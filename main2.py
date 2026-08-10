@@ -42,7 +42,7 @@ def keep_alive():
     t.start()
 
 # ===== CONFIG =====
-BOT_TOKEN = os.getenv("8479229761:AAGbmY8k5MSngcGSulo6VZ5rWzrikwgtOUw")
+BOT_TOKEN = os.getenv("BOT_TOKEN")
 API_TOKEN = os.getenv("API_TOKEN")
 ADMIN_ID = [str(os.getenv("ADMIN_ID"))] # Lista para poder agregar varios admins
 ARCHIVO_USUARIOS = os.getenv("ARCHIVO_USUARIOS") or "usuarios.json"
