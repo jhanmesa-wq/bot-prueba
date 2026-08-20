@@ -2,7 +2,6 @@ import asyncio
 import base64
 import io
 import re
-import aiohttp
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, ContextTypes
 
