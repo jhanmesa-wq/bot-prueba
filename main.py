@@ -599,7 +599,7 @@ async def main_async():
     )
     
     # 5. Mantener vivo
-    await application.updater.idle()
+await asyncio.Event().wait()  # Mantener vivo para siempre
     
     # 6. Cerrar
     await application.stop()
