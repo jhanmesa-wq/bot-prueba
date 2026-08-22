@@ -590,8 +590,9 @@ def main():
     loop.close()
 
     application.run_polling(
-        drop_pending_updates=False,
-        allowed_updates=Update.ALL_TYPES
+    drop_pending_updates=False,
+    allowed_updates=Update.ALL_TYPES,
+    close_loop=False  # <-- Añade esto
     )
 
 if __name__ == "__main__":
