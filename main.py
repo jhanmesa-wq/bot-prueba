@@ -592,6 +592,12 @@ async def facial_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 # ================== INICIAR TODO ==================
 def main():
     init_db()
+    # ESTE TRUCO ARREGLA EL BUG DE PYTHON 3.14
+    from telegram.ext import Updater
+    # Le agregamos __dict__ a la fuerza
+    if '__dict__' not in Updater.__slots__:
+        Updater.__slots__ = (*Updater.__slots__, '__dict__')
+
 
     # Iniciar Flask en segundo plano para recargas automáticas
     Thread(target=iniciar_flask, daemon=True).start()
