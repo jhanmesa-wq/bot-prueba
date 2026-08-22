@@ -579,27 +579,35 @@ application.add_handler(CallbackQueryHandler(botones_callback))
 
 async def main_async():
     """Función asíncrona principal para Render"""
-    print("🤖 Bot SPECTER PERÚ iniciado en modo POLLING (sin Flask)")
+    print("🤖 Bot SPECTER PERÚ iniciado en modo POLLING")
     print("💓 Keep-alive externo activo: https://bot-prueba-1-uhfr.onrender.com/keep-alive cada 300s")
     
-    # 1. Borrar webhook primero
+    # 1. Inicializar application
+    await application.initialize()
+    
+    # 2. Borrar webhook
     await application.bot.delete_webhook(drop_pending_updates=True)
     print("✅ Webhook eliminado, usando polling")
     
-    # 2. Iniciar polling SIN signals para que no choque en Render
+    # 3. Iniciar application - esto ya inicia el updater solo
+    await application.start()
+    
+    # 4. Iniciar polling
     await application.updater.start_polling(
         drop_pending_updates=False,
         allowed_updates=Update.ALL_TYPES
     )
     
-    # 3. Mantener vivo
+    # 5. Mantener vivo
     await application.updater.idle()
-
+    
+    # 6. Cerrar
+    await application.stop()
+    await application.shutdown()
 
 def main():
     """Ejecuta el bot"""
     asyncio.run(main_async())
-
 
 if __name__ == '__main__':
     main()
