@@ -5,6 +5,7 @@ import sqlite3
 import tempfile
 import time
 import logging
+import asyncio
 import requests
 from functools import wraps
 from threading import Thread
@@ -576,24 +577,29 @@ application.add_handler(CommandHandler("agv", agv_command))
 application.add_handler(CommandHandler("facial", facial_command))
 application.add_handler(CallbackQueryHandler(botones_callback))
 
-def main():
-    logger.info("🤖 Bot SPECTER PERÚ iniciado en modo POLLING (sin Flask)")
-    iniciar_keep_alive()
-    import asyncio as _asyncio
-    loop = _asyncio.new_event_loop()
-    _asyncio.set_event_loop(loop)
-    try:
-        loop.run_until_complete(application.bot.delete_webhook(drop_pending_updates=True))
-        logger.info("✅ Webhook eliminado, usando polling")
-    except Exception as e:
-        logger.warning(f"⚠️ No se pudo borrar webhook: {e}")
-    loop.close()
-
-    application.run_polling(
-    drop_pending_updates=False,
-    allowed_updates=Update.ALL_TYPES,
-    close_loop=False  # <-- Añade esto
+async def main_async():
+    """Función asíncrona principal para Render"""
+    print("🤖 Bot SPECTER PERÚ iniciado en modo POLLING (sin Flask)")
+    print("💓 Keep-alive externo activo: https://bot-prueba-1-uhfr.onrender.com/keep-alive cada 300s")
+    
+    # 1. Borrar webhook primero
+    await application.bot.delete_webhook(drop_pending_updates=True)
+    print("✅ Webhook eliminado, usando polling")
+    
+    # 2. Iniciar polling SIN signals para que no choque en Render
+    await application.updater.start_polling(
+        drop_pending_updates=False,
+        allowed_updates=Update.ALL_TYPES
     )
+    
+    # 3. Mantener vivo
+    await application.updater.idle()
 
-if __name__ == "__main__":
+
+def main():
+    """Ejecuta el bot"""
+    asyncio.run(main_async())
+
+
+if __name__ == '__main__':
     main()
