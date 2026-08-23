@@ -95,7 +95,7 @@ def decodificar_imagen(uri):
 def teclado_volver(): return InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ VOLVER AL SISTEMA", callback_data="menu")]])
 def footer_creditos(ctx):
     c=ctx.user_data.get('costo_actual',0); s=ctx.user_data.get('saldo_actual',0)
-    return f"\n\n▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰\n💠 COSTO: {c} CRD | 🔋 SALDO: {s} CRD\n⚜️ SPECTER_OS v2.5"
+    return f"\n\n▰▰▰▰▰▰▰▰▰▰▰▰\n💠 COSTO: {c} CRD | 🔋 SALDO: {s} CRD\n⚜️ SPECTER_OS v2.5"
 
 def con_creditos(costo:int):
     def decorator(func):
@@ -121,18 +121,22 @@ def con_creditos(costo:int):
 # ============== UI FUTURISTA EN HTML ==============
 def texto_menu_cmds():
     return (
-        "⚜️ <b>SPECTER OS v2.5 ONLINE</b>\n"
-        "<i>CENTRAL DE INTELIGENCIA</i>\n\n"
-        "🧬 <b>SISTEMA FUTURISTA ACTIVO</b>\n\n"
-        "⚡ Créditos solo se descuentan si la API responde OK\n"
-        "🛡️ Si falla, reembolso automático\n\n"
-        "▰▰▰▰▰▰▰ SELECCIONA MÓDULO ▰▰▰▰▰▰▰"
+        """╔═════════════════════╗
+🛰️ MENÚ DE SERVICIOS
+╚═════════════════════╝
+
+🚀 SISTEMA CENTRAL DE CONSULTAS
+
+💎 Selecciona una categoría.
+⚡ Todos los servicios muestran su costo.
+🛡️ El cobro se realiza solamente tras una respuesta exitosa.
+        ▰▰▰ SELECCIONA MÓDULO ▰▰▰"""
     )
 def teclado_menu_cmds():
     return InlineKeyboardMarkup([
-        [InlineKeyboardButton("🪪 DNI CORE [5 CRD]", callback_data="cat_reniec"), InlineKeyboardButton("🧬 DNIT X4 [6 CRD]", callback_data="cat_dnit")],
-        [InlineKeyboardButton("🛰️ AGV TRACE [20 CRD]", callback_data="cat_agv"), InlineKeyboardButton("📱 TELCEL OS [8 CRD]", callback_data="cat_telcel")],
-        [InlineKeyboardButton("👁️ FACIAL SCAN [60 CRD]", callback_data="cat_facial"), InlineKeyboardButton("💎 RECARGAR", callback_data="cat_comprar")],
+        [InlineKeyboardButton("🪪 RENIEC", callback_data="cat_reniec"), InlineKeyboardButton("🚙 VEHÍCULOS", callback_data="cat_dnit")],
+        [InlineKeyboardButton("🛰️ FAMILIARES", callback_data="cat_agv"), InlineKeyboardButton("📱 TELÉFONOS", callback_data="cat_telcel")],
+        [InlineKeyboardButton("🧬 FACIAL", callback_data="cat_facial"), InlineKeyboardButton("💎 RECARGAR", callback_data="cat_comprar")],
     ])
 
 def format_dni_futurista(data, ctx):
@@ -140,12 +144,12 @@ def format_dni_futurista(data, ctx):
     dni_num = dni_obj.get("completo") or dni_obj.get("numero") or data.get("dni") or "—"
     if isinstance(dni_num, dict): dni_num = dni_num.get("completo","—")
     txt = f"""
-<b>╔════════════════════════╗</b>
-<b>║  🪪 RENIEC CORE v2.5    ║</b>
-<b>╚════════════════════════╝</b>
+╔════════════╗
+║  🪪 RENIEC   ║
+╚════════════╝
 
 🔍 TARGET: <code>{esc(dni_num)}</code>
-▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰
+▰▰▰▰▰▰▰▰▰▰▰▰▰
 
 👤 <b>IDENTIDAD</b>
 ├─ Nombres: <b>{esc(data.get('nombres'))}</b>
@@ -187,9 +191,9 @@ def format_dnit_futurista(data, ctx):
 
 def format_agv_futurista(data, ctx):
     txt=f"""
-<b>╔════════════════════════╗</b>
-<b>║  🛰️ AGV TRACE v2.5      ║</b>
-<b>╚════════════════════════╝</b>
+╔════════════╗
+║  🛰️ AGV TRACE║
+╚════════════╝
 
 👁️ DNI: <code>{esc(data.get('dni'))}</code>
 👤 Nombres: <b>{esc(data.get('nombres'))}</b>
@@ -197,7 +201,7 @@ def format_agv_futurista(data, ctx):
 ⚧ Género: <code>{esc(data.get('genero'))}</code>
 🎂 Edad: <code>{esc(data.get('edad'))}</code> años
 
-▰▰▰ SCAN COMPLETADO ▰▰▰
+▰▰ SCAN COMPLETADO ▰▰
 """
     txt+=footer_creditos(ctx)
     return txt
@@ -205,9 +209,9 @@ def format_agv_futurista(data, ctx):
 def format_telcel_futurista(data, ctx, numero):
     titulares=data.get("titulares",[]); count=data.get("titulares_encontrados",len(titulares))
     txt=f"""
-<b>╔════════════════════════╗</b>
-<b>║  📱 TELCEL OS v2.5      ║</b>
-<b>╚════════════════════════╝</b>
+╔══════════════╗
+║  📱 TELCEL OS  ║
+╚══════════════╝
 
 📞 NÚMERO: <code>{esc(numero)}</code>
 🔎 TITULARES: <code>{esc(count)}</code>
@@ -247,7 +251,7 @@ def codart_get(path:str):
 async def start(update:Update, context:ContextTypes.DEFAULT_TYPE):
     get_creditos(update.effective_user.id)
     bot_u=f"@{context.bot.username}"
-    texto=f"⚜️ <b>SPECTER PERÚ OS v2.5</b>\n🚀 PLATAFORMA: <code>{esc(bot_u)}</code>\n🛰️ CORE: <code>CODART_X_API_V1</code>\n\n📚 <b>COMANDOS FUTURISTAS</b>\n├─ /register\n├─ /cmds\n├─ /me\n├─ /dni 12345678 [5 CRD]\n├─ /dnit 12345678 [6 CRD]\n├─ /agv 12345678 [20 CRD]\n├─ /telcel 900000000 [8 CRD]\n├─ /facial [60 CRD]\n└─ /buy"
+    texto=f"⚜️ <b>SPECTER PERÚ</b>\n🚀 PLATAFORMA: <code>{esc(bot_u)}</code>\n🛰️ xxxx: <code>SPECTER V.1</code>\n\n📚 <b>COMANDOS</b>\n├─ /register\n├─ /cmds\n├─ /me\n├─ /buy"
     await update.message.reply_text(texto, parse_mode="HTML", reply_markup=teclado_volver())
 
 async def cmds_command(update:Update, context:ContextTypes.DEFAULT_TYPE):
@@ -258,7 +262,26 @@ async def botones_callback(update:Update, context:ContextTypes.DEFAULT_TYPE):
     if q.data=="menu":
         await q.message.edit_text(texto_menu_cmds(), parse_mode="HTML", reply_markup=teclado_menu_cmds())
     elif q.data=="cat_reniec":
-        await q.message.edit_text("🪪 <b>MÓDULO RENIEC CORE</b>\n\n📌 <code>/dni 12345678</code> → Info completa\n💰 5 CRD", parse_mode="HTML", reply_markup=teclado_volver())
+        await q.message.edit_text("🪪  RENIEC 📌 <code>texto = """
+╔══════════╗
+🪪 MÓDULO RENIEC 
+╚══════════╝
+
+⚡ SISTEMA NACIONAL DE IDENTIDAD ⚡
+━━━━━━━━━━
+
+[01] /dni 12345678 
+     └─> FOTO +INFO
+     └─> COSTO: 4 CRD [████████░░]
+
+[02] /dnit 12345678
+     └─> 4 FOTOS + INFORMACIÓN AMPLIADA 
+     └─> COSTO: 5 CRD [█████████░]
+
+━━━━━━━━━━
+🛡️ Consulta segura | Respuesta < 3s
+⚠️ Los créditos solo se descuentan si hay resultado
+"""", parse_mode="HTML", reply_markup=teclado_volver())
     elif q.data=="cat_dnit":
         await q.message.edit_text("🧬 <b>MÓDULO DNIT X4</b>\n\n📌 <code>/dnit 12345678</code> → 4 fotos\n💰 6 CRD", parse_mode="HTML", reply_markup=teclado_volver())
     elif q.data=="cat_agv":
@@ -419,7 +442,7 @@ async def facial_command(update:Update, context:ContextTypes.DEFAULT_TYPE):
             reembolsar(update.effective_user.id, COSTOS["facial"])
             await prog.edit_text("❌ 0 ROSTROS - Reembolsado", parse_mode="HTML", reply_markup=teclado_volver())
             return
-        txt=f"<b>╔════════════════════════╗</b>\n<b>║  👁️ FACIAL SCAN         ║</b>\n<b>╚════════════════════════╝</b>\n\n🎯 TOTAL ROSTROS: <code>{esc(data.get('total_rostros'))}</code>\n🧬 TIPO: <code>{esc(data.get('tipo_resultado'))}</code>\n\n"
+        txt=f"<b>╔═════════════════╗</b>\n<b>║  👁️ FACIAL SCAN         ║</b>\n<b>╚════════════════════════╝</b>\n\n🎯 TOTAL ROSTROS: <code>{esc(data.get('total_rostros'))}</code>\n🧬 TIPO: <code>{esc(data.get('tipo_resultado'))}</code>\n\n"
         for rostro in rostros:
             txt+=f"▰─ ROSTRO #{esc(rostro.get('numero_rostro'))} ─▰\n"
             for i,coinc in enumerate(rostro.get("coincidencias",[]),1):
@@ -454,7 +477,7 @@ async def addcreditos_command(update:Update, context:ContextTypes.DEFAULT_TYPE):
 
 async def me_command(update:Update, context:ContextTypes.DEFAULT_TYPE):
     u=update.effective_user; saldo=get_creditos(u.id)
-    txt=f"<b>╔════════════════════════╗</b>\n<b>║  👤 USER PROFILE       ║</b>\n<b>╚════════════════════════╝</b>\n\n🆔 ID: <code>{esc(u.id)}</code>\n👤 Nombre: <b>{esc(u.full_name)}</b>\n🔖 User: @{esc(u.username)}\n💳 Créditos: <code>{esc(saldo)} CRD</code>\n🛰️ Status: ONLINE"
+    txt=f"<b>╔════════════════╗</b>\n<b>║  👤 USER PROFILE       ║</b>\n<b>╚════════════════════════╝</b>\n\n🆔 ID: <code>{esc(u.id)}</code>\n👤 Nombre: <b>{esc(u.full_name)}</b>\n🔖 User: @{esc(u.username)}\n💳 Créditos: <code>{esc(saldo)} CRD</code>\n🛰️ Status: ONLINE"
     await update.message.reply_text(txt, parse_mode="HTML", reply_markup=teclado_volver())
 
 async def staff_command(update:Update, context:ContextTypes.DEFAULT_TYPE):
