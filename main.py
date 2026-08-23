@@ -454,29 +454,29 @@ def crear_mensaje_premium(bot_username: str):
         )
     return texto, entidades
 
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    get_creditos(update.effective_user.id)
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE): # 0 espacios
+    get_creditos(update.effective_user.id) # 4 espacios
 
-    bot_username = f"@{context.bot.username}"
-    texto, entidades = crear_mensaje_premium(bot_username)
+    bot_username = f"@{context.bot.username}" # 4 espacios
+    texto, entidades = crear_mensaje_premium(bot_username) # 4 espacios
 
-    # 1. PRIMERO MANDA EL VIDEO
-    video_url = "https://files.catbox.moe/mfy472.mp4"  # <-- CAMBIA ESTE LINK
+    # 1. PRIMERO MANDA EL VIDEO # 4 espacios
+    video_url = "https://files.catbox.moe/mfy472.mp4" # 4 espacios
 
-   await context.bot.send_video(
-        chat_id=update.effective_chat.id,
-        video=video_url,
-        caption="⚜️ BIENVENIDO A SPECTER PERÚ ⚜️", # texto corto en el video
-        parse_mode=None
-    )
+    await context.bot.send_video( # 4 espacios <- esta es la línea 466
+        chat_id=update.effective_chat.id, # 8 espacios
+        video=video_url, # 8 espacios
+        caption="⚜️ BIENVENIDO A SPECTER", # 8 espacios
+        parse_mode=None # 8 espacios
+    ) # 4 espacios
 
-    # 2. DESPUÉS MANDA TU TEXTO PREMIUM
-    await update.message.reply_text(
-        text=texto,
-        entities=entidades,
-        reply_markup=teclado_volver(),
-        parse_mode=None
-        )
+    # 2. DESPUÉS MANDA TU TEXTO PREMIUM # 4 espacios
+    await update.message.reply_text( # 4 espacios
+        text=texto, # 8 espacios
+        entities=entidades, # 8 espacios
+        reply_markup=teclado_volver(), # 8 espacios
+        parse_mode=None # 8 espacios
+    ) # 4 espacios
 
 async def cmds_command(update:Update, context:ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(texto_menu_cmds(), parse_mode="HTML", reply_markup=teclado_menu_cmds())
