@@ -605,7 +605,7 @@ async def botones_callback(update:Update, context:ContextTypes.DEFAULT_TYPE):
     elif q.data=="cat_reniec":
         await q.edit_message_text("""
 ╔════════════╗
- 🪪  RENIEC
+ [7]  RENIEC
 ╚════════════╝
 
 [3] ⚡ SISTEMA NACIONAL DE IDENTIDAD ⚡
