@@ -12,7 +12,7 @@ from aiohttp import web
 from functools import wraps
 from dotenv import load_dotenv
 from flask import Flask
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import Update, MessageEntity, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, ContextTypes, CallbackQueryHandler
 
 load_dotenv()
