@@ -405,7 +405,7 @@ def crear_mensaje_premium():
 ⟦E7⟧ /register ➜ Registrarte
 ⟦E8⟧ /cmds ➜ Ver servicios
 ⟦E9⟧ /me ➜ Ver perfil
-⟦E10⟧ /staff ➜ fundador
+⟦E12⟧ /staff ➜ fundador
 ⟦E10⟧ /buy ➜ Planes y créditos
 
 ━━━━━━━━━━━━━━━━━━━━━━
@@ -414,7 +414,7 @@ def crear_mensaje_premium():
     ids = {
         "E1": "5431650332419563627",
         "E2": "6219810752887262728",
-        "E3": "6219810752887262728",
+        "E3": "6298670698948724690",
         "E4": "5098585844931888090",
         "E5": "5260553279321944543",
         "E6": "5098578393163629920",
@@ -423,6 +423,7 @@ def crear_mensaje_premium():
         "E9": "5177431372788139022",
         "E10": "5098536693326152842",
         "E11": "5260463209562776385",
+        "E12": "5096114086958072826",
     }
 
     entidades = []
