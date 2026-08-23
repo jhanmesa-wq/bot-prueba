@@ -590,7 +590,6 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         chat_id=update.effective_chat.id,
         video=video_url,
         caption=premium(texto),
-        reply_markup=teclado_volver(),
         parse_mode="HTML"
     )
 
@@ -603,9 +602,8 @@ async def botones_callback(update:Update, context:ContextTypes.DEFAULT_TYPE):
     if q.data=="menu":
         await q.edit_message_text(texto_menu_cmds(), parse_mode="HTML", reply_markup=teclado_menu_cmds())
     elif q.data=="cat_reniec":
-        await q.edit_message_text("""
-╔════════════╗
- [7]  RENIEC
+    texto_reniec = """╔════════════╗
+ [7] RENIEC
 ╚════════════╝
 
 [3] ⚡ SISTEMA NACIONAL DE IDENTIDAD ⚡
@@ -622,8 +620,12 @@ async def botones_callback(update:Update, context:ContextTypes.DEFAULT_TYPE):
 ————————
 🛡️ Consulta segura | Respuesta < 3s
 ⚠️ Los créditos solo se descuentan si hay resultado
-""", parse_mode="HTML", reply_markup=teclado_volver())
-
+"""
+    await q.edit_message_text(
+        text=texto_reniec,
+        parse_mode=None, # <-- quita HTML para evitar errores
+        reply_markup=teclado_volver()
+    )
     elif q.data=="cat_placa":
         await q.edit_message_text("""
 ╔═════════╗
