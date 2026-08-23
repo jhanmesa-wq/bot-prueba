@@ -119,14 +119,14 @@ def con_creditos(costo:int):
                 if saldo < costo:
                     target = update.message or (update.callback_query.message if update.callback_query else None)
                     if target:
-                        await target.reply_text(premium(f"⚠️ ACCESO DENEGADO\n\n💳 SALDO: {saldo} CRD\n💸 REQUERIDO: {costo} CRD\n\n🔋 /buy para recargar"), reply_markup=teclado_volver())
+                        await target.reply_text(f"⚠️ ACCESO DENEGADO\n\n💳 SALDO: {saldo} CRD\n💸 REQUERIDO: {costo} CRD\n\n🔋 /buy para recargar", reply_markup=teclado_volver())
                     return
                 nuevo=descontar(uid,costo)
                 context.user_data['costo_actual']=costo; context.user_data['saldo_actual']=nuevo
                 return await func(update,context,*args,**kwargs)
             except Exception as e:
                 logger.error(f"decorador {e}", exc_info=True)
-                try: await update.effective_message.reply_text(premium(f"⚠️ SYSTEM ERROR: {esc(str(e))}"), reply_markup=teclado_volver())
+                try: await update.effective_message.reply_text(f"⚠️ SYSTEM ERROR: {esc(str(e))}", reply_markup=teclado_volver())
                 except: pass
         return wrapper
     return decorator
@@ -135,7 +135,7 @@ def con_creditos(costo:int):
 def texto_menu_cmds():
     return (
         """╔═════════════════════╗
-[2] 🛰️ MENÚ DE SERVICIOS
+🛰️ MENÚ DE SERVICIOS
 ╚═════════════════════╝
 
 🚀 SISTEMA CENTRAL DE CONSULTAS
@@ -297,10 +297,10 @@ async def webhook_pago(request):
     try:
         await bot.send_message(
             chat_id=user_id,
-            text=premium(f"✅ Pago detectado!\n\n"
+            text=f"✅ Pago detectado!\n\n"
                  f"💰 Recibido: S/ {monto}\n"
                  f"🎁 +{creditos} CRD agregados\n"
-                 f"💳 Saldo actual: {saldo_nuevo} CRD")
+                 f"💳 Saldo actual: {saldo_nuevo} CRD"
         )
     except Exception as e:
         print(f"⚠️ No se pudo enviar mensaje: {e}")
@@ -350,25 +350,25 @@ async def pagar(update: Update, context: ContextTypes.DEFAULT_TYPE):
 📸 ATENCION: ENVIA LA FOTO DEL VOUCHER AQUI MISMO 👇"""
 
         # ESTA ES LA LÍNEA CLAVE - manda foto por link + texto
-        await update.message.reply_photo(photo=link_foto, caption=premium(texto))
+        await update.message.reply_photo(photo=link_foto, caption=texto)
 
     except Exception as e:
-        await update.message.reply_text(premium(f"Error: {e}\nUso: /pagar <monto> <pedido> Ej: /pagar 300 6512"))
+        await update.message.reply_text(f"Error: {e}\nUso: /pagar <monto> <pedido> Ej: /pagar 300 6512")
 
 
 async def micelular_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     if not context.args:
         return await update.message.reply_text(
-            premium("📱 Uso: /micelular 987654321\n"
+            "📱 Uso: /micelular 987654321\n"
             "Registra tu número para que los pagos por Yape\n"
-            "se sumen automáticamente a tus créditos ⚡"),
+            "se sumen automáticamente a tus créditos ⚡",
             reply_markup=teclado_volver()
         )
     celular = context.args[0].strip()
     if not re.fullmatch(r"9\d{8}", celular):
         return await update.message.reply_text(
-            premium("❌ Número inválido. Debe empezar con 9 y tener 9 dígitos."),
+            "❌ Número inválido. Debe empezar con 9 y tener 9 dígitos.",
             reply_markup=teclado_volver()
         )
     conn = sqlite3.connect(DB_PATH, check_same_thread=False)
@@ -377,224 +377,103 @@ async def micelular_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     conn.commit()
     conn.close()
     await update.message.reply_text(
-        premium(f"✅ Celular {celular} registrado!\n\n"
+        f"✅ Celular {celular} registrado!\n\n"
         "Ahora cuando pagues por Yape a este número,\n"
-        "los créditos se sumarán automáticamente ⚡"),
+        "los créditos se sumarán automáticamente ⚡",
         reply_markup=teclado_volver()
     )
 
-# ============== STICKERS PREMIUM GLOBALES ==============
-# USO EN TODO EL BOT:
-#   [1] SPECTER PERÚ
-#   [2] COMANDOS
-#   [3] ESTADO
-#   [4] USUARIO
-#
-# También se acepta el formato antiguo [E1], [E2], etc.
-#
-# EDITA LOS STICKERS DESDE ESTE ÚNICO LUGAR.
-PREMIUM_STICKERS = {
-    "1": "5431650332419563627",
-    "2": "6219810752887262728",
-    "3": "6298670698948724690",
-    "4": "5098585844931888090",
-    "5": "5260553279321944543",
-    "6": "5098578393163629920",
-    "7": "5429381339851796035",
-    "8": "5179570356695860413",
-    "9": "5177431372788139022",
-    "10": "5098536693326152842",
-    "11": "5260463209562776385",
-    "12": "5096114086958072826",
-}
-
-def premium(texto):
-    """
-    Reemplaza [1], [2], [3]... por emojis premium de Telegram.
-
-    Puedes escribir los marcadores directamente dentro de cualquier
-    texto del bot. Ejemplo:
-
-        texto = "[2] SPECTER PERÚ"
-        await update.message.reply_text(premium(texto), parse_mode="HTML")
-
-    También mantiene compatibilidad con [E1], [E2]...
-    """
-    if texto is None:
-        return texto
-
-    texto = str(texto)
-
-    def reemplazar(match):
-        numero = match.group(1)
-        custom_id = PREMIUM_STICKERS.get(numero)
-        if not custom_id:
-            return match.group(0)
-        return f'<tg-emoji emoji-id="{custom_id}">🔹</tg-emoji>'
-
-    texto = re.sub(r"\[(?:E)?(\d+)\]", reemplazar, texto)
-    return texto
-
-
-def premium_global(texto):
-    """
-    Procesador GLOBAL de stickers premium.
-
-    Cualquier texto que pase por los métodos de Telegram que han sido
-    parcheados abajo puede contener directamente:
-
-        [1] [2] [3] [4] ... [12]
-
-    También acepta el formato anterior:
-        [E1] [E2] ... [E12]
-
-    Los marcadores se transforman en <tg-emoji> y se envían usando
-    parse_mode=HTML.
-    """
-    if texto is None:
-        return texto
-
-    # No convertir objetos que no sean texto.
-    if not isinstance(texto, str):
-        return texto
-
-    def repl(match):
-        numero = match.group(1) or match.group(2)
-        custom_id = PREMIUM_STICKERS.get(numero)
-        if not custom_id:
-            return match.group(0)
-        return f'<tg-emoji emoji-id="{custom_id}">🔹</tg-emoji>'
-
-    # Un solo regex para [3] y [E3].
-    return re.sub(r'\[(\d+)\]|\[E(\d+)\]', repl, texto)
-
-
-def _patch_premium_method(cls, method_name):
-    """
-    Parchea el método async de Telegram para que los textos/captions
-    enviados desde cualquier parte del código reconozcan [1], [2], etc.
-
-    El parche solo agrega parse_mode=HTML cuando hay marcadores premium.
-    Si el mensaje ya usa parse_mode explícito, se respeta.
-    """
-    original = getattr(cls, method_name, None)
-    if original is None:
-        return
-
-    @wraps(original)
-    async def wrapped(self, *args, **kwargs):
-        changed = False
-
-        # Procesar argumentos posicionales cuando el método utiliza texto
-        # como primer/segundo argumento. Para mantener compatibilidad,
-        # se priorizan los nombres de parámetros conocidos abajo.
-        for key in ("text", "caption"):
-            if key in kwargs and isinstance(kwargs[key], str):
-                nuevo = premium_global(kwargs[key])
-                if nuevo != kwargs[key]:
-                    kwargs[key] = nuevo
-                    changed = True
-
-        # Métodos como reply_text/edit_text suelen recibir texto como
-        # segundo argumento posicional después de self.
-        if not changed and args:
-            args = list(args)
-            for i, value in enumerate(args):
-                if isinstance(value, str) and ("[" in value):
-                    nuevo = premium_global(value)
-                    if nuevo != value:
-                        args[i] = nuevo
-                        changed = True
-                        break
-            args = tuple(args)
-
-        if changed and "parse_mode" not in kwargs:
-            kwargs["parse_mode"] = "HTML"
-
-        return await original(self, *args, **kwargs)
-
-    setattr(cls, method_name, wrapped)
-
-
-def instalar_stickers_premium_globales():
-    """
-    Instala el sistema automático una sola vez.
-
-    Desde este punto, los métodos más utilizados por el bot procesan
-    automáticamente [1], [2], [3]... sin tener que llamar premium()
-    manualmente en cada comando.
-    """
-    metodos = (
-        "send_message",
-        "reply_text",
-        "edit_message_text",
-        "edit_text",
-        "send_photo",
-        "reply_photo",
-        "send_video",
-        "reply_video",
-    )
-
-    for metodo in metodos:
-        _patch_premium_method(type(Update), metodo) if hasattr(type(Update), metodo) else None
-
-    # python-telegram-bot implementa estos métodos en Message/Bot.
-    try:
-        from telegram import Message, Bot
-        for metodo in metodos:
-            if hasattr(Message, metodo):
-                _patch_premium_method(Message, metodo)
-            if hasattr(Bot, metodo):
-                _patch_premium_method(Bot, metodo)
-    except Exception as e:
-        logger.warning(f"No se pudo instalar parche premium global: {e}")
-
-
 def crear_mensaje_premium(bot_username: str):
+    # Los marcadores se reemplazan antes de calcular los offsets UTF-16.
+    # Esto evita que el @username cambie las posiciones de las entidades.
     texto = f"""╔═════════════════════╗
-[1] SPECTER PERÚ
+[E1] SPECTER PERÚ
 ╚═════════════════════╝
 
  BOT DE CONSULTAS
 
-[2] Nombre: SPECTER PERÚ [3]
-[4] Usuario: {bot_username}
-[5] Estado: ONLINE
+[E2] Nombre: SPECTER PERÚ [E3]
+[E4] Usuario: {bot_username}
+[E5] Estado: ONLINE
 
 ━━━━━━━━━━━━━━━━━━━━━━
-[6] COMANDOS
+[E6] COMANDOS
 
-[7] /register ➜ Registrarte
-[8] /cmds ➜ Ver servicios
-[9] /me ➜ Ver perfil
-[12] /staff ➜ fundador
-[10] /buy ➜ Planes y créditos
+[E7] /register ➜ Registrarte
+[E8] /cmds ➜ Ver servicios
+[E9] /me ➜ Ver perfil
+[E12] /staff ➜ fundador
+[E10] /buy ➜ Planes y créditos
 
 ━━━━━━━━━━━━━━━━━━━━━━
-[11] Sistema actualizado y centralizado"""
+[E11] Sistema actualizado y centralizado"""
 
-    return premium(texto)
+    ids = {
+        "E1": "5431650332419563627",
+        "E2": "6219810752887262728",
+        "E3": "6298670698948724690",
+        "E4": "5098585844931888090",
+        "E5": "5260553279321944543",
+        "E6": "5098578393163629920",
+        "E7": "5429381339851796035",
+        "E8": "5179570356695860413",
+        "E9": "5177431372788139022",
+        "E10": "5098536693326152842",
+        "E11": "5260463209562776385",
+        "E12": "5096114086958072826",
+    }
 
+    entidades = []
+
+    # Procesar siempre el marcador que aparezca primero en el texto.
+    # Así los offsets quedan calculados sobre el texto final.
+    while True:
+        encontrado = None
+
+        for nombre, custom_id in ids.items():
+            marcador = f"[{nombre}]"
+            posicion = texto.find(marcador)
+            if posicion != -1 and (encontrado is None or posicion < encontrado[0]):
+                encontrado = (posicion, marcador, custom_id)
+
+        if encontrado is None:
+            break
+
+        posicion, marcador, custom_id = encontrado
+        offset = len(texto[:posicion].encode("utf-16-le")) // 2
+
+        texto = texto[:posicion] + "🔹" + texto[posicion + len(marcador):]
+
+        entidades.append(
+            MessageEntity(
+                type="custom_emoji",
+                offset=offset,
+                length=2,
+                custom_emoji_id=custom_id
+            )
+        )
+    return texto, entidades
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     get_creditos(update.effective_user.id)
 
     bot_username = f"@{context.bot.username}"
-    texto = crear_mensaje_premium(bot_username)
+    texto, entidades = crear_mensaje_premium(bot_username)  # <-- ya lo llamaste aquí
 
     video_url = "https://files.catbox.moe/mfy472.mp4"
 
     # MANDA VIDEO + TEXTO JUNTOS
-    # Los stickers premium se procesan mediante HTML.
     await context.bot.send_video(
         chat_id=update.effective_chat.id,
         video=video_url,
-        caption=premium(texto),
-        parse_mode="HTML"
+        caption=texto,          # <-- usa 'texto', no la función
+        caption_entities=entidades,  # <-- para que respete negritas/estilos
+        reply_markup=teclado_volver(),
+        parse_mode=None
     )
 
 async def cmds_command(update:Update, context:ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text(premium(texto_menu_cmds()), parse_mode="HTML", reply_markup=teclado_menu_cmds())
+    await update.message.reply_text(texto_menu_cmds(), parse_mode="HTML", reply_markup=teclado_menu_cmds())
 async def botones_callback(update:Update, context:ContextTypes.DEFAULT_TYPE):
     q=update.callback_query
     await q.answer()
@@ -602,26 +481,28 @@ async def botones_callback(update:Update, context:ContextTypes.DEFAULT_TYPE):
     if q.data=="menu":
         await q.edit_message_text(texto_menu_cmds(), parse_mode="HTML", reply_markup=teclado_menu_cmds())
     elif q.data=="cat_reniec":
-    await q.edit_message_text("""
-╔════════════╗
-[7] RENIEC
-╚════════════╝
+        await q.edit_message_text("""
+    ╔════════════╗
+    [7] RENIEC
+    ╚════════════╝
 
-[3] ⚡ SISTEMA NACIONAL DE IDENTIDAD ⚡
-————————
+    [3] ⚡ SISTEMA NACIONAL DE IDENTIDAD ⚡
+    ————————
 
-[01] /dni 12345678
-     ↳ FOTO +INFO
-     ↳ COSTO: 4 CRD [█████░░░░░]
+    [01] /dni 12345678
+         ↳ FOTO +INFO
+         ↳ COSTO: 4 CRD [█████░░░░░]
 
-[02] /dnit 12345678
-     ↳ 4 FOTOS + INFORMACIÓN AMPLIADA
-     ↳ COSTO: 5 CRD [██████░░░░]
+    [02] /dnit 12345678
+         ↳ 4 FOTOS + INFORMACIÓN AMPLIADA
+         ↳ COSTO: 5 CRD [██████░░░░]
 
-————————
-🛡️ Consulta segura | Respuesta < 3s
-⚠️ Los créditos solo se descuentan si hay resultado
-""", parse_mode="HTML", reply_markup=teclado_volver())
+    ————————
+    🛡️ Consulta segura | Respuesta < 3s
+    ⚠️ Los créditos solo se descuentan si hay resultado
+    """, parse_mode="HTML", reply_markup=teclado_volver())
+
+
     elif q.data=="cat_placa":
         await q.edit_message_text("""
 ╔═════════╗
@@ -694,7 +575,7 @@ async def botones_callback(update:Update, context:ContextTypes.DEFAULT_TYPE):
 
     elif q.data=="cat_comprar":
         await q.edit_message_text("""╔═════════════════════╗
-[2] 💎 PLANES PREMIUM
+💎 PLANES PREMIUM
 ╚═════════════════════╝
 
 💰 CRÉDITOS
@@ -726,111 +607,111 @@ async def botones_callback(update:Update, context:ContextTypes.DEFAULT_TYPE):
 async def dni_command(update:Update, context:ContextTypes.DEFAULT_TYPE):
     if not context.args or not validar_dni(context.args[0]):
         reembolsar(update.effective_user.id, COSTOS["dni"])
-        await update.message.reply_text(premium("⚠️ FORMATO INVÁLIDO\n\nUsa: <code>/dni 12345678</code>"), parse_mode="HTML", reply_markup=teclado_volver())
+        await update.message.reply_text("⚠️ FORMATO INVÁLIDO\n\nUsa: <code>/dni 12345678</code>", parse_mode="HTML", reply_markup=teclado_volver())
         return
     dni=context.args[0]
-    prog=await update.message.reply_text(premium(f"🛰️ INICIANDO SCAN RENIEC...\n🎯 TARGET: <code>{esc(dni)}</code>\n⏳ Conectando..."), parse_mode="HTML")
+    prog=await update.message.reply_text(f"🛰️ INICIANDO SCAN RENIEC...\n🎯 TARGET: <code>{esc(dni)}</code>\n⏳ Conectando...", parse_mode="HTML")
     j,err=codart_get(f"/dni/{dni}")
     if err:
         reembolsar(update.effective_user.id, COSTOS["dni"])
-        await prog.edit_text(premium(f"❌ ERROR API\n{esc(err)}\n🔋 Devuelto"), parse_mode="HTML", reply_markup=teclado_volver())
+        await prog.edit_text(f"❌ ERROR API\n{esc(err)}\n🔋 Devuelto", parse_mode="HTML", reply_markup=teclado_volver())
         return
     if not j.get("success"):
         reembolsar(update.effective_user.id, COSTOS["dni"])
-        await prog.edit_text(premium(f"❌ SIN RESULTADOS\n{esc(j.get('message'))}\n🔋 Reembolsado"), parse_mode="HTML", reply_markup=teclado_volver())
+        await prog.edit_text(f"❌ SIN RESULTADOS\n{esc(j.get('message'))}\n🔋 Reembolsado", parse_mode="HTML", reply_markup=teclado_volver())
         return
     data=j.get("data",{}); texto=format_dni_futurista(data, context)
     imgs=data.get("images",[])
     if imgs and imgs[0].get("data_uri"):
         foto=decodificar_imagen(imgs[0]["data_uri"])
         if foto:
-            await update.message.reply_photo(photo=foto, caption=premium(texto), parse_mode="HTML", reply_markup=teclado_volver())
+            await update.message.reply_photo(photo=foto, caption=texto, parse_mode="HTML", reply_markup=teclado_volver())
             try: await prog.delete()
             except: pass
             return
-    await prog.edit_text(premium(texto), parse_mode="HTML", reply_markup=teclado_volver())
+    await prog.edit_text(texto, parse_mode="HTML", reply_markup=teclado_volver())
 
 @con_creditos(costo=COSTOS["dnit"])
 async def dnit_command(update:Update, context:ContextTypes.DEFAULT_TYPE):
     if not context.args or not validar_dni(context.args[0]):
         reembolsar(update.effective_user.id, COSTOS["dnit"])
-        await update.message.reply_text(premium("⚠️ Usa: <code>/dnit 12345678</code>"), parse_mode="HTML", reply_markup=teclado_volver())
+        await update.message.reply_text("⚠️ Usa: <code>/dnit 12345678</code>", parse_mode="HTML", reply_markup=teclado_volver())
         return
     dni=context.args[0]
-    prog=await update.message.reply_text(premium(f"🧬 INICIANDO DNIT X4...\n🎯 TARGET: <code>{esc(dni)}</code>"), parse_mode="HTML")
+    prog=await update.message.reply_text(f"🧬 INICIANDO DNIT X4...\n🎯 TARGET: <code>{esc(dni)}</code>", parse_mode="HTML")
     j,err=codart_get(f"/dnit/{dni}")
     if err:
         reembolsar(update.effective_user.id, COSTOS["dnit"])
-        await prog.edit_text(premium(f"❌ ERROR\n{esc(err)}"), parse_mode="HTML", reply_markup=teclado_volver())
+        await prog.edit_text(f"❌ ERROR\n{esc(err)}", parse_mode="HTML", reply_markup=teclado_volver())
         return
     if not j.get("success"):
         reembolsar(update.effective_user.id, COSTOS["dnit"])
-        await prog.edit_text(premium(f"❌ SIN RESULTADOS\n{esc(j.get('message'))}"), parse_mode="HTML", reply_markup=teclado_volver())
+        await prog.edit_text(f"❌ SIN RESULTADOS\n{esc(j.get('message'))}", parse_mode="HTML", reply_markup=teclado_volver())
         return
     data=j.get("data",{}); texto=format_dnit_futurista(data, context)
     imgs=data.get("images",[])
     fotos_decod=[decodificar_imagen(im.get("data_uri")) for im in imgs if im.get("data_uri")]
     fotos_decod=[f for f in fotos_decod if f]
     if fotos_decod:
-        await update.message.reply_photo(photo=fotos_decod[0], caption=premium(texto), parse_mode="HTML", reply_markup=teclado_volver())
+        await update.message.reply_photo(photo=fotos_decod[0], caption=texto, parse_mode="HTML", reply_markup=teclado_volver())
         for f in fotos_decod[1:4]:
             try: await update.message.reply_photo(photo=f)
             except: pass
         try: await prog.delete()
         except: pass
         return
-    await prog.edit_text(premium(texto), parse_mode="HTML", reply_markup=teclado_volver())
+    await prog.edit_text(texto, parse_mode="HTML", reply_markup=teclado_volver())
 
 @con_creditos(costo=COSTOS["agv"])
 async def agv_command(update:Update, context:ContextTypes.DEFAULT_TYPE):
     if not context.args or not validar_dni(context.args[0]):
         reembolsar(update.effective_user.id, COSTOS["agv"])
-        await update.message.reply_text(premium("⚠️ Usa: <code>/agv 12345678</code>"), parse_mode="HTML", reply_markup=teclado_volver())
+        await update.message.reply_text("⚠️ Usa: <code>/agv 12345678</code>", parse_mode="HTML", reply_markup=teclado_volver())
         return
     dni=context.args[0]
-    prog=await update.message.reply_text(premium(f"🛰️ AGV TRACE...\n🎯 <code>{esc(dni)}</code>"), parse_mode="HTML")
+    prog=await update.message.reply_text(f"🛰️ AGV TRACE...\n🎯 <code>{esc(dni)}</code>", parse_mode="HTML")
     j,err=codart_get(f"/agv/{dni}")
     if err:
         reembolsar(update.effective_user.id, COSTOS["agv"])
-        await prog.edit_text(premium(f"❌ ERROR\n{esc(err)}"), parse_mode="HTML", reply_markup=teclado_volver())
+        await prog.edit_text(f"❌ ERROR\n{esc(err)}", parse_mode="HTML", reply_markup=teclado_volver())
         return
     if not j.get("success"):
         reembolsar(update.effective_user.id, COSTOS["agv"])
-        await prog.edit_text(premium("❌ SIN RESULTADOS - Reembolsado"), parse_mode="HTML", reply_markup=teclado_volver())
+        await prog.edit_text("❌ SIN RESULTADOS - Reembolsado", parse_mode="HTML", reply_markup=teclado_volver())
         return
     data=j.get("data",{}); texto=format_agv_futurista(data, context)
     imgs=data.get("images",[])
     if imgs and imgs[0].get("data_uri"):
         foto=decodificar_imagen(imgs[0]["data_uri"])
         if foto:
-            await update.message.reply_photo(photo=foto, caption=premium(texto), parse_mode="HTML", reply_markup=teclado_volver())
+            await update.message.reply_photo(photo=foto, caption=texto, parse_mode="HTML", reply_markup=teclado_volver())
             try: await prog.delete()
             except: pass
             return
-    await prog.edit_text(premium(texto), parse_mode="HTML", reply_markup=teclado_volver())
+    await prog.edit_text(texto, parse_mode="HTML", reply_markup=teclado_volver())
 
 @con_creditos(costo=COSTOS["telcel"])
 async def telcel_command(update:Update, context:ContextTypes.DEFAULT_TYPE):
     if not context.args or not validar_cel(context.args[0]):
         reembolsar(update.effective_user.id, COSTOS["telcel"])
-        await update.message.reply_text(premium("⚠️ NÚMERO INVÁLIDO\nUsa: <code>/telcel 900000000</code>\n9 dígitos"), parse_mode="HTML", reply_markup=teclado_volver())
+        await update.message.reply_text("⚠️ NÚMERO INVÁLIDO\nUsa: <code>/telcel 900000000</code>\n9 dígitos", parse_mode="HTML", reply_markup=teclado_volver())
         return
     num=context.args[0]
-    prog=await update.message.reply_text(premium(f"📡 TELCEL OS SCANNING...\n📱 TARGET: <code>{esc(num)}</code>"), parse_mode="HTML")
+    prog=await update.message.reply_text(f"📡 TELCEL OS SCANNING...\n📱 TARGET: <code>{esc(num)}</code>", parse_mode="HTML")
     j,err=codart_get(f"/telp/cel/{num}")
     if err or (j and not j.get("success")):
         j2,err2=codart_get(f"/telcel/{num}")
         if j2 and j2.get("success"): j=j2; err=None
     if err:
         reembolsar(update.effective_user.id, COSTOS["telcel"])
-        await prog.edit_text(premium(f"❌ ERROR API\n{esc(err)}\n🔋 Devuelto"), parse_mode="HTML", reply_markup=teclado_volver())
+        await prog.edit_text(f"❌ ERROR API\n{esc(err)}\n🔋 Devuelto", parse_mode="HTML", reply_markup=teclado_volver())
         return
     if not j.get("success"):
         reembolsar(update.effective_user.id, COSTOS["telcel"])
-        await prog.edit_text(premium(f"❌ SIN TITULAR\n{esc(j.get('message'))}\n🔋 Reembolsado"), parse_mode="HTML", reply_markup=teclado_volver())
+        await prog.edit_text(f"❌ SIN TITULAR\n{esc(j.get('message'))}\n🔋 Reembolsado", parse_mode="HTML", reply_markup=teclado_volver())
         return
     data=j.get("data",{}); texto=format_telcel_futurista(data, context, num)
-    await prog.edit_text(premium(texto), parse_mode="HTML", reply_markup=teclado_volver())
+    await prog.edit_text(texto, parse_mode="HTML", reply_markup=teclado_volver())
 
 @con_creditos(costo=COSTOS["facial"])
 async def facial_command(update:Update, context:ContextTypes.DEFAULT_TYPE):
@@ -839,9 +720,9 @@ async def facial_command(update:Update, context:ContextTypes.DEFAULT_TYPE):
     elif msg.reply_to_message and msg.reply_to_message.photo: photo_file_id=msg.reply_to_message.photo[-1].file_id
     if not photo_file_id:
         reembolsar(update.effective_user.id, COSTOS["facial"])
-        await msg.reply_text(premium("👁️ FACIAL SCAN\nEnvía foto con <code>/facial</code> o responde a foto"), parse_mode="HTML", reply_markup=teclado_volver())
+        await msg.reply_text("👁️ FACIAL SCAN\nEnvía foto con <code>/facial</code> o responde a foto", parse_mode="HTML", reply_markup=teclado_volver())
         return
-    prog=await msg.reply_text(premium("👁️ FACIAL SCAN INICIADO\n⏳ Analizando..."), parse_mode="HTML")
+    prog=await msg.reply_text("👁️ FACIAL SCAN INICIADO\n⏳ Analizando...", parse_mode="HTML")
     tmp_path=None
     try:
         tg_file=await context.bot.get_file(photo_file_id)
@@ -853,21 +734,21 @@ async def facial_command(update:Update, context:ContextTypes.DEFAULT_TYPE):
             r=requests.post(url, headers=HEADERS_FACIAL, files=files, timeout=35)
         if not r.text:
             reembolsar(update.effective_user.id, COSTOS["facial"])
-            await prog.edit_text(premium("❌ API VACÍA"), parse_mode="HTML", reply_markup=teclado_volver())
+            await prog.edit_text("❌ API VACÍA", parse_mode="HTML", reply_markup=teclado_volver())
             return
         try: j=r.json()
         except:
             reembolsar(update.effective_user.id, COSTOS["facial"])
-            await prog.edit_text(premium(f"❌ NO JSON: {esc(r.text[:300])}"), parse_mode="HTML", reply_markup=teclado_volver())
+            await prog.edit_text(f"❌ NO JSON: {esc(r.text[:300])}", parse_mode="HTML", reply_markup=teclado_volver())
             return
         if r.status_code!=200 or not j.get("success"):
             reembolsar(update.effective_user.id, COSTOS["facial"])
-            await prog.edit_text(premium("❌ SIN COINCIDENCIAS - Reembolsado"), parse_mode="HTML", reply_markup=teclado_volver())
+            await prog.edit_text("❌ SIN COINCIDENCIAS - Reembolsado", parse_mode="HTML", reply_markup=teclado_volver())
             return
         data=j.get("data",{}); rostros=data.get("rostros",[])
         if not rostros:
             reembolsar(update.effective_user.id, COSTOS["facial"])
-            await prog.edit_text(premium("❌ 0 ROSTROS - Reembolsado"), parse_mode="HTML", reply_markup=teclado_volver())
+            await prog.edit_text("❌ 0 ROSTROS - Reembolsado", parse_mode="HTML", reply_markup=teclado_volver())
             return
         txt=f"<b>╔═════════════════╗</b>\n<b>║  👁️ FACIAL SCAN         ║</b>\n<b>╚════════════════════════╝</b>\n\n🎯 TOTAL ROSTROS: <code>{esc(data.get('total_rostros'))}</code>\n🧬 TIPO: <code>{esc(data.get('tipo_resultado'))}</code>\n\n"
         for rostro in rostros:
@@ -877,11 +758,11 @@ async def facial_command(update:Update, context:ContextTypes.DEFAULT_TYPE):
                 txt+=f"{emoji} {i}. <b>{esc(coinc.get('nombre'))}</b>\n   └─ DNI: <code>{esc(coinc.get('dni'))}</code> | {esc(pct)}%\n"
             txt+="\n"
         txt+=footer_creditos(context)
-        await prog.edit_text(premium(txt), parse_mode="HTML", reply_markup=teclado_volver())
+        await prog.edit_text(txt, parse_mode="HTML", reply_markup=teclado_volver())
     except Exception as e:
         logger.error(f"facial {e}", exc_info=True)
         reembolsar(update.effective_user.id, COSTOS["facial"])
-        await prog.edit_text(premium(f"❌ ERROR: {esc(str(e))}"), parse_mode="HTML", reply_markup=teclado_volver())
+        await prog.edit_text(f"❌ ERROR: {esc(str(e))}", parse_mode="HTML", reply_markup=teclado_volver())
     finally:
         if tmp_path and os.path.exists(tmp_path):
             try: os.remove(tmp_path)
@@ -890,43 +771,35 @@ async def facial_command(update:Update, context:ContextTypes.DEFAULT_TYPE):
 async def addcreditos_command(update:Update, context:ContextTypes.DEFAULT_TYPE):
     uid=update.effective_user.id
     if ADMIN_ID!=0 and uid!=ADMIN_ID:
-        await update.message.reply_text(premium("⛔ ACCESO DENEGADO - SOLO ADMIN"), reply_markup=teclado_volver())
+        await update.message.reply_text("⛔ ACCESO DENEGADO - SOLO ADMIN", reply_markup=teclado_volver())
         return
     if len(context.args)<2:
-        await update.message.reply_text(premium("⚙️ USO: <code>/addcreditos &lt;user_id&gt; &lt;cantidad&gt;</code>\nEj: <code>/addcreditos 6330231681 100</code>"), parse_mode="HTML", reply_markup=teclado_volver())
+        await update.message.reply_text("⚙️ USO: <code>/addcreditos &lt;user_id&gt; &lt;cantidad&gt;</code>\nEj: <code>/addcreditos 6330231681 100</code>", parse_mode="HTML", reply_markup=teclado_volver())
         return
     try:
         target=int(context.args[0]); cant=int(context.args[1])
         nuevo=get_creditos(target)+cant; set_creditos(target,nuevo)
-        await update.message.reply_text(premium(f"✅ CRÉDITOS INYECTADOS\n👤 USER: <code>{esc(target)}</code>\n💳 +{esc(cant)} CRD\n🔋 SALDO: {esc(nuevo)} CRD"), parse_mode="HTML", reply_markup=teclado_volver())
+        await update.message.reply_text(f"✅ CRÉDITOS INYECTADOS\n👤 USER: <code>{esc(target)}</code>\n💳 +{esc(cant)} CRD\n🔋 SALDO: {esc(nuevo)} CRD", parse_mode="HTML", reply_markup=teclado_volver())
     except Exception as e:
-        await update.message.reply_text(premium(f"❌ {esc(str(e))}"), reply_markup=teclado_volver())
+        await update.message.reply_text(f"❌ {esc(str(e))}", reply_markup=teclado_volver())
 
 async def me_command(update:Update, context:ContextTypes.DEFAULT_TYPE):
     u=update.effective_user; saldo=get_creditos(u.id)
     txt=f"<b>╔════════════════╗</b>\n<b>║  👤 USER PROFILE       ║</b>\n<b>╚════════════════════════╝</b>\n\n🆔 ID: <code>{esc(u.id)}</code>\n👤 Nombre: <b>{esc(u.full_name)}</b>\n🔖 User: @{esc(u.username)}\n💳 Créditos: <code>{esc(saldo)} CRD</code>\n🛰️ Status: ONLINE"
-    await update.message.reply_text(premium(txt), parse_mode="HTML", reply_markup=teclado_volver())
+    await update.message.reply_text(txt, parse_mode="HTML", reply_markup=teclado_volver())
 
 async def staff_command(update:Update, context:ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text(premium("🛡️ <b>STAFF PANEL // EN DESARROLLO</b>"), parse_mode="HTML", reply_markup=teclado_volver())
+    await update.message.reply_text("🛡️ <b>STAFF PANEL // EN DESARROLLO</b>", parse_mode="HTML", reply_markup=teclado_volver())
 async def buy_command(update:Update, context:ContextTypes.DEFAULT_TYPE, from_callback=False):
     txt="💎 <b>RECARGA // SPECTER STORE</b>\n\n💰 PLANES\n├─ 5 CRD = S/ 5.00\n├─ 20 CRD = S/ 18.00\n├─ 60 CRD = S/ 50.00\n└─ 150 CRD = S/ 110.00\n\n📩 Contacta @admin"
-    if from_callback and update.callback_query: await update.callback_query.message.edit_text(premium(txt), parse_mode="HTML", reply_markup=teclado_volver())
-    else: await update.message.reply_text(premium(txt), parse_mode="HTML", reply_markup=teclado_volver())
+    if from_callback and update.callback_query: await update.callback_query.message.edit_text(txt, parse_mode="HTML", reply_markup=teclado_volver())
+    else: await update.message.reply_text(txt, parse_mode="HTML", reply_markup=teclado_volver())
 async def register_command(update:Update, context:ContextTypes.DEFAULT_TYPE):
     get_creditos(update.effective_user.id)
-    await update.message.reply_text(premium("✅ <b>SISTEMA ACTIVADO</b>\n\n🧬 Bienvenido a SPECTER OS v2.5\n💳 10 CRD de bienvenida"), parse_mode="HTML", reply_markup=teclado_volver())
+    await update.message.reply_text("✅ <b>SISTEMA ACTIVADO</b>\n\n🧬 Bienvenido a SPECTER OS v2.5\n💳 10 CRD de bienvenida", parse_mode="HTML", reply_markup=teclado_volver())
 
 def main():
     init_db()
-
-    # ================================================================
-    # STICKERS PREMIUM GLOBALES
-    # Desde aquí [1], [2], [3]... funcionan automáticamente en los
-    # textos enviados/editados por el bot, sin llamar premium() manualmente.
-    # ================================================================
-    instalar_stickers_premium_globales()
-
     threading.Thread(target=run_flask, daemon=True).start()
     logger.info(f"Flask {PORT}")
     app=Application.builder().token(BOT_TOKEN).build()
