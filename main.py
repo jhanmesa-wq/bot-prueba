@@ -452,9 +452,7 @@ def crear_mensaje_premium(bot_username: str):
                 custom_emoji_id=custom_id
             )
         )
-
     return texto, entidades
-
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     get_creditos(update.effective_user.id)
@@ -462,12 +460,23 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     bot_username = f"@{context.bot.username}"
     texto, entidades = crear_mensaje_premium(bot_username)
 
+    # 1. PRIMERO MANDA EL VIDEO
+    video_url = "https://files.catbox.moe/mfy472.mp4"  # <-- CAMBIA ESTE LINK
+
+   await context.bot.send_video(
+        chat_id=update.effective_chat.id,
+        video=video_url,
+        caption="⚜️ BIENVENIDO A SPECTER PERÚ ⚜️", # texto corto en el video
+        parse_mode=None
+    )
+
+    # 2. DESPUÉS MANDA TU TEXTO PREMIUM
     await update.message.reply_text(
         text=texto,
         entities=entidades,
         reply_markup=teclado_volver(),
         parse_mode=None
-    )
+        )
 
 async def cmds_command(update:Update, context:ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(texto_menu_cmds(), parse_mode="HTML", reply_markup=teclado_menu_cmds())
