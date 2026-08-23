@@ -466,7 +466,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE): # 0 espacio
     await context.bot.send_video( # 4 espacios <- esta es la línea 466
         chat_id=update.effective_chat.id, # 8 espacios
         video=video_url, # 8 espacios
-        caption="⚜️ BIENVENIDO A SPECTER", # 8 espacios
+        caption=crear_mensaje_premium, # 8 espacios
         parse_mode=None # 8 espacios
     ) # 4 espacios
 
