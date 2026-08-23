@@ -506,7 +506,7 @@ async def botones_callback(update:Update, context:ContextTypes.DEFAULT_TYPE):
     elif q.data=="cat_placa":
         await q.edit_message_text("""
 ╔═════════╗
- 🧬 PLACA
+ [E1] PLACA
 ╚═════════╝
 
 ⚡ BUSCAR POR PLACA⚡
