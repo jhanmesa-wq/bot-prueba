@@ -601,31 +601,31 @@ async def botones_callback(update:Update, context:ContextTypes.DEFAULT_TYPE):
     
     if q.data=="menu":
         await q.edit_message_text(texto_menu_cmds(), parse_mode="HTML", reply_markup=teclado_menu_cmds())
-    elif q.data=="cat_reniec":
-    texto_reniec = """╔════════════╗
- [7] RENIEC
-╚════════════╝
+    elif q.data=="cat_reniec": # 4 espacios
+    texto_reniec = """╔════════════╗ # 8 espacios
+ [7] RENIEC # 8 espacios
+╚════════════╝ # 8 espacios
 
-[3] ⚡ SISTEMA NACIONAL DE IDENTIDAD ⚡
-————————
+[3] ⚡ SISTEMA NACIONAL DE IDENTIDAD ⚡ # 8 espacios
+———————— # 8 espacios
 
-[01] /dni 12345678
-     ↳ FOTO +INFO
-     ↳ COSTO: 4 CRD [█████░░░░░]
+[01] /dni 12345678 # 8 espacios
+     ↳ FOTO +INFO # 8 espacios
+     ↳ COSTO: 4 CRD [█████░░░░░] # 8 espacios
 
-[02] /dnit 12345678
-     ↳ 4 FOTOS + INFORMACIÓN AMPLIADA
-     ↳ COSTO: 5 CRD [██████░░░░]
+[02] /dnit 12345678 # 8 espacios
+     ↳ 4 FOTOS + INFORMACIÓN AMPLIADA # 8 espacios
+     ↳ COSTO: 5 CRD [██████░░░░] # 8 espacios
 
-————————
-🛡️ Consulta segura | Respuesta < 3s
-⚠️ Los créditos solo se descuentan si hay resultado
-"""
-    await q.edit_message_text(
-        text=texto_reniec,
-        parse_mode=None, # <-- quita HTML para evitar errores
-        reply_markup=teclado_volver()
-    )
+———————— # 8 espacios
+🛡️ Consulta segura | Respuesta < 3s # 8 espacios
+⚠️ Los créditos solo se descuentan si hay resultado # 8 espacios
+""" # 8 espacios
+    await q.edit_message_text( # 8 espacios
+        text=texto_reniec, # 12 espacios
+        parse_mode=None, # 12 espacios
+        reply_markup=teclado_volver() # 12 espacios
+    ) # 8 espacios
     elif q.data=="cat_placa":
         await q.edit_message_text("""
 ╔═════════╗
