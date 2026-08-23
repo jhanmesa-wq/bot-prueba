@@ -392,7 +392,7 @@ def crear_mensaje_premium(bot_username: str):
 
  BOT DE CONSULTAS
 
-[E2] Nombre: [E3] SPECTER PERÚ
+[E2] Nombre: SPECTER PERÚ [E3]
 [E4] Usuario: {bot_username}
 [E5] Estado: ONLINE
 
