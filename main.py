@@ -7,6 +7,8 @@ import requests
 import logging
 import threading
 import html
+import asyncio
+from aiohttp import web
 from functools import wraps
 from dotenv import load_dotenv
 from flask import Flask
@@ -22,6 +24,7 @@ CODART_TOKEN = os.getenv("CODART_TOKEN")
 API_BASE = os.getenv("API_BASE", "https://api-codart.cgrt.org/api/v1/consultas/fd").rstrip("/")
 PORT = int(os.getenv("PORT", 10000))
 ADMIN_ID = int(os.getenv("ADMIN_ID", "0"))
+link_foto = "https://files.catbox.moe/0y85js.jpg"
 
 if not BOT_TOKEN: raise SystemExit("BOT_TOKEN faltante")
 
@@ -41,13 +44,23 @@ if db_dir and not os.path.exists(db_dir): os.makedirs(db_dir, exist_ok=True)
 
 CREDITOS_INICIALES = 10
 COSTOS = {"dni":5,"agv":20,"facial":60,"dnit":6,"telcel":8}
-
 def init_db():
     conn = sqlite3.connect(DB_PATH, check_same_thread=False, timeout=10)
     cur = conn.cursor()
-    cur.execute("CREATE TABLE IF NOT EXISTS usuarios (user_id INTEGER PRIMARY KEY, creditos INTEGER NOT NULL)")
-    conn.commit(); conn.close()
-
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS usuarios (
+            user_id INTEGER PRIMARY KEY,
+            creditos INTEGER NOT NULL,
+            celular TEXT
+        )
+    """)
+    # ✅ Si la tabla ya existía, agregamos la columna celular por si falta
+    try:
+        cur.execute("ALTER TABLE usuarios ADD COLUMN celular TEXT")
+    except:
+        pass  # Ya existe, no pasa nada
+    conn.commit()
+    conn.close()
 def get_creditos(uid:int):
     try:
         conn = sqlite3.connect(DB_PATH, check_same_thread=False, timeout=10)
@@ -55,12 +68,12 @@ def get_creditos(uid:int):
         cur.execute("SELECT creditos FROM usuarios WHERE user_id=?", (uid,))
         row = cur.fetchone()
         if row is None:
-            cur.execute("INSERT INTO usuarios (user_id, creditos) VALUES (?,?)", (uid, CREDITOS_INICIALES))
+            cur.execute("INSERT INTO usuarios (user_id, creditos, celular) VALUES (?,?,?)", (uid, CREDITOS_INICIALES, ""))
             conn.commit(); conn.close()
             return CREDITOS_INICIALES
         conn.close(); return row[0]
     except: return CREDITOS_INICIALES
-
+        
 def set_creditos(uid,nuevo):
     try:
         conn = sqlite3.connect(DB_PATH, check_same_thread=False, timeout=10)
@@ -248,6 +261,128 @@ def codart_get(path:str):
         return None, str(e)
 
 # ============== COMANDOS ==============
+
+
+# ================== WEBHOOK DE PAGOS SIN FLASK ==================
+async def webhook_pago(request):
+    try:
+        datos = await request.json()
+    except:
+        return web.json_response({"error": "Sin datos"}, status=400)
+
+    celular = str(datos.get("celular", "")).strip()
+    monto = datos.get("monto", 0)
+
+    if not celular or not monto:
+        return web.json_response({"error": "Faltan datos: celular y monto"}, status=400)
+
+    # Buscar usuario por celular
+    conn = sqlite3.connect(DB_PATH, check_same_thread=False)
+    cur = conn.cursor()
+    cur.execute("SELECT user_id FROM usuarios WHERE celular =?", (celular,))
+    row = cur.fetchone()
+    conn.close()
+
+    if not row:
+        print(f"⚠️ Pago recibido — Celular {celular} NO REGISTRADO")
+        return web.json_response({"status": "usuario_no_registrado"}, status=200)
+
+    user_id = row[0]
+    creditos = int(float(monto))
+    saldo_nuevo = agregar_creditos(user_id, creditos)
+
+    # Enviar notificación al usuario
+    from telegram import Bot
+    bot = Bot(token=BOT_TOKEN)
+    try:
+        await bot.send_message(
+            chat_id=user_id,
+            text=f"✅ Pago detectado!\n\n"
+                 f"💰 Recibido: S/ {monto}\n"
+                 f"🎁 +{creditos} CRD agregados\n"
+                 f"💳 Saldo actual: {saldo_nuevo} CRD"
+        )
+    except Exception as e:
+        print(f"⚠️ No se pudo enviar mensaje: {e}")
+
+    print(f"✅ Pago procesado — Usuario {user_id} | +{creditos} CRD")
+    return web.json_response({
+        "status": "ok",
+        "user_id": user_id,
+        "creditos": creditos,
+        "saldo_actual": saldo_nuevo
+    }, status=200)
+
+async def iniciar_webhook():
+    app = web.Application()
+    app.router.add_post("/webhook-pago", webhook_pago)
+    port = int(os.getenv("PORT", 10000))
+    runner = web.AppRunner(app)
+    await runner.setup()
+    site = web.TCPSite(runner, "0.0.0.0", port)
+    await site.start()
+    print(f"🌐 Webhook de pagos activo en el puerto {port}")
+    return runner
+
+# ================== FIN WEBHOOK DE PAGOS =================
+
+async def pagar(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    try:
+        # Uso: /pagar 300 6512
+        # Si no pone nada, usa 300 y 6512 por defecto
+        if len(context.args) >= 2:
+            total = context.args[0]
+            pedido = context.args[1]
+        else:
+            total = "300"
+            pedido = "6512"
+
+        texto = f"""💳 PAGO DE SERVICIO 💳
+
+🛒 Servicio: créditos 
+💰 Total a pagar: 200
+🧾 N° Pedido: #{pedido}
+
+➡️CCI: 92200200000387413218
+➡️BANCO: DALE
+⚠️NOTA: Adjuntar comprobante de pago⚠️
+
+📸 ATENCION: ENVIA LA FOTO DEL VOUCHER AQUI MISMO 👇"""
+
+        # ESTA ES LA LÍNEA CLAVE - manda foto por link + texto
+        await update.message.reply_photo(photo=link_foto, caption=texto)
+
+    except Exception as e:
+        await update.message.reply_text(f"Error: {e}\nUso: /pagar <monto> <pedido> Ej: /pagar 300 6512")
+
+
+async def micelular_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+    if not context.args:
+        return await update.message.reply_text(
+            "📱 Uso: /micelular 987654321\n"
+            "Registra tu número para que los pagos por Yape\n"
+            "se sumen automáticamente a tus créditos ⚡",
+            reply_markup=teclado_volver()
+        )
+    celular = context.args[0].strip()
+    if not re.fullmatch(r"9\d{8}", celular):
+        return await update.message.reply_text(
+            "❌ Número inválido. Debe empezar con 9 y tener 9 dígitos.",
+            reply_markup=teclado_volver()
+        )
+    conn = sqlite3.connect(DB_PATH, check_same_thread=False)
+    cur = conn.cursor()
+    cur.execute("UPDATE usuarios SET celular =? WHERE user_id =?", (celular, user_id))
+    conn.commit()
+    conn.close()
+    await update.message.reply_text(
+        f"✅ Celular {celular} registrado!\n\n"
+        "Ahora cuando pagues por Yape a este número,\n"
+        "los créditos se sumarán automáticamente ⚡",
+        reply_markup=teclado_volver()
+    )
+    
 async def start(update:Update, context:ContextTypes.DEFAULT_TYPE):
     get_creditos(update.effective_user.id)
     bot_u=f"@{context.bot.username}"
@@ -616,6 +751,7 @@ def main():
     app.add_handler(CommandHandler("staff",staff_command))
     app.add_handler(CommandHandler("buy",buy_command))
     app.add_handler(CommandHandler("register",register_command))
+    app.add_handler(CommandHandler("pagar", pagar))
     app.add_handler(CommandHandler("addcreditos",addcreditos_command))
     app.add_handler(CallbackQueryHandler(botones_callback))
     logger.info("⚜️ SPECTER FUTURISTA ONLINE")
