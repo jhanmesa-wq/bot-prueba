@@ -814,6 +814,7 @@ def main():
     app.add_handler(CommandHandler("register",register_command))
     app.add_handler(CommandHandler("pagar", pagar))
     app.add_handler(CommandHandler("addcreditos",addcreditos_command))
+    app.add_handler(CommandHandler("micelular",micelular))
     app.add_handler(CallbackQueryHandler(botones_callback))
     logger.info("⚜️ SPECTER FUTURISTA ONLINE")
     app.run_polling(allowed_updates=Update.ALL_TYPES, drop_pending_updates=True)
