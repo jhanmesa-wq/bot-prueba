@@ -202,31 +202,50 @@ def teclado_volver():
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     get_creditos(update.effective_user.id)
     bot_username = f"@{context.bot.username}"
-    texto = f"""
-╔═════════════════════╗
-⚜️ SPECTER PERÚ
-╚═════════════════════╝
+    nombre_bot = "⚜️ SPECTER PERÚ ⚜️"
+    user_mention = f"@{update.effective_user.username}" if update.effective_user.username else update.effective_user.first_name
 
-🚀 PLATAFORMA DE CONSULTAS
+    texto = f"""╔══════════════════════╗
+✅ SPECTER PERÚ
+╚══════════════════════╝
 
-🏷️ Nombre: ⚜ SPECTER PERÚ ⚜
-👤 Usuario: {bot_username}
-🛰️ Estado: ONLINE
+ BOT DE CONSULTAS
 
-━━━━━━━━━━━━━━━━━━━━━━
-📚 COMANDOS
+😱 Nombre: ⚜️ {nombre_bot} ⚜️
+😀 Usuario: {user_mention}
+😈 Estado: ONLINE
 
-📝 /register ➜ Registrar cuenta
-📖 /cmds ➜ Ver servicios
-👤 /me ➜ Ver perfil
-🛡️ /staff ➜ Ver staff
-💳 /buy ➜ Planes y créditos
+━━━━━━━━━━━━━━━━━━━━━━━
+😀 COMANDOS
 
-━━━━━━━━━━━━━━━━━━━━━━
-⚡ Sistema actualizado y centralizado
+♾️ /register ➜ Registrarte
+ 🔍 /cmds ➜ Ver servicios
+✔️ /me ➜ Ver perfil
+ ✅ /staff ➜ fundador 
+🟣 /buy ➜ Planes y créditos
+
+━━━━━━━━━━━━━━━
+😀 Sistema actualizado y centralizado
 """
-    await update.message.reply_text(texto, reply_markup=teclado_volver())
 
+    entities = [
+        MessageEntity(type="custom_emoji", offset=24, length=1, custom_emoji_id="5431650332419563627"), # ✅
+        MessageEntity(type="custom_emoji", offset=83, length=2, custom_emoji_id="5177431372788139022"), # 😱
+        MessageEntity(type="custom_emoji", offset=94, length=2, custom_emoji_id="6219727185708582935"), # ⚜️
+        MessageEntity(type="custom_emoji", offset=110, length=2, custom_emoji_id="6219727185708582935"), # ⚜️
+        MessageEntity(type="custom_emoji", offset=113, length=2, custom_emoji_id="5429128173004529431"), # 😀
+        MessageEntity(type="mention", offset=125, length=len(user_mention)), # @usuario
+        MessageEntity(type="custom_emoji", offset=156, length=2, custom_emoji_id="5429128173004529431"), # 😈
+        MessageEntity(type="custom_emoji", offset=196, length=2, custom_emoji_id="5429128173004529431"), # 😀
+        MessageEntity(type="custom_emoji", offset=210, length=2, custom_emoji_id="5431650332419563628"), # ♾️
+        MessageEntity(type="custom_emoji", offset=246, length=2, custom_emoji_id="5431650332419563629"), # 🔍
+        MessageEntity(type="custom_emoji", offset=276, length=2, custom_emoji_id="5431650332419563630"), # ✔️
+        MessageEntity(type="custom_emoji", offset=302, length=2, custom_emoji_id="5431650332419563627"), # ✅
+        MessageEntity(type="custom_emoji", offset=334, length=2, custom_emoji_id="5431650332419563631"), # 🟣
+        MessageEntity(type="custom_emoji", offset=376, length=2, custom_emoji_id="5429128173004529431"), # 😀
+    ]
+    
+    await update.message.reply_text(texto, entities=entities, reply_markup=teclado_volver())
 def texto_menu_cmds():
     return """
 ╔════════════════════════════╗
