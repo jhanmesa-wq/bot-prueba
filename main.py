@@ -135,7 +135,7 @@ def con_creditos(costo:int):
 def texto_menu_cmds():
     return (
         """╔═════════════════════╗
-[2] 🛰️ MENÚ DE SERVICIOS
+[2]  MENÚ DE SERVICIOS
 ╚═════════════════════╝
 
 🚀 SISTEMA CENTRAL DE CONSULTAS
@@ -627,7 +627,7 @@ async def botones_callback(update:Update, context:ContextTypes.DEFAULT_TYPE):
     elif q.data=="cat_placa":
         await q.edit_message_text("""
 ╔═════════╗
- 🧬 PLACA
+ [7] PLACA
 ╚═════════╝
 
 ⚡ BUSCAR POR PLACA⚡
