@@ -383,54 +383,127 @@ async def micelular_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         reply_markup=teclado_volver()
     )
     
+def utf16_offset(text: str, position: int) -> int:
+    """
+    Convierte una posición Python a offset UTF-16,
+    que es el formato utilizado por Telegram para MessageEntity.
+    """
+    return len(text[:position].encode("utf-16-le")) // 2
+
+
+def crear_custom_emoji(texto: str, emoji: str, custom_emoji_id: str, ocurrencia: int = 0):
+    """
+    Busca una ocurrencia concreta del emoji y crea su MessageEntity.
+    """
+    posiciones = []
+    inicio = 0
+
+    while True:
+        posicion = texto.find(emoji, inicio)
+
+        if posicion == -1:
+            break
+
+        posiciones.append(posicion)
+        inicio = posicion + len(emoji)
+
+    if ocurrencia >= len(posiciones):
+        return None
+
+    posicion = posiciones[ocurrencia]
+
+    return MessageEntity(
+        type="custom_emoji",
+        offset=utf16_offset(texto, posicion),
+        length=len(emoji.encode("utf-16-le")) // 2,
+        custom_emoji_id=custom_emoji_id
+    )
+
+
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     get_creditos(update.effective_user.id)
-    bot_username = f"@{context.bot.username}"
-    nombre_bot = "⚜️ SPECTER PERÚ ⚜️"
-    user_mention = f"@{update.effective_user.username}" if update.effective_user.username else update.effective_user.first_name
 
-    texto = f"""╔══════════════════════╗
-✅ SPECTER PERÚ
-╚══════════════════════╝
+    bot_username = f"@{context.bot.username}"
+
+    texto = f"""╔═════════════════════╗
+⚜️ SPECTER PERÚ
+╚═════════════════════╝
 
  BOT DE CONSULTAS
 
-😱 Nombre: ⚜️ {nombre_bot} ⚜️
-😀 Usuario: {user_mention}
-😈 Estado: ONLINE
+😱 Nombre: ⚜️ SPECTER PERÚ ⚜️
+😀 Usuario: {bot_username}
+👨 Estado: ONLINE
 
-━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━
 😀 COMANDOS
 
-♾️ /register ➜ Registrarte
- 🔍 /cmds ➜ Ver servicios
+♾ /register ➜ Registrarte
+🔎 /cmds ➜ Ver servicios
 ✔️ /me ➜ Ver perfil
- ✅ /staff ➜ fundador 
+✅ /staff ➜ fundador
 🟣 /buy ➜ Planes y créditos
 
-━━━━━━━━━━━━━━━
-😀 Sistema actualizado y centralizado
-"""
+━━━━━━━━━━━━━━━━━━━━━━
+😀 Sistema actualizado y centralizado"""
 
-    entities = [
-        MessageEntity(type="custom_emoji", offset=24, length=1, custom_emoji_id="5431650332419563627"), # ✅
-        MessageEntity(type="custom_emoji", offset=83, length=2, custom_emoji_id="5177431372788139022"), # 😱
-        MessageEntity(type="custom_emoji", offset=94, length=2, custom_emoji_id="6219727185708582935"), # ⚜️
-        MessageEntity(type="custom_emoji", offset=110, length=2, custom_emoji_id="6219727185708582935"), # ⚜️
-        MessageEntity(type="custom_emoji", offset=113, length=2, custom_emoji_id="5429128173004529431"), # 😀
-        MessageEntity(type="mention", offset=125, length=len(user_mention)), # @usuario
-        MessageEntity(type="custom_emoji", offset=156, length=2, custom_emoji_id="5429128173004529431"), # 😈
-        MessageEntity(type="custom_emoji", offset=196, length=2, custom_emoji_id="5429128173004529431"), # 😀
-        MessageEntity(type="custom_emoji", offset=210, length=2, custom_emoji_id="5431650332419563628"), # ♾️
-        MessageEntity(type="custom_emoji", offset=246, length=2, custom_emoji_id="5431650332419563629"), # 🔍
-        MessageEntity(type="custom_emoji", offset=276, length=2, custom_emoji_id="5431650332419563630"), # ✔️
-        MessageEntity(type="custom_emoji", offset=302, length=2, custom_emoji_id="5431650332419563627"), # ✅
-        MessageEntity(type="custom_emoji", offset=334, length=2, custom_emoji_id="5431650332419563631"), # 🟣
-        MessageEntity(type="custom_emoji", offset=376, length=2, custom_emoji_id="5429128173004529431"), # 😀
-    ]
-    
-    await update.message.reply_text(texto, entities=entities, reply_markup=teclado_volver())
+    entidades = []
 
+    # ⚜️ SPECTER PERÚ
+    entidad = crear_custom_emoji(
+        texto,
+        "⚜️",
+        "5431650332419563627",
+        0
+    )
+    if entidad:
+        entidades.append(entidad)
+
+    # 😱 Nombre
+    entidad = crear_custom_emoji(
+        texto,
+        "😱",
+        "5177431372788139022",
+        0
+    )
+    if entidad:
+        entidades.append(entidad)
+
+    # ⚜️ después de "Nombre:"
+    entidad = crear_custom_emoji(
+        texto,
+        "⚜️",
+        "6219727185708582935",
+        1
+    )
+    if entidad:
+        entidades.append(entidad)
+
+    # ⚜️ después de "SPECTER PERÚ"
+    entidad = crear_custom_emoji(
+        texto,
+        "⚜️",
+        "6219727185708582935",
+        2
+    )
+    if entidad:
+        entidades.append(entidad)
+
+    # 😀 Usuario
+    entidad = crear_custom_emoji(
+        texto,
+        "😀",
+        "6219727185708582935",
+        0
+    )
+    if entidad:
+        entidades.append(entidad)
+
+    await update.message.reply_text(
+        texto,
+        entities=entidades,
+        reply_markup=teclado_volver()
+        )
 async def cmds_command(update:Update, context:ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(texto_menu_cmds(), parse_mode="HTML", reply_markup=teclado_menu_cmds())
 async def botones_callback(update:Update, context:ContextTypes.DEFAULT_TYPE):
