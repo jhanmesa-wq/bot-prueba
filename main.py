@@ -513,10 +513,12 @@ async def botones_callback(update:Update, context:ContextTypes.DEFAULT_TYPE):
      ↳ COSTO: 5 CRD [██████░░░░]
 
 ————————
-🛡️ Consulta segura | Respuesta < 3s
-⚠️ Los créditos solo se descuentan si hay resultado
-""", parse_mode="HTML", reply_markup=teclado_volver())
-
+🛡️ Consulta segura""",        
+      await q.edit_message_text(
+         text=texto_reniec,
+     reply_markup=teclado_volver(),
+        parse_mode=None
+    )
     elif q.data=="cat_placa":
         await q.edit_message_text("""
 ╔═════════╗
