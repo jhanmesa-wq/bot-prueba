@@ -382,42 +382,90 @@ async def micelular_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "los créditos se sumarán automáticamente ⚡",
         reply_markup=teclado_volver()
     )
-    
-def utf16_offset(text: str, position: int) -> int:
-    """
-    Convierte una posición Python a offset UTF-16,
-    que es el formato utilizado por Telegram para MessageEntity.
-    """
-    return len(text[:position].encode("utf-16-le")) // 2
 
+def crear_mensaje_premium():
+    # Texto base. Los emojis entre ⟦ ⟧ son marcadores internos
+    partes = [
+        ("⟦E1⟧", "5431650332419563627"),
+    ]
 
-def crear_custom_emoji(texto: str, emoji: str, custom_emoji_id: str, ocurrencia: int = 0):
-    """
-    Busca una ocurrencia concreta del emoji y crea su MessageEntity.
-    """
-    posiciones = []
-    inicio = 0
+    texto = """╔═════════════════════╗
+⟦E1⟧ SPECTER PERÚ
+╚═════════════════════╝
 
+ BOT DE CONSULTAS
+
+⟦E2⟧ Nombre: ⟦E3⟧ SPECTER PERÚ
+⟦E4⟧ Usuario: {bot_username}
+⟦E5⟧ Estado: ONLINE
+
+━━━━━━━━━━━━━━━━━━━━━━
+⟦E6⟧ COMANDOS
+
+⟦E7⟧ /register ➜ Registrarte
+⟦E8⟧ /cmds ➜ Ver servicios
+⟦E9⟧ /me ➜ Ver perfil
+⟦E10⟧ /staff ➜ fundador
+⟦E10⟧ /buy ➜ Planes y créditos
+
+━━━━━━━━━━━━━━━━━━━━━━
+⟦E11⟧ Sistema actualizado y centralizado"""
+
+    ids = {
+        "E1": "5431650332419563627",
+        "E2": "6219810752887262728",
+        "E3": "6219810752887262728",
+        "E4": "5098585844931888090",
+        "E5": "5260553279321944543",
+        "E6": "5098578393163629920",
+        "E7": "5429381339851796035",
+        "E8": "5179570356695860413",
+        "E9": "5177431372788139022",
+        "E10": "5098536693326152842",
+        "E11": "5260463209562776385",
+    }
+
+    entidades = []
+
+    # Reemplazamos los marcadores y calculamos automáticamente
+    # los offsets UTF-16 que Telegram necesita.
     while True:
-        posicion = texto.find(emoji, inicio)
+        encontrado = False
 
-        if posicion == -1:
+        for marcador, custom_id in ids.items():
+            token = f"⟦{marcador}⟧"
+
+            posicion = texto.find(token)
+
+            if posicion != -1:
+                encontrado = True
+
+                texto_antes = texto[:posicion]
+                offset = len(
+                    texto_antes.encode("utf-16-le")
+                ) // 2
+
+                texto = (
+                    texto[:posicion]
+                    + "🔹"
+                    + texto[posicion + len(token):]
+                )
+
+                entidades.append(
+                    MessageEntity(
+                        type="custom_emoji",
+                        offset=offset,
+                        length=2,
+                        custom_emoji_id=custom_id
+                    )
+                )
+
+                break
+
+        if not encontrado:
             break
 
-        posiciones.append(posicion)
-        inicio = posicion + len(emoji)
-
-    if ocurrencia >= len(posiciones):
-        return None
-
-    posicion = posiciones[ocurrencia]
-
-    return MessageEntity(
-        type="custom_emoji",
-        offset=utf16_offset(texto, posicion),
-        length=len(emoji.encode("utf-16-le")) // 2,
-        custom_emoji_id=custom_emoji_id
-    )
+    return texto, entidades
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -425,85 +473,19 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     bot_username = f"@{context.bot.username}"
 
-    texto = f"""╔═════════════════════╗
-⚜️ SPECTER PERÚ
-╚═════════════════════╝
+    texto, entidades = crear_mensaje_premium()
 
- BOT DE CONSULTAS
-
-😱 Nombre: ⚜️ SPECTER PERÚ ⚜️
-😀 Usuario: {bot_username}
-👨 Estado: ONLINE
-
-━━━━━━━━━━━━━━━━━━━━━━
-😀 COMANDOS
-
-♾ /register ➜ Registrarte
-🔎 /cmds ➜ Ver servicios
-✔️ /me ➜ Ver perfil
-✅ /staff ➜ fundador
-🟣 /buy ➜ Planes y créditos
-
-━━━━━━━━━━━━━━━━━━━━━━
-😀 Sistema actualizado y centralizado"""
-
-    entidades = []
-
-    # ⚜️ SPECTER PERÚ
-    entidad = crear_custom_emoji(
-        texto,
-        "⚜️",
-        "5431650332419563627",
-        0
+    texto = texto.replace(
+        "{bot_username}",
+        bot_username
     )
-    if entidad:
-        entidades.append(entidad)
-
-    # 😱 Nombre
-    entidad = crear_custom_emoji(
-        texto,
-        "😱",
-        "5177431372788139022",
-        0
-    )
-    if entidad:
-        entidades.append(entidad)
-
-    # ⚜️ después de "Nombre:"
-    entidad = crear_custom_emoji(
-        texto,
-        "⚜️",
-        "6219727185708582935",
-        1
-    )
-    if entidad:
-        entidades.append(entidad)
-
-    # ⚜️ después de "SPECTER PERÚ"
-    entidad = crear_custom_emoji(
-        texto,
-        "⚜️",
-        "6219727185708582935",
-        2
-    )
-    if entidad:
-        entidades.append(entidad)
-
-    # 😀 Usuario
-    entidad = crear_custom_emoji(
-        texto,
-        "😀",
-        "6219727185708582935",
-        0
-    )
-    if entidad:
-        entidades.append(entidad)
 
     await update.message.reply_text(
         texto,
         entities=entidades,
         reply_markup=teclado_volver()
-        )
+    )   
+
 async def cmds_command(update:Update, context:ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(texto_menu_cmds(), parse_mode="HTML", reply_markup=teclado_menu_cmds())
 async def botones_callback(update:Update, context:ContextTypes.DEFAULT_TYPE):
