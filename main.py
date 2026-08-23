@@ -135,7 +135,7 @@ def con_creditos(costo:int):
 def texto_menu_cmds():
     return (
         """╔═════════════════════╗
-🛰️ MENÚ DE SERVICIOS
+[E1] MENÚ DE SERVICIOS
 ╚═════════════════════╝
 
 🚀 SISTEMA CENTRAL DE CONSULTAS
