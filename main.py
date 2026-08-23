@@ -800,6 +800,7 @@ def main():
     logger.info(f"Flask {PORT}")
     app=Application.builder().token(BOT_TOKEN).build()
     app.add_handler(CommandHandler("start",start))
+        app.add_handler(CommandHandler("micelular",micelular))
     app.add_handler(CommandHandler("cmds",cmds_command))
     app.add_handler(CommandHandler("dni",dni_command))
     app.add_handler(CommandHandler("dnit",dnit_command))
