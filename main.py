@@ -602,7 +602,7 @@ async def botones_callback(update:Update, context:ContextTypes.DEFAULT_TYPE):
     if q.data=="menu":
         await q.edit_message_text(texto_menu_cmds(), parse_mode="HTML", reply_markup=teclado_menu_cmds())
     elif q.data=="cat_reniec":
-    texto_reniec = """╔════════════╗
+        await q.edit_message_text"""╔════════════╗
  [7] RENIEC
 ╚════════════╝
 
