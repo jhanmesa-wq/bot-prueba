@@ -262,7 +262,7 @@ async def botones_callback(update:Update, context:ContextTypes.DEFAULT_TYPE):
     if q.data=="menu":
         await q.message.edit_text(texto_menu_cmds(), parse_mode="HTML", reply_markup=teclado_menu_cmds())
     elif q.data=="cat_reniec":
-        await q.message.edit_text("🪪  RENIEC 📌 <code>texto = """
+        await q.message.edit_text(""""
 ╔══════════╗
 🪪 MÓDULO RENIEC 
 ╚══════════╝
@@ -281,7 +281,7 @@ async def botones_callback(update:Update, context:ContextTypes.DEFAULT_TYPE):
 ━━━━━━━━━━
 🛡️ Consulta segura | Respuesta < 3s
 ⚠️ Los créditos solo se descuentan si hay resultado
-"""", parse_mode="HTML", reply_markup=teclado_volver())
+""", parse_mode="HTML", reply_markup=teclado_volver())
     elif q.data=="cat_dnit":
         await q.message.edit_text("🧬 <b>MÓDULO DNIT X4</b>\n\n📌 <code>/dnit 12345678</code> → 4 fotos\n💰 6 CRD", parse_mode="HTML", reply_markup=teclado_volver())
     elif q.data=="cat_agv":
