@@ -256,44 +256,105 @@ async def start(update:Update, context:ContextTypes.DEFAULT_TYPE):
 
 async def cmds_command(update:Update, context:ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(texto_menu_cmds(), parse_mode="HTML", reply_markup=teclado_menu_cmds())
-
 async def botones_callback(update:Update, context:ContextTypes.DEFAULT_TYPE):
-    q=update.callback_query; await q.answer()
+    q=update.callback_query
+    await q.answer()
+    
     if q.data=="menu":
-        await q.message.edit_text(texto_menu_cmds(), parse_mode="HTML", reply_markup=teclado_menu_cmds())
+        await q.edit_message_text(texto_menu_cmds(), parse_mode="HTML", reply_markup=teclado_menu_cmds())
+
     elif q.data=="cat_reniec":
-        await q.message.edit_text("""
-╔══════════╗
-🪪 MÓDULO RENIEC 
-╚══════════╝
+        await q.edit_message_text("""
+╔════════════╗
+ 🪪 MÓDULO RENIEC
+╚════════════╝
 
 ⚡ SISTEMA NACIONAL DE IDENTIDAD ⚡
-━━━━━━━━━━
+————————
 
-[01] /dni 12345678 
-     └─> FOTO +INFO
-     └─> COSTO: 4 CRD [████████░░]
+[01] /dni 12345678
+     ↳ FOTO +INFO
+     ↳ COSTO: 4 CRD [█████░░░░░]
 
 [02] /dnit 12345678
-     └─> 4 FOTOS + INFORMACIÓN AMPLIADA 
-     └─> COSTO: 5 CRD [█████████░]
+     ↳ 4 FOTOS + INFORMACIÓN AMPLIADA
+     ↳ COSTO: 5 CRD [██████░░░░]
 
-━━━━━━━━━━
+————————
 🛡️ Consulta segura | Respuesta < 3s
 ⚠️ Los créditos solo se descuentan si hay resultado
 """, parse_mode="HTML", reply_markup=teclado_volver())
+
     elif q.data=="cat_dnit":
-        await q.message.edit_text("🧬 <b>MÓDULO DNIT X4</b>\n\n📌 <code>/dnit 12345678</code> → 4 fotos\n💰 6 CRD", parse_mode="HTML", reply_markup=teclado_volver())
+        await q.edit_message_text("""
+╔════════════╗
+ 🧬 MÓDULO DNIT X4
+╚════════════╝
+
+⚡ PROTOCOLO BIOMÉTRICO MULTIPLE ⚡
+————————
+
+[01] /dnit 12345678
+     ↳ 4 FOTOS HD + DATOS COMPLETOS
+     ↳ COSTO: 6 CRD [██████░░░░]
+
+————————
+🛡️ Base RENIEC 2026
+""", parse_mode="HTML", reply_markup=teclado_volver())
+
     elif q.data=="cat_agv":
-        await q.message.edit_text("🛰️ <b>MÓDULO AGV TRACE</b>\n\n📌 <code>/agv 12345678</code>\n💰 20 CRD", parse_mode="HTML", reply_markup=teclado_volver())
+        await q.edit_message_text("""
+╔════════════╗
+ 🛰️ MÓDULO AGV TRACE
+╚════════════╝
+
+⚡ SISTEMA DE RASTREO AVANZADO ⚡
+————————
+
+[01] /agv 12345678
+     ↳ FICHA RÁPIDA + FOTO
+     ↳ COSTO: 20 CRD [████████░░]
+
+————————
+🛡️ Datos en tiempo real
+""", parse_mode="HTML", reply_markup=teclado_volver())
+
     elif q.data=="cat_telcel":
-        await q.message.edit_text("📱 <b>MÓDULO TELCEL OS</b>\n\n📌 <code>/telcel 9XXXXXXXX</code>\n💰 8 CRD", parse_mode="HTML", reply_markup=teclado_volver())
+        await q.edit_message_text("""
+╔════════════╗
+ 📱 MÓDULO TELCEL OS
+╚════════════╝
+
+⚡ SISTEMA DE TELEFONÍA MÓVIL ⚡
+————————
+
+[01] /telcel 9XXXXXXXX
+     ↳ TITULAR + OPERADOR
+     ↳ COSTO: 8 CRD [████░░░░░░]
+
+————————
+🛡️ 9 dígitos empezando con 9
+""", parse_mode="HTML", reply_markup=teclado_volver())
+
     elif q.data=="cat_facial":
-        await q.message.edit_text("👁️ <b>MÓDULO FACIAL SCAN</b>\n\n📌 Envía foto con /facial", parse_mode="HTML", reply_markup=teclado_volver())
+        await q.edit_message_text("""
+╔════════════╗
+ 👁️ MÓDULO FACIAL SCAN
+╚════════════╝
+
+⚡ RECONOCIMIENTO BIOMÉTRICO AI ⚡
+————————
+
+[01] Enviar foto con /facial
+     ↳ MATCH 1:1 CON BASE RENIEC
+     ↳ COSTO: 60 CRD [██████████]
+
+————————
+🛡️ IA 99.8% precisión
+""", parse_mode="HTML", reply_markup=teclado_volver())
+
     elif q.data=="cat_comprar":
-        await buy_command(update,context,from_callback=True)
-    else:
-        await q.message.edit_text("🚧 En desarrollo...", reply_markup=teclado_volver())
+        await buy_command(update,context)
 
 @con_creditos(costo=COSTOS["dni"])
 async def dni_command(update:Update, context:ContextTypes.DEFAULT_TYPE):
