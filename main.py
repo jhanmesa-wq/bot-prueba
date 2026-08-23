@@ -251,7 +251,27 @@ def codart_get(path:str):
 async def start(update:Update, context:ContextTypes.DEFAULT_TYPE):
     get_creditos(update.effective_user.id)
     bot_u=f"@{context.bot.username}"
-    texto=f"⚜️ <b>SPECTER PERÚ</b>\n🚀 PLATAFORMA: <code>{esc(bot_u)}</code>\n🛰️ xxxx: <code>SPECTER V.1</code>\n\n📚 <b>COMANDOS</b>\n├─ /register\n├─ /cmds\n├─ /me\n├─ /buy"
+    texto=f"""╔═════════════════════╗
+⚜️ SPECTER PERÚ
+╚═════════════════════╝
+
+🚀 PLATAFORMA DE CONSULTAS
+
+🏷️ Nombre: ⚜ SPECTER PERÚ ⚜
+👤 Usuario: @specter_Dox44bot
+🛰️ Estado: ONLINE
+
+━━━━━━━━━━━━━━━━━━━━━━
+📚 COMANDOS
+
+📝 /register ➜ Registrar cuenta
+📖 /cmds ➜ Ver servicios
+👤 /me ➜ Ver perfil
+🛡️ /staff ➜ Ver staff
+💳 /buy ➜ Planes y créditos
+
+━━━━━━━━━━━━━━━━━━━━━━
+⚡ Sistema actualizado y centralizado"""
     await update.message.reply_text(texto, parse_mode="HTML", reply_markup=teclado_volver())
 
 async def cmds_command(update:Update, context:ContextTypes.DEFAULT_TYPE):
