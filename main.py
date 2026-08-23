@@ -134,7 +134,7 @@ def texto_menu_cmds():
     )
 def teclado_menu_cmds():
     return InlineKeyboardMarkup([
-        [InlineKeyboardButton("🪪 RENIEC", callback_data="cat_reniec"), InlineKeyboardButton("🚙 VEHÍCULOS", callback_data="cat_dnit")],
+        [InlineKeyboardButton("🪪 RENIEC", callback_data="cat_reniec"), InlineKeyboardButton("🚙 VEHÍCULOS", callback_data="cat_placa")],
         [InlineKeyboardButton("🛰️ FAMILIARES", callback_data="cat_familiares"), InlineKeyboardButton("📱 TELÉFONOS", callback_data="cat_telcel")],
         [InlineKeyboardButton("🧬 FACIAL", callback_data="cat_facial"), InlineKeyboardButton("💎 RECARGAR", callback_data="cat_comprar")],
     ])
@@ -285,7 +285,7 @@ async def botones_callback(update:Update, context:ContextTypes.DEFAULT_TYPE):
 ⚠️ Los créditos solo se descuentan si hay resultado
 """, parse_mode="HTML", reply_markup=teclado_volver())
 
-    elif q.data=="cat_dnit":
+    elif q.data=="cat_placa":
         await q.edit_message_text("""
 ╔═════════╗
  🧬 PLACA
@@ -302,7 +302,7 @@ async def botones_callback(update:Update, context:ContextTypes.DEFAULT_TYPE):
 🛡️ Base SOAT 2026
 """, parse_mode="HTML", reply_markup=teclado_volver())
 
-    elif q.data=="cat_agv":
+    elif q.data=="cat_familiares":
         await q.edit_message_text("""
 ╔════════════╗
  🗯️ FAMILIARES  
