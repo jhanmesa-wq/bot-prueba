@@ -130,12 +130,12 @@ def texto_menu_cmds():
 💎 Selecciona una categoría.
 ⚡ Todos los servicios muestran su costo.
 🛡️ El cobro se realiza solamente tras una respuesta exitosa.
-        ▰▰▰ SELECCIONA MÓDULO ▰▰▰"""
+ ▰▰▰ SELECCIONA MÓDULO ▰▰▰"""
     )
 def teclado_menu_cmds():
     return InlineKeyboardMarkup([
         [InlineKeyboardButton("🪪 RENIEC", callback_data="cat_reniec"), InlineKeyboardButton("🚙 VEHÍCULOS", callback_data="cat_dnit")],
-        [InlineKeyboardButton("🛰️ FAMILIARES", callback_data="cat_agv"), InlineKeyboardButton("📱 TELÉFONOS", callback_data="cat_telcel")],
+        [InlineKeyboardButton("🛰️ FAMILIARES", callback_data="cat_familiares"), InlineKeyboardButton("📱 TELÉFONOS", callback_data="cat_telcel")],
         [InlineKeyboardButton("🧬 FACIAL", callback_data="cat_facial"), InlineKeyboardButton("💎 RECARGAR", callback_data="cat_comprar")],
     ])
 
@@ -209,9 +209,9 @@ def format_agv_futurista(data, ctx):
 def format_telcel_futurista(data, ctx, numero):
     titulares=data.get("titulares",[]); count=data.get("titulares_encontrados",len(titulares))
     txt=f"""
-╔══════════════╗
-║  📱 TELCEL OS  ║
-╚══════════════╝
+╔════════════╗
+║  📱 TELCEL   ║
+╚════════════╝
 
 📞 NÚMERO: <code>{esc(numero)}</code>
 🔎 TITULARES: <code>{esc(count)}</code>
@@ -287,32 +287,32 @@ async def botones_callback(update:Update, context:ContextTypes.DEFAULT_TYPE):
 
     elif q.data=="cat_dnit":
         await q.edit_message_text("""
-╔════════════╗
- 🧬 MÓDULO DNIT X4
-╚════════════╝
+╔═════════╗
+ 🧬 PLACA
+╚═════════╝
 
-⚡ PROTOCOLO BIOMÉTRICO MULTIPLE ⚡
-————————
+⚡ BUSCAR POR PLACA⚡
+————————————————
 
 [01] /dnit 12345678
-     ↳ 4 FOTOS HD + DATOS COMPLETOS
+     ↳ 4
      ↳ COSTO: 6 CRD [██████░░░░]
 
 ————————
-🛡️ Base RENIEC 2026
+🛡️ Base SOAT 2026
 """, parse_mode="HTML", reply_markup=teclado_volver())
 
     elif q.data=="cat_agv":
         await q.edit_message_text("""
 ╔════════════╗
- 🛰️ MÓDULO AGV TRACE
+ 🗯️ FAMILIARES  
 ╚════════════╝
 
-⚡ SISTEMA DE RASTREO AVANZADO ⚡
+⚡ SISTEMA DE FAMILIARES ⚡
 ————————
 
 [01] /agv 12345678
-     ↳ FICHA RÁPIDA + FOTO
+     ↳ ÁRBOL GENEALÓGICO FOTO
      ↳ COSTO: 20 CRD [████████░░]
 
 ————————
@@ -322,7 +322,7 @@ async def botones_callback(update:Update, context:ContextTypes.DEFAULT_TYPE):
     elif q.data=="cat_telcel":
         await q.edit_message_text("""
 ╔════════════╗
- 📱 MÓDULO TELCEL OS
+ 📱 TELÉFONOS 
 ╚════════════╝
 
 ⚡ SISTEMA DE TELEFONÍA MÓVIL ⚡
@@ -330,16 +330,18 @@ async def botones_callback(update:Update, context:ContextTypes.DEFAULT_TYPE):
 
 [01] /telcel 9XXXXXXXX
      ↳ TITULAR + OPERADOR
-     ↳ COSTO: 8 CRD [████░░░░░░]
+     ↳ COSTO: 20 CRD [████░░░░░░]
+[02] /telp 9XXXXXXXX
+     ↳ NÚMEROS × DNI
+     ↳ COSTO: 20 CRD [████░░░░░░]
+     
 
-————————
-🛡️ 9 dígitos empezando con 9
-""", parse_mode="HTML", reply_markup=teclado_volver())
+————————————————""", parse_mode="HTML", reply_markup=teclado_volver())
 
     elif q.data=="cat_facial":
         await q.edit_message_text("""
 ╔════════════╗
- 👁️ MÓDULO FACIAL SCAN
+ 👁️  FACIAL 
 ╚════════════╝
 
 ⚡ RECONOCIMIENTO BIOMÉTRICO AI ⚡
@@ -354,8 +356,35 @@ async def botones_callback(update:Update, context:ContextTypes.DEFAULT_TYPE):
 """, parse_mode="HTML", reply_markup=teclado_volver())
 
     elif q.data=="cat_comprar":
-        await buy_command(update,context)
+        await q.edit_message_text("""╔═════════════════════╗
+💎 PLANES PREMIUM
+╚═════════════════════╝
 
+💰 CRÉDITOS
+
+🥉 100 créditos ➜ S/ 10
+🥈 200 créditos ➜ S/ 20
+🥇 400 créditos ➜ S/ 30
+💠 500 créditos ➜ S/ 40
+🚀 800 créditos ➜ S/ 50
+👑 2,000 créditos ➜ S/ 100
+💎 4,300 créditos ➜ S/ 200
+
+━━━━━━━━━━━━━━━━━━━━━━
+♾️ PLANES ILIMITADOS
+
+💥 7 días ➜ S/ 20
+⚡ 15 días ➜ S/ 35
+🔱 30 días ➜ S/ 60
+👑 60 días ➜ S/ 100
+
+━━━━━━━━━━━━━━━━━━━━━━
+💳 PAGOS: Yape • Plin • BCP
+👤 CONTACTO: @Sthep_18
+
+⚡ Atención rápida
+🛡️ Activación mediante administración""", parse_mode="HTML", reply_markup=teclado_volver())
+    
 @con_creditos(costo=COSTOS["dni"])
 async def dni_command(update:Update, context:ContextTypes.DEFAULT_TYPE):
     if not context.args or not validar_dni(context.args[0]):
