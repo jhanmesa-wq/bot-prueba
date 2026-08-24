@@ -426,7 +426,7 @@ PREMIUM_STICKERS = {
     "23": "4907189552327689109", #gobierno del peru 
     "24": "5352625743081775722", #rojo verde
     "25": "5350427505805238170", #tres bolitas asules
-    "26": "", #
+    "26": "5895714560840568825", #bolita roja x
     "27": "", # 
     "28": "", #
     
@@ -1200,7 +1200,39 @@ async def me_command(update:Update, context:ContextTypes.DEFAULT_TYPE):
     u=update.effective_user; saldo=get_creditos(u.id)
     txt=f"<b>╔════════════════╗</b>\n<b>║  👤 USER PROFILE       ║</b>\n<b>╚═══════════════════╝</b>\n\n🆔 ID: <code>{esc(u.id)}</code>\n👤 Nombre: <b>{esc(u.full_name)}</b>\n🔖 User: @{esc(u.username)}\n💳 Créditos: <code>{esc(saldo)} CRD</code>\n🛰️ Status: ONLINE"
     await update.message.reply_text(premium(txt), parse_mode="HTML", reply_markup=teclado_volver())
+async def register_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
 
+    # Cargar usuarios registrados
+    usuarios = cargar_usuarios()
+
+    # Verificar si el usuario ya está registrado
+    if str(user_id) in usuarios or user_id in usuarios:
+        await update.message.reply_text(
+            premium(
+                "[26] <b>YA ESTÁS REGISTRADO</b>\n\n"
+                "⚠️ Tu cuenta ya se encuentra registrada en SPECTER.\n\n"
+                "💳 No puedes reclamar nuevamente los <b>10 CRD</b> de bienvenida.\n"
+                "🚀 Puedes continuar usando el sistema."
+            ),
+            parse_mode="HTML",
+            reply_markup=teclado_volver()
+        )
+        return
+
+    # Registrar usuario nuevo
+    get_creditos(user_id)
+
+    await update.message.reply_text(
+        premium(
+            "[11] <b>SISTEMA ACTIVADO</b>\n\n"
+            "🧬 Bienvenido a <b>SPECTER OS v2.5</b>\n"
+            "💳 <b>10 CRD</b> de bienvenida\n\n"
+            "✅ Registro completado correctamente."
+        ),
+        parse_mode="HTML",
+        reply_markup=teclado_volver()
+    )
 async def buy_command(update:Update, context:ContextTypes.DEFAULT_TYPE, from_callback=False):
     txt="💎 <b>RECARGA // SPECTER STORE</b>\n\n💰 PLANES\n├─ 5 CRD = S/ 5.00\n├─ 20 CRD = S/ 18.00\n├─ 60 CRD = S/ 50.00\n└─ 150 CRD = S/ 110.00\n\n📩 Contacta @admin"
     if from_callback and update.callback_query: await update.callback_query.message.edit_text(premium(txt), parse_mode="HTML", reply_markup=teclado_volver())
