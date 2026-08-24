@@ -605,7 +605,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 def texto_menu_cmds():
     return (
         """╔═════════════════════╗
-[2]  MENÚ DE SERVICIOS
+  MENÚ DE SERVICIOS [3]
 ╚═════════════════════╝
 
 🚀 SISTEMA CENTRAL DE CONSULTAS
