@@ -910,9 +910,7 @@ async def me_command(update:Update, context:ContextTypes.DEFAULT_TYPE):
     u=update.effective_user; saldo=get_creditos(u.id)
     txt=f"<b>╔════════════════╗</b>\n<b>║  👤 USER PROFILE       ║</b>\n<b>╚═══════════════════╝</b>\n\n🆔 ID: <code>{esc(u.id)}</code>\n👤 Nombre: <b>{esc(u.full_name)}</b>\n🔖 User: @{esc(u.username)}\n💳 Créditos: <code>{esc(saldo)} CRD</code>\n🛰️ Status: ONLINE"
     await update.message.reply_text(premium(txt), parse_mode="HTML", reply_markup=teclado_volver())
-
-    )
-    
+  
 async def buy_command(update:Update, context:ContextTypes.DEFAULT_TYPE, from_callback=False):
     txt="💎 <b>RECARGA // SPECTER STORE</b>\n\n💰 PLANES\n├─ 5 CRD = S/ 5.00\n├─ 20 CRD = S/ 18.00\n├─ 60 CRD = S/ 50.00\n└─ 150 CRD = S/ 110.00\n\n📩 Contacta @admin"
     if from_callback and update.callback_query: await update.callback_query.message.edit_text(premium(txt), parse_mode="HTML", reply_markup=teclado_volver())
