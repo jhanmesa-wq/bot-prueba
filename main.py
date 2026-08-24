@@ -653,27 +653,27 @@ async def botones_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     elif q.data == "cat_reniec":
         texto_reniec = """╔════════════╗
-  🪪 RENIEC
+  [8] RENIEC
 ╚════════════╝
 
-[3] ⚡ SISTEMA NACIONAL DE IDENTIDAD ⚡
+SISTEMA NACIONAL DE IDENTIDAD [3]
 ━━━━━━━━━━━━━━━━━━━━
 
-[01] /dni 12345678
-     ↳ FOTO + INFORMACIÓN
+[9] /dni 12345678
+     ↳ Consulta datos completos del DNI.
      ↳ COSTO: 5 CRD
 
-[02] /dnit 12345678
+[9] /dnit 12345678
      ↳ 4 FOTOS + INFORMACIÓN AMPLIADA
      ↳ COSTO: 6 CRD
 
-[03] /dnivel 12345678
-     ↳ FOTO + INFORMACIÓN + EDAD
-     ↳ COSTO: 5 CRD
+[9] /dnivel 12345678
+     ↳ Consulta el DNI electrónico +foto
+     ↳ COSTO: 10 CRD
 
-[04] /dniv 12345678
-     ↳ FOTO + INFORMACIÓN + EDAD
-     ↳ COSTO: 5 CRD
+[9] /dniv 12345678
+     ↳ FOTO + INFO
+     ↳ COSTO: 10 CRD
 
 ━━━━━━━━━━━━━━━━━━━━
 🛡️ Consulta segura
