@@ -1226,7 +1226,7 @@ async def register_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
         premium(
             "[11] <b>SISTEMA ACTIVADO</b>\n\n"
-            "🧬 Bienvenido a <b>SPECTER OS v2.5</b>\n"
+            "[3] Bienvenido a <b>SPECTER OS v2.5</b>\n"
             "💳 <b>10 CRD</b> de bienvenida\n\n"
             "✅ Registro completado correctamente."
         ),
