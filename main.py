@@ -403,17 +403,19 @@ async def micelular_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 PREMIUM_STICKERS = {
     "1": "5431650332419563627", #verificado negro
     "2": "6219810752887262728", #austronauta
-    "3": "6298670698948724690", #free verde
-    "4": "5098585844931888090", #minsa peru
-    "5": "5260553279321944543", #buena
-    "6": "5098578393163629920", #reniec
-    "7": "5429381339851796035", #dni 
-    "8": "5179570356695860413", #bandera corona
-    "9": "5177431372788139022", #tarjeta plateada
-    "10": "5098536693326152842", #buena bolita
-    "11": "5260463209562776385", #verificado rojo 
-    "12": "5096114086958072826", 
-    "13": "6255716507683129387", #huella digital 
+    "3": "6298670698948724690", #verificado rojo 
+    "4": "5098585844931888090", #free verde
+    "5": "5260553279321944543", #haker
+    "6": "5098578393163629920", #minsa
+    "7": "5429381339851796035", #buena verde 
+    "8": "5179570356695860413", #reniec
+    "9": "5177431372788139022", #dni
+    "10": "5098536693326152842", #tarjeta plateada
+    "11": "5260463209562776385", #bolita verde
+    "12": "5096114086958072826", #bandera corona
+    "13": "6255716507683129387",#huella digital 
+    "14": "5895628223407984747", #verificado azul pequeño
+    "15": "4900384661978481721",#sunarp
 } 
 
 def premium(texto):
@@ -605,14 +607,16 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 def texto_menu_cmds():
     return (
         """╔═════════════════════╗
-  MENÚ DE SERVICIOS [3]
+  MENÚ COMANDOS [3] 
 ╚═════════════════════╝
 
-🚀 SISTEMA CENTRAL DE CONSULTAS
+Accede a información oficial y verificada [14] en tiempo real desde 
+[8] [15] [16] [17] [18] [19] [20] [21] [22] [23] y mucho mas
 
-💎 Selecciona una categoría.
-⚡ Todos los servicios muestran su costo.
-🛡️ El cobro se realiza solamente tras una respuesta exitosa.
+[24] Selecciona una categoría.
+
+[25] Todos los servicios muestran su costo.
+
  ▰▰▰ SELECCIONA MÓDULO ▰▰▰"""
     )
 
