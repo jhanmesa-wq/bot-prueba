@@ -917,7 +917,39 @@ async def me_command(update:Update, context:ContextTypes.DEFAULT_TYPE):
     u=update.effective_user; saldo=get_creditos(u.id)
     txt=f"<b>╔════════════════╗</b>\n<b>║  👤 USER PROFILE       ║</b>\n<b>╚═══════════════════╝</b>\n\n🆔 ID: <code>{esc(u.id)}</code>\n👤 Nombre: <b>{esc(u.full_name)}</b>\n🔖 User: @{esc(u.username)}\n💳 Créditos: <code>{esc(saldo)} CRD</code>\n🛰️ Status: ONLINE"
     await update.message.reply_text(premium(txt), parse_mode="HTML", reply_markup=teclado_volver())
-  
+async def staff_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    texto_staff = """╔══════════════╗
+║   [7] STAFF OFICIAL    ║
+╚══════════════╝
+
+  [ FUNDADOR ]
+😴 @TuUsuario - Creador & Admin
+
+[ ADMINISTRADORES ]
+ @Admin1✅ - Soporte 24/7
+ @Admin2☑️ - Pagos & Créditos
+
+<b>[ MODERADORES ]</b>
+⚡ @Mod1 - Soporte
+⚡ @Mod2 - Soporte
+
+╔════════════════╗
+║  😱 CONTACTO OFICIAL ║
+╚════════════════╝
+
+💬 Grupo: t.me/tugrupo
+📢 Canal: t.me/tucanal
+💌 Soporte: @SoporteBot
+
+<b>⚠️ OJO:</b> Solo estos usuarios son staff oficial.
+Cuidado con las estafas."""
+
+    await update.message.reply_video(
+        video="https://files.catbox.moe/0g2ts6.mp4", # <-- Pega aquí link de tu video
+        caption=texto_staff
+        parse_mode="HTML",
+        reply_markup=teclado_volver()
+    )
 async def buy_command(update:Update, context:ContextTypes.DEFAULT_TYPE, from_callback=False):
     txt="💎 <b>RECARGA // SPECTER STORE</b>\n\n💰 PLANES\n├─ 5 CRD = S/ 5.00\n├─ 20 CRD = S/ 18.00\n├─ 60 CRD = S/ 50.00\n└─ 150 CRD = S/ 110.00\n\n📩 Contacta @admin"
     if from_callback and update.callback_query: await update.callback_query.message.edit_text(premium(txt), parse_mode="HTML", reply_markup=teclado_volver())
@@ -943,6 +975,7 @@ def main():
     app.add_handler(CommandHandler("micelular",micelular_command))
     app.add_handler(CommandHandler("cmds",cmds_command))
     app.add_handler(CommandHandler("dni",dni_command))
+    app.add_handler(CommandHandler("staff", staff_command))
     app.add_handler(CommandHandler("dnit",dnit_command))
     app.add_handler(CommandHandler("agv",agv_command))
     app.add_handler(CommandHandler("telcel",telcel_command))
