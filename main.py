@@ -43,7 +43,7 @@ db_dir = os.path.dirname(os.path.abspath(DB_PATH))
 if db_dir and not os.path.exists(db_dir): os.makedirs(db_dir, exist_ok=True)
 
 CREDITOS_INICIALES = 10
-COSTOS = {"dni":5,"agv":20,"facial":60,"dnit":6,"telcel":8,"dnivel":5,"dniv":5}
+COSTOS = {"dni":5,"agv":20,"facial":60,"dnit":6,"telcel":8,"dnivel":10,"dniv":10}
 def init_db():
     conn = sqlite3.connect(DB_PATH, check_same_thread=False, timeout=10)
     cur = conn.cursor()
@@ -656,7 +656,7 @@ async def botones_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
   [8] RENIEC
 ╚════════════╝
 
-SISTEMA NACIONAL DE IDENTIDAD [3]
+CONSULTA POR DNI [3]
 ━━━━━━━━━━━━━━━━━━━━
 
 [9] /dni 12345678
