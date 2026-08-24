@@ -706,10 +706,10 @@ CONSULTA POR DNI [3]
     elif q.data == "cat_placa":
         await q.edit_message_text("""
 ╔═════════╗
- [7] PLACA
+ [15] PLACA
 ╚═════════╝
 
-⚡ BUSCAR POR PLACA⚡
+ BUSCAR POR PLACA [3]
 ————————————————
 
 [01] /dnit 12345678
@@ -717,7 +717,7 @@ CONSULTA POR DNI [3]
      ↳ COSTO: 6 CRD [██████░░░░]
 
 ————————
-🛡️ Base SOAT 2026
+🛡️ Base SUNARP 2026
 """, parse_mode="HTML", reply_markup=teclado_volver())
 
     elif q.data == "cat_familiares":
