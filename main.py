@@ -946,10 +946,10 @@ async def staff_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 Cuidado con las estafas."""
 
     await update.message.reply_video(
-        video="https://files.catbox.moe/0g2ts6.mp4", # <-- Pega aquí link de tu video
-        caption=texto_staff
-        parse_mode="HTML",
-        reply_markup=teclado_volver()
+    video="https://files.catbox.moe/0g2ts6.mp4",  # ✅ COMA AGREGADA
+    caption=texto_staff,                          # ✅ COMA AGREGADA
+    parse_mode="HTML",
+    reply_markup=teclado_volver()
     )
 async def buy_command(update:Update, context:ContextTypes.DEFAULT_TYPE, from_callback=False):
     txt="💎 <b>RECARGA // SPECTER STORE</b>\n\n💰 PLANES\n├─ 5 CRD = S/ 5.00\n├─ 20 CRD = S/ 18.00\n├─ 60 CRD = S/ 50.00\n└─ 150 CRD = S/ 110.00\n\n📩 Contacta @admin"
