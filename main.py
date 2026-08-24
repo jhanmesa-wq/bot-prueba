@@ -376,19 +376,20 @@ async def micelular_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 #
 # EDITA LOS STICKERS DESDE ESTE ÚNICO LUGAR.
 PREMIUM_STICKERS = {
-    "1": "5431650332419563627",
-    "2": "6219810752887262728",
-    "3": "6298670698948724690",
-    "4": "5098585844931888090",
-    "5": "5260553279321944543",
-    "6": "5098578393163629920",
-    "7": "5429381339851796035",
-    "8": "5179570356695860413",
-    "9": "5177431372788139022",
-    "10": "5098536693326152842",
-    "11": "5260463209562776385",
-    "12": "5096114086958072826",
-}
+    "1": "5431650332419563627", #verificado negro
+    "2": "6219810752887262728", #austronauta
+    "3": "6298670698948724690", #free verde
+    "4": "5098585844931888090", #minsa peru
+    "5": "5260553279321944543", #buena
+    "6": "5098578393163629920", #reniec
+    "7": "5429381339851796035", #dni 
+    "8": "5179570356695860413", #bandera corona
+    "9": "5177431372788139022", #tarjeta plateada
+    "10": "5098536693326152842", #buena bolita
+    "11": "5260463209562776385", #verificado rojo 
+    "12": "5096114086958072826", 
+    "13": "6255716507683129387", #huella digital 
+} 
 
 def premium(texto):
     """
@@ -554,7 +555,7 @@ def crear_mensaje_premium(bot_username: str):
 [13] /otros ➜ Servicios secundarios 
 
 ━━━━━━━━━━━━━━━━━━━━━━
-[11] Sistema actualizado y centralizado"""
+[11] Sistema actualizado y [12] centralizado"""
 
     return premium(texto)
 
@@ -934,7 +935,7 @@ async def staff_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 ⚡ @Mod2 - Soporte
 
 ╔════════════════╗
-║  😱 CONTACTO OFICIAL ║
+║  [7] CONTACTO OFICIAL ║
 ╚════════════════╝
 
 💬 Grupo: t.me/tugrupo
