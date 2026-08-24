@@ -1112,7 +1112,55 @@ async def addcreditos_command(update:Update, context:ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(premium(f"✅ CRÉDITOS INYECTADOS\n👤 USER: <code>{esc(target)}</code>\n💳 +{esc(cant)} CRD\n🔋 SALDO: {esc(nuevo)} CRD"), parse_mode="HTML", reply_markup=teclado_volver())
     except Exception as e:
         await update.message.reply_text(premium(f"❌ {esc(str(e))}"), reply_markup=teclado_volver())
+async def staff_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    texto_staff = """╔══════════════╗
+║   [7] STAFF OFICIAL    ║
+╚══════════════╝
 
+[ FUNDADOR ]
+😴 @TuUsuario - Creador & Admin
+
+[ ADMINISTRADORES ]
+@Admin1✅ - Soporte 24/7
+@Admin2☑️ - Pagos & Créditos
+
+[ MODERADORES ]
+⚡ @Mod1 - Soporte
+⚡ @Mod2 - Soporte
+
+╔════════════════╗
+║  [7] CONTACTO OFICIAL ║
+╚════════════════╝
+
+💬 Grupo: t.me/tugrupo
+📢 Canal: t.me/tucanal
+💌 Soporte: @SoporteBot
+
+<b>⚠️ OJO:</b>
+Solo estos usuarios son staff oficial.
+Cuidado con las estafas."""
+
+    try:
+        await update.message.reply_text(
+            premium(texto_staff),
+            parse_mode="HTML",
+            reply_markup=teclado_volver()
+        )
+
+    except Exception as e:
+        logger.exception(f"ERROR EN /staff: {e}")
+
+        try:
+            await update.message.reply_text(
+                premium(
+                    "❌ <b>ERROR AL MOSTRAR STAFF</b>\n\n"
+                    f"<code>{esc(str(e))}</code>"
+                ),
+                parse_mode="HTML",
+                reply_markup=teclado_volver()
+            )
+        except Exception:
+            pass
 async def me_command(update:Update, context:ContextTypes.DEFAULT_TYPE):
     u=update.effective_user; saldo=get_creditos(u.id)
     txt=f"<b>╔════════════════╗</b>\n<b>║  👤 USER PROFILE       ║</b>\n<b>╚═══════════════════╝</b>\n\n🆔 ID: <code>{esc(u.id)}</code>\n👤 Nombre: <b>{esc(u.full_name)}</b>\n🔖 User: @{esc(u.username)}\n💳 Créditos: <code>{esc(saldo)} CRD</code>\n🛰️ Status: ONLINE"
