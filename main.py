@@ -633,41 +633,58 @@ async def botones_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if q.data == "menu":
         await q.edit_message_text(premium(texto_menu_cmds()), parse_mode="HTML", reply_markup=teclado_menu_cmds())
     
-    elif q.data == "cat_reniec":
-        texto_reniec = """
-╔════════════╗
- 🪪  RENIEC
+        elif q.data == "cat_reniec":
+        texto_reniec = """╔════════════╗
+  🪪 RENIEC
 ╚════════════╝
 
 [3] ⚡ SISTEMA NACIONAL DE IDENTIDAD ⚡
-———————
+━━━━━━━━━━━━━━━━━━━━
 
 [01] /dni 12345678
      ↳ FOTO + INFORMACIÓN
-     ↳ COSTO: 5 CRD [█████░░░░░]
+     ↳ COSTO: 5 CRD
 
 [02] /dnit 12345678
      ↳ 4 FOTOS + INFORMACIÓN AMPLIADA
-     ↳ COSTO: 6 CRD [██████░░░░]
+     ↳ COSTO: 6 CRD
 
 [03] /dnivel 12345678
      ↳ FOTO + INFORMACIÓN + EDAD
-     ↳ COSTO: 5 CRD [█████░░░░░]
+     ↳ COSTO: 5 CRD
 
 [04] /dniv 12345678
      ↳ FOTO + INFORMACIÓN + EDAD
-     ↳ COSTO: 5 CRD [█████░░░░░]
+     ↳ COSTO: 5 CRD
 
-———————
-🛡️ Consulta segura | Respuesta < 3s
-⚠️ Los créditos se reembolsan si no hay resultado
-"""
-        await q.edit_message_text(
-            premium(texto_reniec),
-            parse_mode="HTML",
-            reply_markup=teclado_volver()
-        )
+━━━━━━━━━━━━━━━━━━━━
+🛡️ Consulta segura
+⚠️ Los créditos se reembolsan si no hay resultado"""
 
+        try:
+            await q.edit_message_text(
+                text=premium(texto_reniec),
+                parse_mode="HTML",
+                reply_markup=teclado_volver()
+            )
+
+        except Exception as e:
+            logger.exception(f"ERROR BOTÓN RENIEC: {e}")
+
+            try:
+                await q.message.reply_text(
+                    premium(
+                        "❌ <b>ERROR AL ABRIR RENIEC</b>\n\n"
+                        "No se pudo editar el menú anterior.\n"
+                        f"<code>{esc(str(e))}</code>"
+                    ),
+                    parse_mode="HTML",
+                    reply_markup=teclado_volver()
+                )
+            except Exception as e2:
+                logger.exception(
+                    f"ERROR RESPUESTA ALTERNATIVA RENIEC: {e2}"
+                )
     elif q.data == "cat_placa":
         await q.edit_message_text("""
 ╔═════════╗
