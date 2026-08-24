@@ -416,6 +416,12 @@ PREMIUM_STICKERS = {
     "13": "6255716507683129387",#huella digital 
     "14": "5895628223407984747", #verificado azul pequeño
     "15": "4900384661978481721",#sunarp
+    "16": "4899924254369252443", #poner judicial 
+    "17": "4900307150703690607", #policia
+    "18": "4900462624224838579", #impe
+    "19": "6255716507683129387",#huella digital 
+    "20": "5895628223407984747", #verificado azul pequeño
+    "21": "4900384661978481721",
 } 
 
 def premium(texto):
