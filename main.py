@@ -550,9 +550,10 @@ def instalar_stickers_premium_globales():
         logger.warning(f"No se pudo instalar parche premium global: {e}")
         
 async def otros(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    texto_otros = """╔════════════╗
- [8] SERVICIOS SECUNDARIOS
-╚════════════╝
+    texto_otros = """
+══════════════════════════════
+[8] SERVICIOS SECUNDARIOS
+══════════════════════════════
 
 [⚡] Servicios extra y herramientas disponibles
 
@@ -561,15 +562,15 @@ Selecciona una opción:
     keyboard = [
         [InlineKeyboardButton("👻 APP FAKE", callback_data="app_fake")],
         [InlineKeyboardButton("🤖 CREAR MI PROPIO BOT", callback_data="crear_bot")],
-        [InlineKeyboardButton("⬅️ IR A CMDS", callback_data="teclado_volver")
+        [InlineKeyboardButton("⬅️ IR A CMDS", callback_data="teclado_volver")]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
-
     await update.message.reply_photo(
-        photo="https://i.imgur.com/8Km9tLL.jpg", # <-- CAMBIA ESTA FOTO
+        photo="https://i.imgur.com/8Km9tLL.jpg",
         caption=texto_otros,
         reply_markup=reply_markup
     )
+    
 
 # CALLBACKS DE LOS BOTONES
 async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
