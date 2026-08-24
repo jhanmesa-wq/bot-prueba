@@ -561,7 +561,7 @@ Selecciona una opción:
     keyboard = [
         [InlineKeyboardButton("👻 APP FAKE", callback_data="app_fake")],
         [InlineKeyboardButton("🤖 CREAR MI PROPIO BOT", callback_data="crear_bot")],
-        [InlineKeyboardButton("⬅️ volver a cmds", callback_data="menu_principal")]
+        [InlineKeyboardButton("⬅️ IR A CMDS", callback_data="teclado_volver")
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
 
@@ -590,7 +590,7 @@ Ejemplo:
 Costo: 3 CRD
 La imagen se genera con tu texto encima.
 """
-        foto = "https://i.imgur.com/5cK3m9p.jpg" # <-- FOTO PARA APP FAKE
+        foto = "https://files.catbox.moe/ksykip.jpg" # <-- FOTO PARA APP FAKE
         kb = [[InlineKeyboardButton("⬅️ Volver", callback_data="otros")]]
 
     elif q.data == "crear_bot":
@@ -651,7 +651,7 @@ def crear_mensaje_premium(bot_username: str):
 [9] /me ➜ Ver perfil
 [12] /staff ➜ fundador
 [10] /buy ➜ Planes y créditos
-[12] /otros ➜ Servicios secundarios 
+[13] /otros ➜ Servicios secundarios 
 
 ━━━━━━━━━━━━━━━━━━━━━━
 [11] Sistema actualizado y centralizado"""
@@ -673,7 +673,6 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         chat_id=update.effective_chat.id,
         video=video_url,
         caption=premium(texto),
-        reply_markup=teclado_volver(),
         parse_mode="HTML"
     )
 
@@ -1031,6 +1030,7 @@ def main():
     app.add_handler(CommandHandler("register",register_command))
     app.add_handler(CommandHandler("pagar", pagar))
     app.add_handler(CommandHandler("addcreditos",addcreditos_command))
+    app.add_handler(CallbackQueryHandler(button_handler))
     app.add_handler(CallbackQueryHandler(botones_callback))
     logger.info("⚜️ SPECTER FUTURISTA ONLINE")
     app.run_polling(allowed_updates=Update.ALL_TYPES, drop_pending_updates=True)
