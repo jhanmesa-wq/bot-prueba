@@ -908,11 +908,68 @@ async def addcreditos_command(update:Update, context:ContextTypes.DEFAULT_TYPE):
 
 async def me_command(update:Update, context:ContextTypes.DEFAULT_TYPE):
     u=update.effective_user; saldo=get_creditos(u.id)
-    txt=f"<b>╔════════════════╗</b>\n<b>║  👤 USER PROFILE       ║</b>\n<b>╚════════════════════════╝</b>\n\n🆔 ID: <code>{esc(u.id)}</code>\n👤 Nombre: <b>{esc(u.full_name)}</b>\n🔖 User: @{esc(u.username)}\n💳 Créditos: <code>{esc(saldo)} CRD</code>\n🛰️ Status: ONLINE"
+    txt=f"<b>╔════════════════╗</b>\n<b>║  👤 USER PROFILE       ║</b>\n<b>╚═══════════════════╝</b>\n\n🆔 ID: <code>{esc(u.id)}</code>\n👤 Nombre: <b>{esc(u.full_name)}</b>\n🔖 User: @{esc(u.username)}\n💳 Créditos: <code>{esc(saldo)} CRD</code>\n🛰️ Status: ONLINE"
     await update.message.reply_text(premium(txt), parse_mode="HTML", reply_markup=teclado_volver())
+    
+async async def staff(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = str(update.effective_user.id)
+    usuarios = cargar_usuarios()
+    usuarios.setdefault(user_id, {"creditos": 0, "consultas": 0, "celular": ""})
 
-async def staff_command(update:Update, context:ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text(premium("🛡️ <b>STAFF PANEL // EN DESARROLLO</b>"), parse_mode="HTML", reply_markup=teclado_volver())
+    texto_staff = """
+╔═══════════════╗
+⚜️ 𝗦𝗧𝗔𝗙𝗙 𝗢𝗙𝗜𝗖𝗜𝗔𝗟
+╚═══════════════╝
+
+🛡️ 𝗘𝗤𝗨𝗜𝗣𝗢 𝗗𝗘 𝗦𝗨𝗣𝗢𝗥𝗧𝗘 & 𝗗𝗘𝗦𝗔𝗥𝗥𝗢𝗟𝗟𝗢
+
+╭─────────────────────────╮
+│ 👑 𝗙𝗢𝗨𝗡𝗗𝗘𝗥 & 𝗗𝗘𝗦𝗔𝗥𝗥𝗢𝗟𝗟𝗘𝗥
+│ ├ user: @Sthep_18
+│ ├ Rol: Creador Principal
+│ ╰ Estado: ✅ ACTIVO
+│
+│ 🛡️ 𝗔𝗗𝗠𝗜𝗡𝗜𝗦𝗧𝗥𝗔𝗗𝗢𝗥𝗘𝗦
+│ ├ No hay admins asignados
+│ ╰ —
+│
+│ 🔧 𝗦𝗨𝗣𝗢𝗥𝗧𝗘 𝗧𝗘́𝗖𝗡𝗜𝗖𝗢
+│ ├ Asistencia 24/7
+│ ├ Consultas y recargas
+│ ╰ Respuesta rápida ⚡
+╰────────────────────╯
+
+📞 𝗖𝗢𝗡𝗧𝗔𝗖𝗧𝗢 𝗢𝗙𝗜𝗖𝗜𝗔𝗟
+├ Telegram: @SpecterPeru
+├ Canal: @SpecterPeruCanal
+└️ Soporte: @SpecterPeruSupport
+
+╭───────────────╮
+│ ⚡ 𝗜𝗡𝗙𝗢𝗥𝗠𝗔𝗖𝗜𝗢́𝗡 𝗢𝗙𝗜𝗖𝗜𝗔𝗟
+│ ├ Versión: 2.5.0
+│ ├ Estado: 🟢 ONLINE
+│ ├ Actualización: 23/08/2026
+│ ╰ Servicio: 🔐 SEGURO
+──────────────╯
+
+⚠️ 𝗡𝗢𝗧𝗔: Solo confía en los contactos
+arriba mencionados. No pagues a
+usuarios no oficiales.🔒
+"""
+
+    keyboard = [
+        [InlineKeyboardButton("📞 Contactar Soporte", url="t.me/Sthep_18")],
+        [InlineKeyboardButton("📢 Canal Oficial", url="https://t.me/SpecterPeruCanal")],
+        [InlineKeyboardButton("⬅️ Volver al Menú", callback_data="start")]
+    ]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+
+    await update.message.reply_text(
+        texto_staff,
+        parse_mode="HTML",
+        reply_markup=reply_markup
+    )
+    
 async def buy_command(update:Update, context:ContextTypes.DEFAULT_TYPE, from_callback=False):
     txt="💎 <b>RECARGA // SPECTER STORE</b>\n\n💰 PLANES\n├─ 5 CRD = S/ 5.00\n├─ 20 CRD = S/ 18.00\n├─ 60 CRD = S/ 50.00\n└─ 150 CRD = S/ 110.00\n\n📩 Contacta @admin"
     if from_callback and update.callback_query: await update.callback_query.message.edit_text(premium(txt), parse_mode="HTML", reply_markup=teclado_volver())
@@ -950,7 +1007,6 @@ def main():
     app.add_handler(CommandHandler("register",register_command))
     app.add_handler(CommandHandler("pagar", pagar))
     app.add_handler(CommandHandler("addcreditos",addcreditos_command))
-    app.add_handler(CallbackQueryHandler(button_handler))
     app.add_handler(CallbackQueryHandler(botones_callback))
     logger.info("⚜️ SPECTER FUTURISTA ONLINE")
     app.run_polling(allowed_updates=Update.ALL_TYPES, drop_pending_updates=True)
