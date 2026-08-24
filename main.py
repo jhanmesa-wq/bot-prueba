@@ -13,7 +13,7 @@ from functools import wraps
 from dotenv import load_dotenv
 from flask import Flask
 from telegram import Update, InputMediaPhoto, MessageEntity, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import, Application, CommandHandler, ContextTypes, CallbackQueryHandler
+from telegram.ext import Application, CommandHandler, ContextTypes, CallbackQueryHandler
 
 load_dotenv()
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
