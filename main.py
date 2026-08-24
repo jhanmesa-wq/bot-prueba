@@ -132,25 +132,7 @@ def con_creditos(costo:int):
     return decorator
 
 # ============== UI FUTURISTA EN HTML ==============
-def texto_menu_cmds():
-    return (
-        """╔═════════════════════╗
-[2]  MENÚ DE SERVICIOS
-╚═════════════════════╝
 
-🚀 SISTEMA CENTRAL DE CONSULTAS
-
-💎 Selecciona una categoría.
-⚡ Todos los servicios muestran su costo.
-🛡️ El cobro se realiza solamente tras una respuesta exitosa.
- ▰▰▰ SELECCIONA MÓDULO ▰▰▰"""
-    )
-def teclado_menu_cmds():
-    return InlineKeyboardMarkup([
-        [InlineKeyboardButton("🪪 RENIEC", callback_data="cat_reniec"), InlineKeyboardButton("🚙 VEHÍCULOS", callback_data="cat_placa")],
-        [InlineKeyboardButton("🛰️ FAMILIARES", callback_data="cat_familiares"), InlineKeyboardButton("📱 TELÉFONOS", callback_data="cat_telcel")],
-        [InlineKeyboardButton("🧬 FACIAL", callback_data="cat_facial"), InlineKeyboardButton("💎 RECARGAR", callback_data="cat_comprar")],
-    ])
 
 def format_dni_futurista(data, ctx):
     dni_obj=data.get("dni",{}); nac=data.get("nacimiento",{}); info=data.get("informacion_general",{}); dom=data.get("domicilio",{}); ubi=data.get("ubigeos",{})
@@ -549,8 +531,6 @@ def instalar_stickers_premium_globales():
     except Exception as e:
         logger.warning(f"No se pudo instalar parche premium global: {e}")
         
-async def otros(update: Update, context: ContextTypes.DEFAULT_TYPE):
-
 
 def crear_mensaje_premium(bot_username: str):
     texto = f"""╔═════════════════════╗
@@ -596,15 +576,38 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         parse_mode="HTML"
     )
 
-async def cmds_command(update:Update, context:ContextTypes.DEFAULT_TYPE):
+def texto_menu_cmds():
+    return (
+        """╔═════════════════════╗
+[2]  MENÚ DE SERVICIOS
+╚═════════════════════╝
+
+🚀 SISTEMA CENTRAL DE CONSULTAS
+
+💎 Selecciona una categoría.
+⚡ Todos los servicios muestran su costo.
+🛡️ El cobro se realiza solamente tras una respuesta exitosa.
+ ▰▰▰ SELECCIONA MÓDULO ▰▰▰"""
+    )
+
+def teclado_menu_cmds():
+    return InlineKeyboardMarkup([
+        [InlineKeyboardButton("🪪 RENIEC", callback_data="cat_reniec"), InlineKeyboardButton("🚙 VEHÍCULOS", callback_data="cat_placa")],
+        [InlineKeyboardButton("🛰️ FAMILIARES", callback_data="cat_familiares"), InlineKeyboardButton("📱 TELÉFONOS", callback_data="cat_telcel")],
+        [InlineKeyboardButton("🧬 FACIAL", callback_data="cat_facial"), InlineKeyboardButton("💎 RECARGAR", callback_data="cat_comprar")],
+    ])
+
+async def cmds_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(premium(texto_menu_cmds()), parse_mode="HTML", reply_markup=teclado_menu_cmds())
-async def botones_callback(update:Update, context:ContextTypes.DEFAULT_TYPE):
-    q=update.callback_query
+
+async def botones_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    q = update.callback_query
     await q.answer()
     
-    if q.data=="menu":
-        await q.edit_message_text(texto_menu_cmds(), parse_mode="HTML", reply_markup=teclado_menu_cmds())
-    elif q.data=="cat_reniec":
+    if q.data == "menu":
+        await q.edit_message_text(premium(texto_menu_cmds()), parse_mode="HTML", reply_markup=teclado_menu_cmds())
+    
+    elif q.data == "cat_reniec":
         await q.edit_message_text("""
 ╔════════════╗
  🪪  RENIEC
@@ -626,7 +629,7 @@ async def botones_callback(update:Update, context:ContextTypes.DEFAULT_TYPE):
 ⚠️ Los créditos solo se descuentan si hay resultado
 """, parse_mode="HTML", reply_markup=teclado_volver())
 
-    elif q.data=="cat_placa":
+    elif q.data == "cat_placa":
         await q.edit_message_text("""
 ╔═════════╗
  [7] PLACA
@@ -643,7 +646,7 @@ async def botones_callback(update:Update, context:ContextTypes.DEFAULT_TYPE):
 🛡️ Base SOAT 2026
 """, parse_mode="HTML", reply_markup=teclado_volver())
 
-    elif q.data=="cat_familiares":
+    elif q.data == "cat_familiares":
         await q.edit_message_text("""
 ╔════════════╗
  🗯️ FAMILIARES  
@@ -660,7 +663,7 @@ async def botones_callback(update:Update, context:ContextTypes.DEFAULT_TYPE):
 🛡️ Datos en tiempo real
 """, parse_mode="HTML", reply_markup=teclado_volver())
 
-    elif q.data=="cat_telcel":
+    elif q.data == "cat_telcel":
         await q.edit_message_text("""
 ╔════════════╗
  📱 TELÉFONOS 
@@ -675,20 +678,6 @@ async def botones_callback(update:Update, context:ContextTypes.DEFAULT_TYPE):
 [02] /telp 9XXXXXXXX
      ↳ NÚMEROS × DNI
      ↳ COSTO: 20 CRD [████░░░░░░]
-     
-
-————————————————""", parse_mode="HTML", reply_markup=teclado_volver())
-
-    elif q.data=="cat_facial":
-        await q.edit_message_text("""
-╔════════════╗
- 👁️  FACIAL 
-╚════════════╝
-
-⚡ RECONOCIMIENTO BIOMÉTRICO AI ⚡
-————————
-
-[01] Enviar foto con /facial
      ↳ MATCH 1:1 CON BASE RENIEC
      ↳ COSTO: 60 CRD [██████████]
 
@@ -696,7 +685,7 @@ async def botones_callback(update:Update, context:ContextTypes.DEFAULT_TYPE):
 🛡️ IA 99.8% precisión
 """, parse_mode="HTML", reply_markup=teclado_volver())
 
-    elif q.data=="cat_comprar":
+    elif q.data == "cat_comprar":
         await q.edit_message_text("""╔═════════════════════╗
 [2] 💎 PLANES PREMIUM
 ╚═════════════════════╝
@@ -725,7 +714,25 @@ async def botones_callback(update:Update, context:ContextTypes.DEFAULT_TYPE):
 
 ⚡ Atención rápida
 🛡️ Activación mediante administración""", parse_mode="HTML", reply_markup=teclado_volver())
-    
+
+    elif q.data == "cat_facial":
+        await q.edit_message_text("""
+╔════════════╗
+ 🧬 FACIAL
+╚════════════╝
+
+⚡ RECONOCIMIENTO FACIAL ⚡
+————————
+
+[01] /facial [foto]
+     ↳ COMPARACIÓN CON BASE
+     ↳ COSTO: 50 CRD [█████████░]
+
+————————
+🛡️ Precisión 99.9%
+""", parse_mode="HTML", reply_markup=teclado_volver())
+    la
+        
 @con_creditos(costo=COSTOS["dni"])
 async def dni_command(update:Update, context:ContextTypes.DEFAULT_TYPE):
     if not context.args or not validar_dni(context.args[0]):
