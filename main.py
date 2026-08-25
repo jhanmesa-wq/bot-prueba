@@ -1001,12 +1001,11 @@ CONSULTA POR DNI [3]
      ↳ FOTO + INFO
      ↳ COSTO: 10 CRD
 
-[5] /nm NOMBRE APELLIDO1 APELLIDO2
+[9] /nm NOMBRE APELLIDO1 APELLIDO2
      ↳ BÚSQUEDA POR NOMBRES
      ↳ COSTO: 5 CRD
 
 ━━━━━━━━━━━━━━━━━━━━
-🛡️ Consulta segura
 [28] Los créditos se reembolsan si no hay resultado"""
 
         try:
@@ -1047,7 +1046,7 @@ CONSULTA POR DNI [3]
      ↳ COSTO: 6 CRD [██████░░░░]
 
 ————————
-🛡️ Base SUNARP 2026
+ Base SUNARP 2026 [15]
 """, parse_mode="HTML", reply_markup=teclado_volver())
 
     elif q.data == "cat_familiares":
