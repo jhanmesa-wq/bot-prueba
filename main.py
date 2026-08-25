@@ -8,6 +8,7 @@ import logging
 import threading
 import html
 import asyncio
+import urllib.parse
 import secrets
 from datetime import datetime
 from urllib.parse import quote_plus
@@ -30,6 +31,12 @@ ADMIN_ID = int(os.getenv("ADMIN_ID", "0"))
 link_foto = "https://files.catbox.moe/0y85js.jpg"
 PAYMENT_WEB_URL = "https://TU-WEB-DE-PAGO.com"
 ADMIN_PAYMENT_ID = 6330231681
+DATOS_PAGO = {
+    "yape_numero": "925805734",      # Tu número Yape
+    "cci": "92200200000387413218", # Tu CCI
+    "titular": "Christian Gustavo Ramos Gonzales",
+    "qr_url": "https://files.catbox.moe/1037r1.jpg"
+}
 if not BOT_TOKEN: raise SystemExit("BOT_TOKEN faltante")
 
 HEADERS_JSON = {"Content-Type": "application/json", "Authorization": f"Bearer {CODART_TOKEN}"}
@@ -361,73 +368,227 @@ def codart_get(path:str):
         return None, str(e)
 
 # ============== COMANDOS ==============
+# 💰 PLANES — MISMOS QUE TUS PLANES
+PLANES = {
+    10: 100,     # S/10 → 100 créditos
+    20: 200,     # S/20 → 200 créditos
+    30: 400,     # S/30 → 400 créditos
+    40: 500,     # S/40 → 500 créditos
+    50: 800,     # S/50 → 800 créditos
+    100: 2000,   # S/100 → 2000 créditos
+    200: 4300    # S/200 → 4300 créditos
+}
 
 
-# ================== WEBHOOK DE PAGOS SIN FLASK ==================
-async def webhook_pago(request):
+# ============================================================
+# 📡 RECARGA DESDE LA WEB
+# ============================================================
+
+async def recarga_web(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Comando interno para sumar créditos desde la web."""
+
+    if not context.args or len(context.args) < 2:
+        return
+
+    # Formato:
+    # /recarga_web user_id monto
+
+    user_id = context.args[0]
+
     try:
-        datos = await request.json()
-    except:
-        return web.json_response({"error": "Sin datos"}, status=400)
+        monto = float(context.args[1])
+    except (ValueError, TypeError):
+        return
 
-    celular = str(datos.get("celular", "")).strip()
-    monto = datos.get("monto", 0)
+    # Buscar créditos correspondientes al monto
+    creditos = PLANES.get(monto)
 
-    if not celular or not monto:
-        return web.json_response({"error": "Faltan datos: celular y monto"}, status=400)
+    if not creditos:
+        return
 
-    # Buscar usuario por celular
-    conn = sqlite3.connect(DB_PATH, check_same_thread=False)
-    cur = conn.cursor()
-    cur.execute("SELECT user_id FROM usuarios WHERE celular =?", (celular,))
-    row = cur.fetchone()
-    conn.close()
-
-    if not row:
-        print(f"⚠️ Pago recibido — Celular {celular} NO REGISTRADO")
-        return web.json_response({"status": "usuario_no_registrado"}, status=200)
-
-    user_id = row[0]
-    creditos = int(float(monto))
-    saldo_nuevo = agregar_creditos(user_id, creditos)
-
-    # Enviar notificación al usuario
-    from telegram import Bot
-    bot = Bot(token=BOT_TOKEN)
     try:
-        await bot.send_message(
-            chat_id=user_id,
-            text=premium(f"✅ Pago detectado!\n\n"
-                 f"💰 Recibido: S/ {monto}\n"
-                 f"🎁 +{creditos} CRD agregados\n"
-                 f"💳 Saldo actual: {saldo_nuevo} CRD")
+        conn = sqlite3.connect(
+            "specter_peru.db",
+            check_same_thread=False,
+            timeout=10
         )
+
+        cur = conn.cursor()
+
+        # Sumar créditos
+        cur.execute(
+            """
+            UPDATE usuarios
+            SET creditos = creditos + ?
+            WHERE user_id = ?
+            """,
+            (creditos, user_id)
+        )
+
+        # Si el usuario no existe, crearlo
+        if cur.rowcount == 0:
+            cur.execute(
+                """
+                INSERT INTO usuarios (user_id, creditos)
+                VALUES (?, ?)
+                """,
+                (user_id, creditos)
+            )
+
+        # Obtener saldo actual
+        cur.execute(
+            """
+            SELECT creditos
+            FROM usuarios
+            WHERE user_id = ?
+            """,
+            (user_id,)
+        )
+
+        row = cur.fetchone()
+
+        saldo_actual = row[0] if row else creditos
+
+        conn.commit()
+        conn.close()
+
+        # ====================================================
+        # NOTIFICACIÓN AL USUARIO
+        # ====================================================
+
+        texto = f"""[3] <b>✅ RECARGA EXITOSA</b>
+
+💰 <b>+{creditos} CRÉDITOS AGREGADOS</b>
+
+💵 <b>Monto:</b> S/ {monto:g}
+💳 <b>Saldo actual:</b> {saldo_actual} CRD
+
+⚡ <b>Activación:</b> INSTANTÁNEA
+
+━━━━━━━━━━━━━━━━━━━━
+
+⚜️ <b>SPECTER PERÚ</b>"""
+
+        await context.bot.send_message(
+            chat_id=int(user_id),
+            text=premium(texto),
+            parse_mode="HTML"
+        )
+
     except Exception as e:
-        print(f"⚠️ No se pudo enviar mensaje: {e}")
+        logger.exception(f"ERROR RECARGA WEB: {e}")
 
-    print(f"✅ Pago procesado — Usuario {user_id} | +{creditos} CRD")
-    return web.json_response({
-        "status": "ok",
-        "user_id": user_id,
-        "creditos": creditos,
-        "saldo_actual": saldo_nuevo
-    }, status=200)
 
-async def iniciar_webhook():
-    app = web.Application()
-    app.router.add_post("/webhook-pago", webhook_pago)
-    port = int(os.getenv("PORT", 10000))
-    runner = web.AppRunner(app)
-    await runner.setup()
-    site = web.TCPSite(runner, "0.0.0.0", port)
-    await site.start()
-    print(f"🌐 Webhook de pagos activo en el puerto {port}")
-    return runner
-
-# ================== FIN WEBHOOK DE PAGOS =================
 # ============================================================
-# GENERADOR DE PEDIDOS
+# 📡 RECARGA AUTOMÁTICA PANDAX
 # ============================================================
+
+async def recarga_pandax(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Comando interno para sumar créditos automáticamente mediante PandaX."""
+
+    if not context.args or len(context.args) < 2:
+        return
+
+    # Formato:
+    # /recarga_pandax numero_origen monto
+
+    origen = context.args[0]
+
+    try:
+        monto = float(context.args[1])
+    except (ValueError, TypeError):
+        return
+
+    # Buscar créditos correspondientes al monto
+    creditos = PLANES.get(monto)
+
+    if not creditos:
+        return
+
+    try:
+        conn = sqlite3.connect(
+            "specter_peru.db",
+            check_same_thread=False,
+            timeout=10
+        )
+
+        cur = conn.cursor()
+
+        # Buscar usuario mediante celular
+        cur.execute(
+            """
+            SELECT user_id
+            FROM usuarios
+            WHERE celular = ?
+            """,
+            (origen,)
+        )
+
+        row = cur.fetchone()
+
+        if not row:
+            conn.close()
+            return
+
+        user_id = row[0]
+
+        # ====================================================
+        # SUMAR CRÉDITOS
+        # ====================================================
+
+        cur.execute(
+            """
+            UPDATE usuarios
+            SET creditos = creditos + ?
+            WHERE user_id = ?
+            """,
+            (creditos, user_id)
+        )
+
+        # Obtener saldo actualizado
+        cur.execute(
+            """
+            SELECT creditos
+            FROM usuarios
+            WHERE user_id = ?
+            """,
+            (user_id,)
+        )
+
+        saldo_row = cur.fetchone()
+        saldo_actual = saldo_row[0] if saldo_row else creditos
+
+        conn.commit()
+        conn.close()
+
+        # ====================================================
+        # NOTIFICACIÓN AL USUARIO
+        # ====================================================
+
+        texto = f"""[3] <b>✅ PAGO DETECTADO AUTOMÁTICAMENTE</b>
+
+💰 <b>+{creditos} CRÉDITOS AGREGADOS</b>
+
+💵 <b>Monto:</b> S/ {monto:g}
+💳 <b>Saldo actual:</b> {saldo_actual} CRD
+
+📱 <b>Origen:</b> <code>{esc(str(origen))}</code>
+
+⚡ <b>Activación:</b> INSTANTÁNEA
+
+━━━━━━━━━━━━━━━━━━━━
+
+⚜️ <b>SPECTER PERÚ</b>"""
+
+        await context.bot.send_message(
+            chat_id=int(user_id),
+            text=premium(texto),
+            parse_mode="HTML"
+        )
+
+    except Exception as e:
+        logger.exception(f"ERROR RECARGA PANDAX: {e}")
+
 
 def generar_pedido():
     """
@@ -1714,10 +1875,65 @@ async def register_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         parse_mode="HTML",
         reply_markup=teclado_volver()
     )
-async def buy_command(update:Update, context:ContextTypes.DEFAULT_TYPE, from_callback=False):
-    txt="💎 <b>RECARGA // SPECTER STORE</b>\n\n💰 PLANES\n├─ 5 CRD = S/ 5.00\n├─ 20 CRD = S/ 18.00\n├─ 60 CRD = S/ 50.00\n└─ 150 CRD = S/ 110.00\n\n📩 Contacta @admin"
-    if from_callback and update.callback_query: await update.callback_query.message.edit_text(premium(txt), parse_mode="HTML", reply_markup=teclado_volver())
-    else: await update.message.reply_text(premium(txt), parse_mode="HTML", reply_markup=teclado_volver())
+async def buy_command(
+    update: Update,
+    context: ContextTypes.DEFAULT_TYPE,
+    from_callback=False
+):
+    txt = """[3] <b>╔═════════════════════╗
+💎 PLANES PREMIUM
+╚═════════════════════╝</b>
+
+💰 <b>CRÉDITOS</b>
+
+🥉 100 créditos ➜ <b>S/ 10</b>
+🥈 200 créditos ➜ <b>S/ 20</b>
+🥇 400 créditos ➜ <b>S/ 30</b>
+💠 500 créditos ➜ <b>S/ 40</b>
+🚀 800 créditos ➜ <b>S/ 50</b>
+👑 2,000 créditos ➜ <b>S/ 100</b>
+💎 4,300 créditos ➜ <b>S/ 200</b>
+
+━━━━━━━━━━━━━━━━━━━━━━
+
+♾️ <b>PLANES ILIMITADOS</b>
+
+💥 7 días ➜ <b>S/ 20</b>
+⚡ 15 días ➜ <b>S/ 35</b>
+🔱 30 días ➜ <b>S/ 60</b>
+👑 60 días ➜ <b>S/ 100</b>
+
+━━━━━━━━━━━━━━━━━━━━━━
+
+💳 <b>PAGOS:</b> Yape • Plin • BCP
+👤 <b>CONTACTO:</b> @zxxxxx_michi_xxxxxx
+
+⚡ Atención rápida
+
+💡 <b>USA:</b>
+<code>/pagar</code> + <b>monto que abonarás</b>
+
+📌 Ejemplo:
+<code>/pagar 20</code>
+
+━━━━━━━━━━━━━━━━━━━━━━
+
+[3] <b>SPECTER PERÚ</b>"""
+
+    texto = premium(txt)
+
+    if from_callback and update.callback_query:
+        await update.callback_query.message.edit_text(
+            text=texto,
+            parse_mode="HTML",
+            reply_markup=teclado_volver()
+        )
+    else:
+        await update.message.reply_text(
+            text=texto,
+            parse_mode="HTML",
+            reply_markup=teclado_volver()
+    )
 def main():
     init_db()
 
@@ -1740,6 +1956,8 @@ def main():
     app.add_handler(CommandHandler("buy", buy_command))
     app.add_handler(CommandHandler("micelular", micelular_command))
     app.add_handler(CommandHandler("pagar", pagar))
+    app.add_handler(CommandHandler("recarga_web", recarga_web))
+    app.add_handler(CommandHandler("recarga_pandax", recarga_pandax))
 
     # ===================== CONSULTAS RENIEC ======================
     app.add_handler(CommandHandler("dni", dni_command))
