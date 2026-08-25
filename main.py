@@ -8,13 +8,15 @@ import logging
 import threading
 import html
 import asyncio
+import secrets
+from datetime import datetime
 from urllib.parse import quote_plus
 from aiohttp import web
 from functools import wraps
 from dotenv import load_dotenv
 from flask import Flask
 from telegram import Update, InputMediaPhoto, MessageEntity, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import Application, CommandHandler, ContextTypes, CallbackQueryHandler
+from telegram.ext import Application, CommandHandler, ContextTypes, CallbackQueryHandler, ContextTypes, MessageHandler, filters
 
 load_dotenv()
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
@@ -26,7 +28,7 @@ API_BASE = os.getenv("API_BASE", "https://api-codart.cgrt.org/api/v1/consultas/f
 PORT = int(os.getenv("PORT", 10000))
 ADMIN_ID = int(os.getenv("ADMIN_ID", "0"))
 link_foto = "https://files.catbox.moe/0y85js.jpg"
-
+PAYMENT_WEB_URL = "https://TU-WEB-DE-PAGO.com"
 if not BOT_TOKEN: raise SystemExit("BOT_TOKEN faltante")
 
 HEADERS_JSON = {"Content-Type": "application/json", "Authorization": f"Bearer {CODART_TOKEN}"}
@@ -422,36 +424,321 @@ async def iniciar_webhook():
     return runner
 
 # ================== FIN WEBHOOK DE PAGOS =================
+# ============================================================
+# GENERADOR DE PEDIDOS
+# ============================================================
+
+def generar_pedido():
+    """
+    Genera un número de pedido diferente en cada solicitud.
+    """
+
+    fecha = datetime.now().strftime("%Y%m%d%H%M%S")
+    aleatorio = secrets.token_hex(4).upper()
+
+    return f"{fecha}-{aleatorio}"
+
+
+def generar_orden():
+    """
+    Genera una orden independiente del número de pedido.
+    """
+
+    fecha = datetime.now().strftime("%Y%m%d")
+    aleatorio = secrets.token_hex(3).upper()
+
+    return f"ORD-{fecha}-{aleatorio}"
+
+
+# ============================================================
+# COMANDO /PAGAR
+# ============================================================
 
 async def pagar(update: Update, context: ContextTypes.DEFAULT_TYPE):
+
     try:
-        # Uso: /pagar 300 6512
-        # Si no pone nada, usa 300 y 6512 por defecto
-        if len(context.args) >= 2:
+
+        usuario = update.effective_user
+
+        # ----------------------------------------------------
+        # MONTO
+        # ----------------------------------------------------
+
+        if len(context.args) >= 1:
+
             total = context.args[0]
-            pedido = context.args[1]
+
+            try:
+                total_num = float(total)
+
+                if total_num <= 0:
+                    raise ValueError
+
+            except (ValueError, TypeError):
+
+                await update.message.reply_text(
+                    premium(
+                        "[3] <b>MONTO INVÁLIDO</b>\n\n"
+                        "❌ El monto indicado no es válido.\n\n"
+                        "Ejemplo:\n"
+                        "<code>/pagar 20</code>"
+                    ),
+                    parse_mode="HTML",
+                    reply_markup=teclado_volver()
+                )
+
+                return
+
         else:
+
             total = "300"
-            pedido = "6512"
 
-        texto = f"""💳 PAGO DE SERVICIO 💳
+        # ----------------------------------------------------
+        # GENERAR PEDIDO Y ORDEN
+        # ----------------------------------------------------
 
-🛒 Servicio: créditos 
-💰 Total a pagar: 200
-🧾 N° Pedido: #{pedido}
+        pedido = generar_pedido()
+        orden = generar_orden()
 
-➡️CCI: 92200200000387413218
-➡️BANCO: DALE
-⚠️NOTA: Adjuntar comprobante de pago⚠️
+        # ----------------------------------------------------
+        # LINK DE PAGO
+        # ----------------------------------------------------
 
-📸 ATENCION: ENVIA LA FOTO DEL VOUCHER AQUI MISMO 👇"""
+        link_pago = (
+            f"{PAYMENT_WEB_URL}"
+            f"?pedido={pedido}"
+            f"&orden={orden}"
+            f"&monto={total}"
+            f"&usuario={usuario.id}"
+        )
 
-        # ESTA ES LA LÍNEA CLAVE - manda foto por link + texto
-        await update.message.reply_photo(photo=link_foto, caption=premium(texto))
+        # ----------------------------------------------------
+        # TEXTO
+        # ----------------------------------------------------
+
+        texto = f"""[3] <b>💳 PAGO DE SERVICIO</b>
+
+🛒 <b>Servicio:</b> Créditos
+
+💰 <b>Total a pagar:</b> S/ {total}
+
+🧾 <b>N° Pedido:</b>
+<code>#{pedido}</code>
+
+📦 <b>N° Orden:</b>
+<code>{orden}</code>
+
+━━━━━━━━━━━━━━━━━━━━
+
+➡️ <b>CCI:</b>
+<code>92200200000387413218</code>
+
+➡️ <b>BANCO:</b>
+DALE
+
+━━━━━━━━━━━━━━━━━━━━
+
+⚠️ <b>NOTA:</b>
+Adjuntar comprobante de pago.
+
+📸 <b>ATENCIÓN:</b>
+Envía la foto del voucher aquí mismo 👇
+
+━━━━━━━━━━━━━━━━━━━━
+
+🔐 Guarda tu número de pedido.
+🧾 Guarda también tu número de orden."""
+
+        # ----------------------------------------------------
+        # BOTONES
+        # ----------------------------------------------------
+
+        teclado_pago = InlineKeyboardMarkup(
+            [
+                [
+                    InlineKeyboardButton(
+                        "💳 DESEO PAGAR AUTOMÁTICAMENTE",
+                        url=link_pago
+                    )
+                ],
+                [
+                    InlineKeyboardButton(
+                        "🔙 VOLVER",
+                        callback_data="menu"
+                    )
+                ]
+            ]
+        )
+
+        # ----------------------------------------------------
+        # ENVIAR PAGO
+        # ----------------------------------------------------
+
+        await update.message.reply_photo(
+            photo=link_foto,
+            caption=premium(texto),
+            parse_mode="HTML",
+            reply_markup=teclado_pago
+        )
+
+        # ----------------------------------------------------
+        # GUARDAR DATOS DEL PEDIDO EN EL CONTEXTO
+        # ----------------------------------------------------
+
+        context.user_data["pedido_pago"] = pedido
+        context.user_data["orden_pago"] = orden
+        context.user_data["monto_pago"] = str(total)
 
     except Exception as e:
-        await update.message.reply_text(premium(f"Error: {e}\nUso: /pagar <monto> <pedido> Ej: /pagar 300 6512"))
 
+        logger.exception(f"ERROR EN /PAGAR: {e}")
+
+        await update.message.reply_text(
+            premium(
+                "[3] <b>ERROR EN EL SISTEMA DE PAGO</b>\n\n"
+                f"❌ <code>{esc(str(e))}</code>"
+            ),
+            parse_mode="HTML",
+            reply_markup=teclado_volver()
+        )
+
+
+# ============================================================
+# RECIBIR VOUCHER
+# ============================================================
+
+async def recibir_voucher(update: Update, context: ContextTypes.DEFAULT_TYPE):
+
+    try:
+
+        usuario = update.effective_user
+        mensaje = update.message
+
+        # ----------------------------------------------------
+        # VERIFICAR QUE SEA UNA FOTO
+        # ----------------------------------------------------
+
+        if not mensaje.photo:
+            return
+
+        # ----------------------------------------------------
+        # DATOS DEL PEDIDO
+        # ----------------------------------------------------
+
+        pedido = context.user_data.get(
+            "pedido_pago",
+            "NO DISPONIBLE"
+        )
+
+        orden = context.user_data.get(
+            "orden_pago",
+            "NO DISPONIBLE"
+        )
+
+        monto = context.user_data.get(
+            "monto_pago",
+            "NO DISPONIBLE"
+        )
+
+        username = (
+            f"@{usuario.username}"
+            if usuario.username
+            else "Sin username"
+        )
+
+        nombre = usuario.full_name or "Sin nombre"
+
+        # ----------------------------------------------------
+        # DATOS PARA EL ADMIN
+        # ----------------------------------------------------
+
+        texto_admin = f"""[3] <b>📸 NUEVO VOUCHER RECIBIDO</b>
+
+━━━━━━━━━━━━━━━━━━━━
+
+👤 <b>Usuario:</b>
+{esc(nombre)}
+
+🔖 <b>Username:</b>
+{esc(username)}
+
+🆔 <b>ID TELEGRAM:</b>
+<code>{usuario.id}</code>
+
+━━━━━━━━━━━━━━━━━━━━
+
+💰 <b>Monto:</b>
+S/ {esc(str(monto))}
+
+🧾 <b>Pedido:</b>
+<code>#{esc(str(pedido))}</code>
+
+📦 <b>Orden:</b>
+<code>{esc(str(orden))}</code>
+
+━━━━━━━━━━━━━━━━━━━━
+
+⚠️ <b>VERIFICAR EL VOUCHER ANTES DE ACREDITAR CRÉDITOS.</b>"""
+
+        # ----------------------------------------------------
+        # OBTENER LA FOTO CON MAYOR CALIDAD
+        # ----------------------------------------------------
+
+        foto = mensaje.photo[-1]
+
+        # ----------------------------------------------------
+        # ENVIAR VOUCHER AL ADMIN
+        # ----------------------------------------------------
+
+        await context.bot.send_photo(
+            chat_id=ADMIN_PAYMENT_ID,
+            photo=foto.file_id,
+            caption=premium(texto_admin),
+            parse_mode="HTML"
+        )
+
+        # ----------------------------------------------------
+        # CONFIRMAR AL USUARIO
+        # ----------------------------------------------------
+
+        texto_usuario = f"""[3] <b>VOUCHER RECIBIDO</b>
+
+✅ Tu comprobante fue enviado correctamente.
+
+🧾 <b>Pedido:</b>
+<code>#{esc(str(pedido))}</code>
+
+📦 <b>Orden:</b>
+<code>{esc(str(orden))}</code>
+
+💰 <b>Monto:</b>
+S/ {esc(str(monto))}
+
+⏳ El comprobante será revisado por administración.
+
+⚠️ No envíes el mismo voucher repetidamente."""
+
+        await mensaje.reply_text(
+            premium(texto_usuario),
+            parse_mode="HTML",
+            reply_markup=teclado_volver()
+        )
+
+    except Exception as e:
+
+        logger.exception(
+            f"ERROR RECIBIENDO VOUCHER: {e}"
+        )
+
+        await update.message.reply_text(
+            premium(
+                "[3] <b>ERROR</b>\n\n"
+                "❌ No se pudo enviar el comprobante.\n"
+                "Inténtalo nuevamente."
+            ),
+            parse_mode="HTML",
+            reply_markup=teclado_volver()
+        )
 
 async def micelular_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
@@ -1468,7 +1755,12 @@ def main():
     app.add_handler(CommandHandler("telcel", telcel_command))
     app.add_handler(CommandHandler("telp", telcel_command))
     app.add_handler(CommandHandler("facial", facial_command))
-
+    app.add_handler(
+    MessageHandler(
+        filters.PHOTO,
+        recibir_voucher
+    )
+    )
     # ======================= ADMINISTRACIÓN ======================
     app.add_handler(CommandHandler("addcreditos", addcreditos_command))
 
