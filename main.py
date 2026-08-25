@@ -517,8 +517,8 @@ PREMIUM_STICKERS = {
     "24": "5352625743081775722", #rojo verde
     "25": "5350427505805238170", #tres bolitas asules
     "26": "5895714560840568825", #bolita roja x
-    "27": "", # 
-    "28": "", #
+    "27": "5213285132709929474", #alerta policía 
+    "28": "5269744182917866822", #triaungulo alerta
     
 } 
 
@@ -771,7 +771,7 @@ CONSULTA POR DNI [3]
 
 ━━━━━━━━━━━━━━━━━━━━
 🛡️ Consulta segura
-⚠️ Los créditos se reembolsan si no hay resultado"""
+[28] Los créditos se reembolsan si no hay resultado"""
 
         try:
             await q.edit_message_text(
@@ -882,7 +882,7 @@ CONSULTA POR DNI [3]
 
 ━━━━━━━━━━━━━━━━━━━━━━
 💳 PAGOS: Yape • Plin • BCP
-👤 CONTACTO: @Sthep_18
+👤 CONTACTO: @zxxxxx_michi_xxxxxx
 
 ⚡ Atención rápida
 🛡️ Activación mediante administración""", parse_mode="HTML", reply_markup=teclado_volver())
@@ -1346,11 +1346,11 @@ async def staff_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 ╚══════════════╝
 
 [ FUNDADOR ]
-😴 @TuUsuario - Creador & Admin
+😴 @zxxxxx_michi_xxxxxx- Creador & Admin
 
 [ ADMINISTRADORES ]
-@Admin1✅ - Soporte 24/7
-@Admin2☑️ - Pagos & Créditos
+@zxxxxx_michi_xxxxxx✅ - Soporte 24/7
+@zxxxxx_michi_xxxxxx☑️ - Pagos & Créditos
 
 [ MODERADORES ]
 ⚡ @Mod1 - Soporte
@@ -1364,7 +1364,7 @@ async def staff_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 📢 Canal: t.me/tucanal
 💌 Soporte: @SoporteBot
 
-<b>⚠️ OJO:</b>
+<b>[27] OJO:</b>
 Solo estos usuarios son staff oficial.
 Cuidado con las estafas."""
 
@@ -1404,7 +1404,7 @@ async def register_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(
             premium(
                 "[26] <b>YA ESTÁS REGISTRADO</b>\n\n"
-                "⚠️ Tu cuenta ya se encuentra registrada en SPECTER.\n\n"
+                "[28] Tu cuenta ya se encuentra registrada en SPECTER.\n\n"
                 "💳 No puedes reclamar nuevamente los <b>10 CRD</b> de bienvenida.\n"
                 "🚀 Puedes continuar usando el sistema."
             ),
