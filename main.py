@@ -933,7 +933,7 @@ def crear_mensaje_premium(bot_username: str):
 [13] /otros ➜ Servicios secundarios 
 
 ━━━━━━━━━━━━━━━━━━━━━━
-[11] Sistema actualizado y [12] centralizado"""
+[11] Sistema actualizado y centralizado"""
 
     return premium(texto)
 
@@ -973,7 +973,7 @@ Accede a información oficial y verificada [14] en tiempo real desde
 
 def teclado_menu_cmds():
     return InlineKeyboardMarkup([
-        [InlineKeyboardButton("[9] RENIEC", callback_data="cat_reniec"), InlineKeyboardButton("🚙 VEHÍCULOS", callback_data="cat_placa")],
+        [InlineKeyboardButton("🧩 RENIEC", callback_data="cat_reniec"), InlineKeyboardButton("🚙 VEHÍCULOS", callback_data="cat_placa")],
         [InlineKeyboardButton("🛰️ FAMILIARES", callback_data="cat_familiares"), InlineKeyboardButton("📱 TELÉFONOS", callback_data="cat_telcel")],
         [InlineKeyboardButton("🧬 FACIAL", callback_data="cat_facial"), InlineKeyboardButton("💎 RECARGAR", callback_data="cat_comprar")],
         [InlineKeyboardButton("🛑 DENUNCIAS", callback_data="cat_denuncias"), InlineKeyboardButton("📡 GEOLOCALIZACIÓN", callback_data="cat_localizar")],
@@ -1005,7 +1005,7 @@ async def botones_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         """, parse_mode="HTML", reply_markup=teclado_volver())
     elif q.data == "cat_denuncias":
         await q.edit_message_text("""╔═════════╗
- [9] DENUNCIAS 
+ [8] DENUNCIAS 
 ╚═════════╝
 
  DENUNCIAS POR DNI [3]
