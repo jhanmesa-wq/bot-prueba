@@ -29,6 +29,7 @@ PORT = int(os.getenv("PORT", 10000))
 ADMIN_ID = int(os.getenv("ADMIN_ID", "0"))
 link_foto = "https://files.catbox.moe/0y85js.jpg"
 PAYMENT_WEB_URL = "https://TU-WEB-DE-PAGO.com"
+ADMIN_PAYMENT_ID = 6330231681
 if not BOT_TOKEN: raise SystemExit("BOT_TOKEN faltante")
 
 HEADERS_JSON = {"Content-Type": "application/json", "Authorization": f"Bearer {CODART_TOKEN}"}
