@@ -988,7 +988,7 @@ async def botones_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     if q.data == "menu":
         await q.edit_message_text(premium(texto_menu_cmds()), parse_mode="HTML", reply_markup=teclado_menu_cmds())
-    elif q.data == "cat_denuncias":
+    elif q.data == "cat_localizar":
         await q.edit_message_text("""╔═════════╗
  [30] DIRECCIÓNES 
 ╚═════════╝
@@ -1022,8 +1022,9 @@ async def botones_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
  Base  2026 [17]
         """, parse_mode="HTML", reply_markup=teclado_volver())
                     
+    
     elif q.data == "cat_reniec":
-        texto_reniec """╔════════════╗
+        texto_reniec = """╔════════════╗
   [8] RENIEC
 ╚════════════╝
 
@@ -1074,9 +1075,7 @@ CONSULTA POR DNI [3]
                     reply_markup=teclado_volver()
                 )
             except Exception as e2:
-                logger.exception(
-                    f"ERROR RESPUESTA ALTERNATIVA RENIEC: {e2}"
-                )
+                logger.exception(f"ERROR RESPUESTA ALTERNATIVA RENIEC: {e2}")
     elif q.data == "cat_placa":
         await q.edit_message_text("""
 ╔═════════╗
