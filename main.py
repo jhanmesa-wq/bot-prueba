@@ -962,7 +962,7 @@ Accede a información oficial y verificada [14] en tiempo real desde
 
 def teclado_menu_cmds():
     return InlineKeyboardMarkup([
-        [InlineKeyboardButton("🪪 RENIEC", callback_data="cat_reniec"), InlineKeyboardButton("🚙 VEHÍCULOS", callback_data="cat_placa")],
+        [InlineKeyboardButton("[9] RENIEC", callback_data="cat_reniec"), InlineKeyboardButton("🚙 VEHÍCULOS", callback_data="cat_placa")],
         [InlineKeyboardButton("🛰️ FAMILIARES", callback_data="cat_familiares"), InlineKeyboardButton("📱 TELÉFONOS", callback_data="cat_telcel")],
         [InlineKeyboardButton("🧬 FACIAL", callback_data="cat_facial"), InlineKeyboardButton("💎 RECARGAR", callback_data="cat_comprar")],
     ])
@@ -1094,10 +1094,10 @@ CONSULTA POR DNI [3]
 
     elif q.data == "cat_comprar":
         await q.edit_message_text("""╔═════════════════════╗
-[2] 💎 PLANES PREMIUM
+[3]  PLANES PREMIUM
 ╚═════════════════════╝
 
-💰 CRÉDITOS
+ CRÉDITOS
 
 🥉 100 créditos ➜ S/ 10
 🥈 200 créditos ➜ S/ 20
@@ -1119,8 +1119,7 @@ CONSULTA POR DNI [3]
 💳 PAGOS: Yape • Plin • BCP
 👤 CONTACTO: @zxxxxx_michi_xxxxxx
 
-⚡ Atención rápida
-🛡️ Activación mediante administración""", parse_mode="HTML", reply_markup=teclado_volver())
+⚡  USE /pagar +monto""", parse_mode="HTML", reply_markup=teclado_volver())
 
     elif q.data == "cat_facial":
         await q.edit_message_text("""
