@@ -495,8 +495,7 @@ Envía la foto del voucher aquí mismo 👇
 
 ━━━━━━━━━━━━━━━━━━━━
 
-🔐 Guarda tu número de pedido.
-🧾 Guarda también tu número de orden."""
+ PAGA CON [36][37][38][39][40]."""
 
         # ----------------------------------------------------
         # BOTONES
@@ -755,6 +754,18 @@ PREMIUM_STICKERS = {
     "26": "5895714560840568825", #bolita roja x
     "27": "5213285132709929474", #alerta policía 
     "28": "5269744182917866822", #triaungulo alerta
+    "29": "5895564043711680203", #direccion azul
+    "30": "6233101473350158283", #mapa dirección 
+    "32": "5098160935227360207", #claro
+    "33": "5098576194140374149", #entel
+    "34": "5098483968307626935", #movistar
+    "35": "5096117497162105860", #bitel
+    "36": "5098178316960007197", #yape 
+    "37": "5098083037405512557", #bcp
+    "38": "5095905836878791606", #bbva
+    "39": "5098117878180218353", #interbanc
+    "40": "5098171771429848438", #plin
+    
     
 } 
 
@@ -965,6 +976,7 @@ def teclado_menu_cmds():
         [InlineKeyboardButton("[9] RENIEC", callback_data="cat_reniec"), InlineKeyboardButton("🚙 VEHÍCULOS", callback_data="cat_placa")],
         [InlineKeyboardButton("🛰️ FAMILIARES", callback_data="cat_familiares"), InlineKeyboardButton("📱 TELÉFONOS", callback_data="cat_telcel")],
         [InlineKeyboardButton("🧬 FACIAL", callback_data="cat_facial"), InlineKeyboardButton("💎 RECARGAR", callback_data="cat_comprar")],
+        [InlineKeyboardButton("🛑 DENUNCIAS", callback_data="cat_denuncias"), InlineKeyboardButton("📡 GEOLOCALIZACIÓN", callback_data="cat_localizar")],
     ])
 
 async def cmds_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -976,9 +988,42 @@ async def botones_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     if q.data == "menu":
         await q.edit_message_text(premium(texto_menu_cmds()), parse_mode="HTML", reply_markup=teclado_menu_cmds())
-    
+    elif q.data == "cat_denuncias":
+        await q.edit_message_text("""╔═════════╗
+ [30] DIRECCIÓNES 
+╚═════════╝
+
+ DIRECCIÓNES POR DNI [3]
+————————————————
+
+[01] /dir
+     ↳ consulta dirección × dni
+     ↳ COSTO: 6 CRD 
+
+————————
+ Base  2026 [29]
+        """, parse_mode="HTML", reply_markup=teclado_volver())
+    elif q.data == "cat_denuncias":
+        await q.edit_message_text("""╔═════════╗
+ [9] DENUNCIAS 
+╚═════════╝
+
+ DENUNCIAS POR DNI [3]
+————————————————
+
+[01] /den 12345678
+     ↳ denuncias por dni 
+     ↳ COSTO: 20 CRD 
+[02] /denuncias 12345678
+     ↳ denuncias asociadas a un dni PDF
+     ↳ COSTO: 40 CRD
+
+————————
+ Base  2026 [17]
+        """, parse_mode="HTML", reply_markup=teclado_volver())
+                    
     elif q.data == "cat_reniec":
-        texto_reniec = """╔════════════╗
+        texto_reniec """╔════════════╗
   [8] RENIEC
 ╚════════════╝
 
@@ -1076,7 +1121,7 @@ CONSULTA POR DNI [3]
  📱 TELÉFONOS 
 ╚════════════╝
 
-⚡ SISTEMA DE TELEFONÍA MÓVIL ⚡
+ CONSULTA POR TELÉFONO [3]
 ————————
 
 [01] /telcel 9XXXXXXXX
@@ -1085,11 +1130,10 @@ CONSULTA POR DNI [3]
 [02] /telp 9XXXXXXXX
      ↳ NÚMEROS × DNI
      ↳ COSTO: 20 CRD [████░░░░░░]
-     ↳ MATCH 1:1 CON BASE RENIEC
-     ↳ COSTO: 60 CRD [██████████]
+    
 
 ————————
-🛡️ IA 99.8% precisión
+BASE DE DATOS DE [32] [33] [34] [35]
 """, parse_mode="HTML", reply_markup=teclado_volver())
 
     elif q.data == "cat_comprar":
@@ -1116,7 +1160,7 @@ CONSULTA POR DNI [3]
 👑 60 días ➜ S/ 100
 
 ━━━━━━━━━━━━━━━━━━━━━━
-💳 PAGOS: Yape • Plin • BCP
+💳 PAGOS: [36][37][38][39][40]
 👤 CONTACTO: @zxxxxx_michi_xxxxxx
 
 ⚡  USE /pagar +monto""", parse_mode="HTML", reply_markup=teclado_volver())
@@ -1770,7 +1814,7 @@ async def buy_command(
 
 ━━━━━━━━━━━━━━━━━━━━━━
 
-💳 <b>PAGOS:</b> Yape • Plin • BCP
+💳 <b>PAGOS:</b> [36][37][38][39][40]
 👤 <b>CONTACTO:</b> @zxxxxx_michi_xxxxxx
 
 ⚡ Atención rápida
