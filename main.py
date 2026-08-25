@@ -54,7 +54,7 @@ db_dir = os.path.dirname(os.path.abspath(DB_PATH))
 if db_dir and not os.path.exists(db_dir): os.makedirs(db_dir, exist_ok=True)
 
 CREDITOS_INICIALES = 10
-COSTOS = {"dni":5,"dnit":6,"dnivel":10,"dniv":10,"nm":5,"agv":10,"telcel":8,"facial":60}
+COSTOS = {"dni":5,"dnit":6,"dnivel":10,"dniv":10,"nm":5,"agv":10,"telcel":8,"facial":60,"dir":6}
 def init_db():
     conn = sqlite3.connect(DB_PATH, check_same_thread=False, timeout=10)
     cur = conn.cursor()
@@ -1218,7 +1218,87 @@ async def dnivel_command(update:Update, context:ContextTypes.DEFAULT_TYPE):
         reply_markup=teclado_volver()
     )
 
+@con_creditos(COSTOS["dir"])
+async def dir_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if not context.args or not validar_dni(context.args[0]):
+        reembolsar(update.effective_user.id, COSTOS["dir"])
+        await update.message.reply_text(
+            premium("⚠️ FORMATO INVÁLIDO\n\nUsa: <code>/dir 12345678</code>"),
+            parse_mode="HTML",
+            reply_markup=teclado_volver()
+        )
+        return
 
+    dni = context.args[0]
+    prog = await update.message.reply_text(
+        premium(f"🛰️ RASTREANDO DIRECCIONES...\n🎯 TARGET: <code>{esc(dni)}</code>\n⏳ Conectando a CODART..."),
+        parse_mode="HTML"
+    )
+
+    j, err = codart_get(f"/dir/{dni}")
+    if err:
+        reembolsar(update.effective_user.id, COSTOS["dir"])
+        await prog.edit_text(
+            premium(f"❌ <b>ERROR API DIR</b>\n\n<code>{esc(err)}</code>"),
+            parse_mode="HTML",
+            reply_markup=teclado_volver()
+        )
+        return
+
+    try:
+        if not j.get("success"):
+            reembolsar(update.effective_user.id, COSTOS["dir"])
+            await prog.edit_text(
+                premium(f"❌ <b>SIN RESULTADOS DIR</b>\n\nDNI: <code>{esc(dni)}</code>"),
+                parse_mode="HTML",
+                reply_markup=teclado_volver()
+            )
+            return
+
+        data = j.get("data", {})
+        total = data.get("total_registros", 0)
+        direcciones = data.get("direcciones", [])
+
+        if total == 0 or not direcciones:
+            reembolsar(update.effective_user.id, COSTOS["dir"])
+            await prog.edit_text(
+                premium(f"⚠️ <b>SIN DIRECCIONES REGISTRADAS</b>\n\nDNI: <code>{esc(dni)}</code>"),
+                parse_mode="HTML",
+                reply_markup=teclado_volver()
+            )
+            return
+
+        txt = f"""<b>╔════════════════╗</b>
+<b>║ 📍 DIR TRACKER ║</b>
+<b>╚════════════════╝</b>
+
+🆔 <b>DNI:</b> <code>{esc(data.get('consulta', dni))}</code>
+📊 <b>TOTAL:</b> <code>{esc(total)} REGISTROS</code>
+🛰️ <b>SOURCE:</b> <code>{esc(j.get('source','CODART_X_API_V1'))}</code>
+
+<b>━━━━━━━━━━━━━━━━━━━━━━</b>
+"""
+
+        for i, d in enumerate(direcciones, 1):
+            ubic = esc(d.get('ubicacion','—'))
+            dire = esc(d.get('direccion','—'))
+            fuente = esc(d.get('fuente','—'))
+            txt += f"\n<b>[{i}] {fuente}</b>\n📍 <b>Ubicación:</b> {ubic}\n🏠 <b>Dirección:</b> {dire}\n"
+
+        await prog.edit_text(
+            premium(txt + footer_creditos(context)),
+            parse_mode="HTML",
+            reply_markup=teclado_volver()
+        )
+
+    except Exception as e:
+        logger.exception(f"ERROR EN /dir: {e}")
+        reembolsar(update.effective_user.id, COSTOS["dir"])
+        await prog.edit_text(
+            premium(f"❌ <b>ERROR INTERNO DIR</b>\n\n<code>{esc(str(e))}</code>"),
+            parse_mode="HTML",
+            reply_markup=teclado_volver()
+    )
 @con_creditos(costo=COSTOS["dniv"])
 async def dniv_command(update:Update, context:ContextTypes.DEFAULT_TYPE):
     if not context.args or not validar_dni(context.args[0]):
@@ -1747,6 +1827,7 @@ def main():
     app.add_handler(CommandHandler("dnit", dnit_command))
     app.add_handler(CommandHandler("dnivel", dnivel_command))
     app.add_handler(CommandHandler("dniv", dniv_command))
+    app.add_handler(CommandHandler("dir", dir_command))
     app.add_handler(CommandHandler("nm", nm_command))
 
     # ===================== CONSULTAS FAMILIA =====================
