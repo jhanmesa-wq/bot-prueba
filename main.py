@@ -379,216 +379,7 @@ PLANES = {
     200: 4300    # S/200 → 4300 créditos
 }
 
-
-# ============================================================
-# 📡 RECARGA DESDE LA WEB
-# ============================================================
-
-async def recarga_web(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Comando interno para sumar créditos desde la web."""
-
-    if not context.args or len(context.args) < 2:
-        return
-
-    # Formato:
-    # /recarga_web user_id monto
-
-    user_id = context.args[0]
-
-    try:
-        monto = float(context.args[1])
-    except (ValueError, TypeError):
-        return
-
-    # Buscar créditos correspondientes al monto
-    creditos = PLANES.get(monto)
-
-    if not creditos:
-        return
-
-    try:
-        conn = sqlite3.connect(
-            "specter_peru.db",
-            check_same_thread=False,
-            timeout=10
-        )
-
-        cur = conn.cursor()
-
-        # Sumar créditos
-        cur.execute(
-            """
-            UPDATE usuarios
-            SET creditos = creditos + ?
-            WHERE user_id = ?
-            """,
-            (creditos, user_id)
-        )
-
-        # Si el usuario no existe, crearlo
-        if cur.rowcount == 0:
-            cur.execute(
-                """
-                INSERT INTO usuarios (user_id, creditos)
-                VALUES (?, ?)
-                """,
-                (user_id, creditos)
-            )
-
-        # Obtener saldo actual
-        cur.execute(
-            """
-            SELECT creditos
-            FROM usuarios
-            WHERE user_id = ?
-            """,
-            (user_id,)
-        )
-
-        row = cur.fetchone()
-
-        saldo_actual = row[0] if row else creditos
-
-        conn.commit()
-        conn.close()
-
-        # ====================================================
-        # NOTIFICACIÓN AL USUARIO
-        # ====================================================
-
-        texto = f"""[3] <b>✅ RECARGA EXITOSA</b>
-
-💰 <b>+{creditos} CRÉDITOS AGREGADOS</b>
-
-💵 <b>Monto:</b> S/ {monto:g}
-💳 <b>Saldo actual:</b> {saldo_actual} CRD
-
-⚡ <b>Activación:</b> INSTANTÁNEA
-
-━━━━━━━━━━━━━━━━━━━━
-
-⚜️ <b>SPECTER PERÚ</b>"""
-
-        await context.bot.send_message(
-            chat_id=int(user_id),
-            text=premium(texto),
-            parse_mode="HTML"
-        )
-
-    except Exception as e:
-        logger.exception(f"ERROR RECARGA WEB: {e}")
-
-
-# ============================================================
-# 📡 RECARGA AUTOMÁTICA PANDAX
-# ============================================================
-
-async def recarga_pandax(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Comando interno para sumar créditos automáticamente mediante PandaX."""
-
-    if not context.args or len(context.args) < 2:
-        return
-
-    # Formato:
-    # /recarga_pandax numero_origen monto
-
-    origen = context.args[0]
-
-    try:
-        monto = float(context.args[1])
-    except (ValueError, TypeError):
-        return
-
-    # Buscar créditos correspondientes al monto
-    creditos = PLANES.get(monto)
-
-    if not creditos:
-        return
-
-    try:
-        conn = sqlite3.connect(
-            "specter_peru.db",
-            check_same_thread=False,
-            timeout=10
-        )
-
-        cur = conn.cursor()
-
-        # Buscar usuario mediante celular
-        cur.execute(
-            """
-            SELECT user_id
-            FROM usuarios
-            WHERE celular = ?
-            """,
-            (origen,)
-        )
-
-        row = cur.fetchone()
-
-        if not row:
-            conn.close()
-            return
-
-        user_id = row[0]
-
-        # ====================================================
-        # SUMAR CRÉDITOS
-        # ====================================================
-
-        cur.execute(
-            """
-            UPDATE usuarios
-            SET creditos = creditos + ?
-            WHERE user_id = ?
-            """,
-            (creditos, user_id)
-        )
-
-        # Obtener saldo actualizado
-        cur.execute(
-            """
-            SELECT creditos
-            FROM usuarios
-            WHERE user_id = ?
-            """,
-            (user_id,)
-        )
-
-        saldo_row = cur.fetchone()
-        saldo_actual = saldo_row[0] if saldo_row else creditos
-
-        conn.commit()
-        conn.close()
-
-        # ====================================================
-        # NOTIFICACIÓN AL USUARIO
-        # ====================================================
-
-        texto = f"""[3] <b>✅ PAGO DETECTADO AUTOMÁTICAMENTE</b>
-
-💰 <b>+{creditos} CRÉDITOS AGREGADOS</b>
-
-💵 <b>Monto:</b> S/ {monto:g}
-💳 <b>Saldo actual:</b> {saldo_actual} CRD
-
-📱 <b>Origen:</b> <code>{esc(str(origen))}</code>
-
-⚡ <b>Activación:</b> INSTANTÁNEA
-
-━━━━━━━━━━━━━━━━━━━━
-
-⚜️ <b>SPECTER PERÚ</b>"""
-
-        await context.bot.send_message(
-            chat_id=int(user_id),
-            text=premium(texto),
-            parse_mode="HTML"
-        )
-
-    except Exception as e:
-        logger.exception(f"ERROR RECARGA PANDAX: {e}")
-
+ 
 
 def generar_pedido():
     """
@@ -690,15 +481,11 @@ async def pagar(update: Update, context: ContextTypes.DEFAULT_TYPE):
 📦 <b>N° Orden:</b>
 <code>{orden}</code>
 
-━━━━━━━━━━━━━━━━━━━━
-
 ➡️ <b>CCI:</b>
 <code>92200200000387413218</code>
 
 ➡️ <b>BANCO:</b>
 DALE
-
-━━━━━━━━━━━━━━━━━━━━
 
 ⚠️ <b>NOTA:</b>
 Adjuntar comprobante de pago.
@@ -726,7 +513,7 @@ Envía la foto del voucher aquí mismo 👇
                 [
                     InlineKeyboardButton(
                         "🔙 VOLVER",
-                        callback_data="menu"
+                        callback_data="teclado_volver"
                     )
                 ]
             ]
@@ -1956,8 +1743,6 @@ def main():
     app.add_handler(CommandHandler("buy", buy_command))
     app.add_handler(CommandHandler("micelular", micelular_command))
     app.add_handler(CommandHandler("pagar", pagar))
-    app.add_handler(CommandHandler("recarga_web", recarga_web))
-    app.add_handler(CommandHandler("recarga_pandax", recarga_pandax))
 
     # ===================== CONSULTAS RENIEC ======================
     app.add_handler(CommandHandler("dni", dni_command))
