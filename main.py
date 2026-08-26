@@ -502,15 +502,6 @@ Envía la foto del voucher aquí mismo 👇
         # BOTONES
         # ----------------------------------------------------
 
-        teclado_pago = InlineKeyboardMarkup(
-            [
-                [
-                    InlineKeyboardButton(
-                        "💳 DESEO PAGAR AUTOMÁTICAMENTE",
-                        url=link_pago
-                    )
-                ],
-                [
                     InlineKeyboardButton(
                         "🔙 VOLVER",
                         callback_data="teclado_volver"
