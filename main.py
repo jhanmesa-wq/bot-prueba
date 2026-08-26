@@ -2394,6 +2394,7 @@ async def telcel_command(update:Update, context:ContextTypes.DEFAULT_TYPE):
         return
     data=j.get("data",{}); texto=format_telcel_futurista(data, context, num)
     await prog.edit_text(premium(texto), parse_mode="HTML", reply_markup=teclado_volver())
+
 @con_creditos(COSTOS["hsoat"])
 async def hsoat_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not context.args or not validar_placa(context.args[0]):
@@ -2433,7 +2434,55 @@ async def hsoat_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         data = j.get("data", {})
         cantidad = data.get("cantidad_registros", 0)
-        historial = data.get("histor
+        historial = data.get("historial", [])
+        placa_resp = data.get("placa", placa)
+
+        if cantidad == 0 or not historial:
+            reembolsar(update.effective_user.id, COSTOS["hsoat"])
+            await prog.edit_text(
+                premium(f"⚠️ <b>SIN HISTORIAL SOAT</b>\n\n🚗 Placa: <code>{esc(placa_resp)}</code>\nNo registra SOAT."),
+                parse_mode="HTML",
+                reply_markup=teclado_volver()
+            )
+            return
+
+        txt = f"""<b>╔════════════════╗</b>
+<b>║ 🛡️ HSOAT TRACKER ║</b>
+<b>╚════════════════╝</b>
+
+🚗 <b>Placa:</b> <code>{esc(placa_resp)}</code>
+📊 <b>Total:</b> <code>{cantidad} REGISTROS</code>
+🛰️ <b>SOURCE:</b> <code>{esc(j.get('source','CODART_X_API_V1'))}</code>
+
+<b>━━━━━━━━━━━━━━━━━━━━━━</b>
+"""
+        for i, h in enumerate(historial[:4], 1):
+            estado = esc(h.get('estado','—'))
+            icon = "🟢" if estado.upper() == "VIGENTE" else "🔴"
+            txt += f"""
+{icon} <b>[{i}] {estado}</b>
+🏢 <b>Compañía:</b> {esc(h.get('compania','—'))}
+📜 <b>Póliza:</b> <code>{esc(h.get('poliza','—'))}</code>
+📄 <b>Tipo:</b> {esc(h.get('tipo_certificado','—'))}
+🚗 <b>Uso:</b> {esc(h.get('uso','—'))} | <b>Clase:</b> {esc(h.get('clase','—'))}
+📅 <b>Inicio:</b> {esc(h.get('fecha_inicio','—'))} | <b>Fin:</b> {esc(h.get('fecha_fin','—'))}
+🚓 <b>Control:</b> {esc(h.get('control_policial','—'))}
+"""
+
+        await prog.edit_text(
+            premium(txt + footer_creditos(context)),
+            parse_mode="HTML",
+            reply_markup=teclado_volver()
+        )
+
+    except Exception as e:
+        logger.exception(f"ERROR EN /hsoat: {e}")
+        reembolsar(update.effective_user.id, COSTOS["hsoat"])
+        await prog.edit_text(
+            premium(f"❌ <b>ERROR INTERNO HSOAT</b>\n\n<code>{esc(str(e))}</code>"),
+            parse_mode="HTML",
+            reply_markup=teclado_volver()
+)
 @con_creditos(COSTOS["revtec"])
 async def revtec_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not context.args or not validar_placa(context.args[0]):
