@@ -770,8 +770,8 @@ PREMIUM_STICKERS = {
     "44": "4934128274402969696", #ositel
     "45": "5098111813686395869", #lupa
     "46": "5096029016540841163", #bandera diablo
-    "47": "", #
-    "48": "", #
+    "47": "", #billete
+    "48": "", #telegram
     "49": "", #
     "50": "", #
     
@@ -1529,7 +1529,15 @@ async def otros_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     elif data == "otros_billetes":
         await query.message.edit_text(
-            premium("💵 <b>BILLETES 5G</b>\n\n✅ Alta velocidad y conexión estable\n💬 Contacta a @TU_USUARIO para disponibilidad y precios"),
+            premium("""[47]BILLETES G5 
+
+ [47]BILLETE DE S/.100 ≫ S/. 33
+[47]BILLETE DE S/.50 ≫ S/. 20
+
+[11] COMPRA MÍNIMA DE 5 UNIDADES
+[11] ENVIOS A LIMA Y PROVINCIA
+[26] NO CONTRA ENTREGA 
+[48] t.me/zxxxxx_michi_xxxxxx"),
             parse_mode="HTML",
             reply_markup=InlineKeyboardMarkup([
                 [InlineKeyboardButton("📩 Contactar", url="t.me/zxxxxx_michi_xxxxxx")],
