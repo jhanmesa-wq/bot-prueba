@@ -1510,7 +1510,28 @@ async def otros_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     elif data == "otros_webbot":
         await query.message.edit_text(
-            premium("🌐 <b>CREA TU PROPIO WEB/BOT</b>\n\n💬 Contacta a @TU_USUARIO para cotizar\n⚡ Entrega rápida + hosting incluido"),
+            premium("""╔══════════════╗
+ SERVICIOS DIGITALES [3]
+╚══════════════╝
+
+🌐 CREACIÓN DE PÁGINAS WEB
+├─ Diseño profesional y responsivo
+├─ Estilo personalizados 
+├─ Optimizado para móviles
+├─ Integración con botones, enlaces y pagos
+└─ Hosting incluido — Solo compártelo
+
+🤖 BOTS DE TELEGRAM A MEDIDA
+├─ Comandos personalizados
+├─ Sistema de créditos y usuarios
+├─ Conexión a APIs 
+├─ Recargas automáticas + QR de pago
+├─ Menús con botones y navegación completa
+└─ Despliegue en  — 24/7 ONLINE
+
+⚡ RÁPIDO • SEGURO • A TU MEDIDA
+💬 Cotiza — ¡Respuesta inmediata!
+"""),
             parse_mode="HTML",
             reply_markup=InlineKeyboardMarkup([
                 [InlineKeyboardButton("📩 Contactar", url="t.me/zxxxxx_michi_xxxxxx")],
@@ -1532,8 +1553,8 @@ async def otros_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await query.message.edit_text(
             premium("""[47]BILLETES G5 
 
- [49] BILLETE DE S/.100 ≫ S/. 33
-[50] BILLETE DE S/.50 ≫ S/. 20
+ [49] BILLETE DE S/.100 ≫ S/. 35
+[50] BILLETE DE S/.50 ≫ S/. 22
 [52] BILLETE DE S/.20 ≫ S/. 10
 
 [11] COMPRA MÍNIMA DE 5 UNIDADES
@@ -1567,7 +1588,7 @@ async def otros_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 InlineKeyboardButton("🌐 Crea tu web/bot", callback_data="otros_webbot")
             ],
             [
-                InlineKeyboardButton("🏦 Bancas", callback_data="otros_bancas"),
+                InlineKeyboardButton("🏦 Bancas fake", callback_data="otros_bancas"),
                 InlineKeyboardButton("📱 Números Virtuales", callback_data="otros_numeros")
             ],
             [
