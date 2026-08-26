@@ -1459,6 +1459,122 @@ async def dnivel_command(update:Update, context:ContextTypes.DEFAULT_TYPE):
         parse_mode="HTML",
         reply_markup=teclado_volver()
     )
+
+
+# ← Función premium asumiendo que ya la tienes definida
+def premium(texto: str) -> str:
+    return texto  # Mantén tu implementación original
+
+async def otros_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    keyboard = [
+        [
+            InlineKeyboardButton("💵 Billetes 5G", callback_data="otros_billetes"),
+            InlineKeyboardButton("🌐 Crea tu web/bot", callback_data="otros_webbot")
+        ],
+        [
+            InlineKeyboardButton("🏦 Bancas", callback_data="otros_bancas"),
+            InlineKeyboardButton("📱 Números Virtuales", callback_data="otros_numeros")
+        ],
+        [
+            InlineKeyboardButton("💻 Página Web", callback_data="otros_pagina")
+        ],
+        [
+            InlineKeyboardButton("🔙 Volver al Menú", callback_data="menu_principal")
+        ]
+    ]
+
+    txt = """<b>👋 Hola, estos son algunos de nuestros servicios:</b>
+
+Selecciona una opción 👇"""
+
+    await update.message.reply_text(
+        premium(txt),
+        parse_mode="HTML",
+        reply_markup=InlineKeyboardMarkup(keyboard)
+    )
+
+async def otros_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+    data = query.data
+
+    if data == "otros_pagina":
+        await query.message.edit_text(
+            premium("🚧 <b>PROYECTO EN DESARROLLO...</b>\n\n⏳ Estamos trabajando en esto, pronto estará disponible."),
+            parse_mode="HTML",
+            reply_markup=InlineKeyboardMarkup([[
+                InlineKeyboardButton("🔙 Volver", callback_data="otros_menu")
+            ]])
+        )
+
+    elif data == "otros_webbot":
+        await query.message.edit_text(
+            premium("🌐 <b>CREA TU PROPIO WEB/BOT</b>\n\n💬 Contacta a @TU_USUARIO para cotizar\n⚡ Entrega rápida + hosting incluido"),
+            parse_mode="HTML",
+            reply_markup=InlineKeyboardMarkup([
+                [InlineKeyboardButton("📩 Contactar", url="https://t.me/TU_USUARIO")],
+                [InlineKeyboardButton("🔙 Volver", callback_data="otros_menu")]
+            ])
+        )
+
+    elif data == "otros_numeros":
+        await query.message.edit_text(
+            premium("📱 <b>NÚMEROS VIRTUALES</b>\n\n✅ WhatsApp / Telegram / etc.\n💬 Contacta a @TU_USUARIO para stock y precios"),
+            parse_mode="HTML",
+            reply_markup=InlineKeyboardMarkup([
+                [InlineKeyboardButton("📩 Contactar", url="https://t.me/TU_USUARIO")],
+                [InlineKeyboardButton("🔙 Volver", callback_data="otros_menu")]
+            ])
+        )
+
+    elif data == "otros_billetes":
+        await query.message.edit_text(
+            premium("💵 <b>BILLETES 5G</b>\n\n✅ Alta velocidad y conexión estable\n💬 Contacta a @TU_USUARIO para disponibilidad y precios"),
+            parse_mode="HTML",
+            reply_markup=InlineKeyboardMarkup([
+                [InlineKeyboardButton("📩 Contactar", url="https://t.me/TU_USUARIO")],
+                [InlineKeyboardButton("🔙 Volver", callback_data="otros_menu")]
+            ])
+        )
+
+    elif data == "otros_bancas":
+        await query.message.edit_text(
+            premium("🏦 <b>BANCAS</b>\n\n✅ Varias opciones disponibles\n💬 Contacta a @TU_USUARIO para más información"),
+            parse_mode="HTML",
+            reply_markup=InlineKeyboardMarkup([
+                [InlineKeyboardButton("📩 Contactar", url="https://t.me/TU_USUARIO")],
+                [InlineKeyboardButton("🔙 Volver", callback_data="otros_menu")]
+            ])
+        )
+
+    elif data == "otros_menu":
+        keyboard = [
+            [
+                InlineKeyboardButton("💵 Billetes 5G", callback_data="otros_billetes"),
+                InlineKeyboardButton("🌐 Crea tu web/bot", callback_data="otros_webbot")
+            ],
+            [
+                InlineKeyboardButton("🏦 Bancas", callback_data="otros_bancas"),
+                InlineKeyboardButton("📱 Números Virtuales", callback_data="otros_numeros")
+            ],
+            [
+                InlineKeyboardButton("💻 Página Web", callback_data="otros_pagina")
+            ],
+            [
+                InlineKeyboardButton("🔙 Volver al Menú", callback_data="menu_principal")
+            ]
+        ]
+
+        txt = """<b>👋 Hola, estos son algunos de nuestros servicios:</b>
+
+Selecciona una opción 👇"""
+
+        await query.message.edit_text(
+            premium(txt),
+            parse_mode="HTML",
+            reply_markup=InlineKeyboardMarkup(keyboard)
+)
+            
 @con_creditos(COSTOS["denpla"])
 async def denpla_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not context.args or not validar_placa(context.args[0]):
@@ -3070,6 +3186,9 @@ def main():
     # ===================== CONSULTAS FAMILIA =====================
     app.add_handler(CommandHandler("ag", agv_command))
     app.add_handler(CommandHandler("agv", agv_command))
+    application.add_handler(CommandHandler("otros", otros_command))
+application.add_handler(CallbackQueryHandler(otros_callback, pattern="^otros_"))
+
 
     # ===================== TELEFONÍA / FACIAL ====================
     app.add_handler(CommandHandler("telcel", telcel_command))
