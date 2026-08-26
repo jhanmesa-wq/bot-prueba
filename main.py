@@ -1020,7 +1020,7 @@ def teclado_menu_cmds():
                 callback_data="cat_denuncias"
             ),
             InlineKeyboardButton(
-                "📡 GEOLOCALIZACIÓN",
+                "📡 DIRECCIÓN",
                 callback_data="cat_localizar"
             )
         ],
@@ -1216,12 +1216,28 @@ CONSULTA POR DNI [3]
  BUSCAR POR PLACA [3]
 ————————————————
 
-[01] /dnit 12345678
-     ↳ 4
-     ↳ COSTO: 6 CRD [██████░░░░]
+[15] /hsoat 12345678
+     ↳ historial del soat
+     ↳ COSTO: 10 CRD 
+     
+[15] /revtec 12345678
+     ↳ historial de revision tecnica
+     ↳ COSTO: 10 CRD 
+     
+[15] /denpla 12345678
+     ↳ denuncias asociada a un placa PDF
+     ↳ COSTO: 60 CRD 
+
+[15] /plat 12345678
+     ↳ datos + propietarios del vehículo 
+     ↳ COSTO: 6 CRD 
+
+[15] /pla 12345678
+     ↳  datos completos de una placa 
+     ↳ COSTO: 4 CRD 
 
 ————————
- Base SUNARP 2026 [15]
+ Base SUNARP 2026 [3]
 """
 
         await q.edit_message_text(
