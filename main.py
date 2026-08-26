@@ -54,7 +54,7 @@ db_dir = os.path.dirname(os.path.abspath(DB_PATH))
 if db_dir and not os.path.exists(db_dir): os.makedirs(db_dir, exist_ok=True)
 
 CREDITOS_INICIALES = 10
-COSTOS = {"dni":5,"dnit":6,"dnivel":10,"dniv":10,"nm":5,"agv":10,"telcel":8,"facial":60,"dir":6,"suel":6}
+COSTOS = {"dni":5,"dnit":6,"dnivel":10,"dniv":10,"nm":5,"agv":10,"telcel":8,"facial":60,"dir":6,"suel":6,"den":20,"denuncias":60}
 def init_db():
     conn = sqlite3.connect(DB_PATH, check_same_thread=False, timeout=10)
     cur = conn.cursor()
@@ -1645,7 +1645,112 @@ async def nm_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         reply_markup=teclado_volver()
     )
 
+@con_creditos(COSTOS["den"])
+async def den_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if not context.args or not validar_dni(context.args[0]):
+        reembolsar(update.effective_user.id, COSTOS["den"])
+        await update.message.reply_text(
+            premium("⚠️ FORMATO INVÁLIDO\n\nUsa: <code>/den 12345678</code>"),
+            parse_mode="HTML",
+            reply_markup=teclado_volver()
+        )
+        return
 
+    dni = context.args[0]
+    prog = await update.message.reply_text(
+        premium(f"🚨 RASTREANDO DENUNCIAS PNP...\n🎯 TARGET: <code>{esc(dni)}</code>\n⏳ Conectando a CODART..."),
+        parse_mode="HTML"
+    )
+
+    j, err = codart_get(f"/den/{dni}")
+    if err:
+        reembolsar(update.effective_user.id, COSTOS["den"])
+        await prog.edit_text(
+            premium(f"❌ <b>ERROR API DEN</b>\n\n<code>{esc(err)}</code>"),
+            parse_mode="HTML",
+            reply_markup=teclado_volver()
+        )
+        return
+
+    try:
+        if not j.get("success"):
+            reembolsar(update.effective_user.id, COSTOS["den"])
+            await prog.edit_text(
+                premium(f"❌ <b>SIN RESULTADOS DEN</b>\n\nDNI: <code>{esc(dni)}</code>"),
+                parse_mode="HTML",
+                reply_markup=teclado_volver()
+            )
+            return
+
+        data = j.get("data", {})
+        cantidad = data.get("cantidad_denuncias", 0)
+        denuncias = data.get("denuncias", [])
+
+        if cantidad == 0 or not denuncias:
+            reembolsar(update.effective_user.id, COSTOS["den"])
+            await prog.edit_text(
+                premium(f"✅ <b>SIN DENUNCIAS REGISTRADAS</b>\n\nDNI: <code>{esc(dni)}</code>\n🛰️ Limpio."),
+                parse_mode="HTML",
+                reply_markup=teclado_volver()
+            )
+            return
+
+        # Header
+        txt = f"""<b>╔════════════════╗</b>
+<b>║ 🚨 DEN TRACKER ║</b>
+<b>╚════════════════╝</b>
+
+🆔 <b>DNI:</b> <code>{esc(data.get('consulta', dni))}</code>
+📊 <b>TOTAL:</b> <code>{esc(cantidad)} DENUNCIAS</code>
+🛰️ <b>SOURCE:</b> <code>{esc(j.get('source','CODART_X_API_V1'))}</code>
+
+<b>━━━━━━━━━━━━━━━━━━━━━━</b>
+"""
+
+        for d in denuncias[:4]: # Limitamos a 4 para no exceder límite de Telegram
+            numero = esc(d.get('numero','—'))
+            tipo = esc(d.get('tipo','—'))
+            comisaria = esc(d.get('comisaria','—'))
+            n_orden = esc(d.get('n_orden','—'))
+            f_hecho = esc(d.get('f_hecho','—'))
+            f_reg = esc(d.get('f_registro','—'))
+            cond = esc(d.get('condicion','—'))
+            interv = esc(d.get('intervencion','—'))
+            resumen_raw = d.get('resumen','—') or '—'
+            # Recortamos resumen a 250 chars para no explotar el mensaje
+            resumen = esc(resumen_raw[:300] + ('...' if len(resumen_raw) > 300 else ''))
+
+            # Emoji por tipo
+            icon = "🔴" if tipo.upper() in ["DENUNCIADO","AGRESOR"] else "🟢" if tipo.upper() in ["AGRAVIADO","DENUNCIANTE"] else "🟡"
+
+            txt += f"""
+{icon} <b>[{numero}] {tipo}</b>
+🗂️ <b>N° Orden:</b> <code>{n_orden}</code>
+🏢 <b>Comisaría:</b> {comisaria}
+📅 <b>F. Hecho:</b> {f_hecho}
+📝 <b>F. Registro:</b> {f_reg}
+📌 <b>Condición:</b> {cond}
+🚓 <b>Intervención:</b> {interv}
+📄 <b>Resumen:</b> <i>{resumen}</i>
+"""
+
+        if cantidad > 4:
+            txt += f"\n\n⚠️ <i>...y {cantidad - 4} denuncias más. Mostrando 4/{cantidad}</i>"
+
+        await prog.edit_text(
+            premium(txt + footer_creditos(context)),
+            parse_mode="HTML",
+            reply_markup=teclado_volver()
+        )
+
+    except Exception as e:
+        logger.exception(f"ERROR EN /den: {e}")
+        reembolsar(update.effective_user.id, COSTOS["den"])
+        await prog.edit_text(
+            premium(f"❌ <b>ERROR INTERNO DEN</b>\n\n<code>{esc(str(e))}</code>"),
+            parse_mode="HTML",
+            reply_markup=teclado_volver()
+        )
 @con_creditos(costo=COSTOS["agv"])
 async def agv_command(update:Update, context:ContextTypes.DEFAULT_TYPE):
 
@@ -1955,7 +2060,7 @@ def main():
     app.add_handler(CommandHandler("dir", dir_command))
     app.add_handler(CommandHandler("nm", nm_command))
     app.add_handler(CommandHandler("suel", suel_command))
-    
+    app.add_handler(CommandHandler("den", den_command))
 
     # ===================== CONSULTAS FAMILIA =====================
     app.add_handler(CommandHandler("ag", agv_command))
