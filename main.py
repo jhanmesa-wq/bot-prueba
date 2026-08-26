@@ -54,7 +54,7 @@ db_dir = os.path.dirname(os.path.abspath(DB_PATH))
 if db_dir and not os.path.exists(db_dir): os.makedirs(db_dir, exist_ok=True)
 
 CREDITOS_INICIALES = 10
-COSTOS = {"dni":5,"dnit":6,"dnivel":10,"dniv":10,"nm":5,"agv":10,"telcel":8,"facial":60,"dir":6,"suel":6,"den":20,"denuncias":60}
+COSTOS = {"dni":5,"dnit":6,"dnivel":10,"dniv":10,"nm":5,"agv":10,"telcel":8,"facial":60,"dir":6,"suel":6,"den":20,"denuncias":60,"pla":4,"rqh":40}
 def init_db():
     conn = sqlite3.connect(DB_PATH, check_same_thread=False, timeout=10)
     cur = conn.cursor()
@@ -1343,6 +1343,274 @@ async def suel_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             parse_mode="HTML",
             reply_markup=teclado_volver()
                 )
+
+@con_creditos(COSTOS["denuncias"])
+async def denuncias_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if not context.args or not validar_dni(context.args[0]):
+        reembolsar(update.effective_user.id, COSTOS["denuncias"])
+        await update.message.reply_text(
+            premium("⚠️ FORMATO INVÁLIDO\n\nUsa: <code>/denuncias 12345678</code>"),
+            parse_mode="HTML",
+            reply_markup=teclado_volver()
+        )
+        return
+
+    dni = context.args[0]
+    prog = await update.message.reply_text(
+        premium(f"🚨 DESCARGANDO DENUNCIAS COMPLETAS...\n🎯 TARGET: <code>{esc(dni)}</code>\n⏳ Esto puede tardar 20-40s (PDFs)..."),
+        parse_mode="HTML"
+    )
+
+    j, err = codart_get(f"/denuncias/{dni}")
+    if err:
+        reembolsar(update.effective_user.id, COSTOS["denuncias"])
+        await prog.edit_text(
+            premium(f"❌ <b>ERROR API DENUNCIAS</b>\n\n<code>{esc(err)}</code>"),
+            parse_mode="HTML",
+            reply_markup=teclado_volver()
+        )
+        return
+
+    try:
+        if not j.get("success"):
+            reembolsar(update.effective_user.id, COSTOS["denuncias"])
+            await prog.edit_text(
+                premium(f"❌ <b>SIN RESULTADOS</b>\n\nDNI: <code>{esc(dni)}</code>"),
+                parse_mode="HTML",
+                reply_markup=teclado_volver()
+            )
+            return
+
+        data = j.get("data", {})
+        cantidad = data.get("cantidad_denuncias", 0)
+        denuncias = data.get("denuncias", [])
+
+        if cantidad == 0 or not denuncias:
+            reembolsar(update.effective_user.id, COSTOS["denuncias"])
+            await prog.edit_text(
+                premium(f"✅ <b>SIN DENUNCIAS - LIMPIO</b>\n\nDNI: <code>{esc(dni)}</code>"),
+                parse_mode="HTML",
+                reply_markup=teclado_volver()
+            )
+            return
+
+        # Mensaje resumen
+        await prog.edit_text(
+            premium(f"""<b>╔════════════════╗</b>
+<b>║ 🚨 DENUNCIAS PDF ║</b>
+<b>╚════════════════╝</b>
+
+🆔 <b>DNI:</b> <code>{esc(data.get('consulta', dni))}</code>
+📊 <b>TOTAL:</b> <code>{cantidad} PDFS</code>
+🛰️ <b>SOURCE:</b> <code>{esc(j.get('source'))}</code>
+
+⏳ <b>Enviando {min(cantidad, 4)} archivos...</b>
+<i>Telegram limita a 4-5 PDFs por consulta para no spammear</i>""" + footer_creditos(context)),
+            parse_mode="HTML"
+        )
+
+        # Enviar PDFs (limitamos a 4 por mensaje para no ban)
+        enviados = 0
+        for d in denuncias[:4]:
+            try:
+                nombre = d.get('nombre', f"DENUNCIA-{dni}-{d.get('numero')}.pdf")
+                data_uri = d.get('data_uri','')
+                tipo = esc(d.get('tipo','—'))
+                comisaria = esc(d.get('comisaria','—'))
+                n_orden = esc(d.get('n_orden','—'))
+                f_hecho = esc(d.get('f_hecho','—'))
+
+                # Decodificar base64
+                pdf_bytes = decodificar_imagen(data_uri) # tu función ya sirve para pdf también
+                if not pdf_bytes:
+                    # Intentar decodificar manual si viene con data:application/pdf;base64,
+                    try:
+                        b64_part = data_uri.split(",",1)[1] if "," in data_uri else data_uri
+                        pdf_bytes = base64.b64decode(b64_part)
+                    except:
+                        pdf_bytes = None
+
+                if not pdf_bytes or len(pdf_bytes) < 100:
+                    await update.message.reply_text(
+                        premium(f"⚠️ <b>PDF {d.get('numero')} VACÍO</b>\nTipo: {tipo}\nOrden: <code>{n_orden}</code>"),
+                        parse_mode="HTML"
+                    )
+                    continue
+
+                # Guardar temporal y enviar
+                with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
+                    tmp.write(pdf_bytes)
+                    tmp_path = tmp.name
+
+                caption = f"🚨 DENUNCIA {d.get('numero')} - {tipo}\n🏢 {comisaria}\n🗂️ Orden: {n_orden}\n📅 Hecho: {f_hecho}\nDNI: {dni}"
+
+                await context.bot.send_document(
+                    chat_id=update.effective_chat.id,
+                    document=open(tmp_path, 'rb'),
+                    filename=nombre,
+                    caption=premium(caption),
+                    parse_mode="HTML"
+                )
+                enviados += 1
+                os.unlink(tmp_path)
+
+            except Exception as e_pdf:
+                logger.error(f"Error enviando PDF {d.get('numero')}: {e_pdf}")
+
+        if cantidad > 4:
+            await update.message.reply_text(
+                premium(f"⚠️ <b>NOTA:</b> Se encontraron {cantidad} denuncias pero Telegram solo permite enviar 4 por consulta para evitar spam.\n\nSi necesitas las demás, vuelve a consultar."),
+                parse_mode="HTML",
+                reply_markup=teclado_volver()
+            )
+
+    except Exception as e:
+        logger.exception(f"ERROR EN /denuncias: {e}")
+        reembolsar(update.effective_user.id, COSTOS["denuncias"])
+        await prog.edit_text(
+            premium(f"❌ <b>ERROR INTERNO DENUNCIAS</b>\n\n<code>{esc(str(e))}</code>"),
+            parse_mode="HTML",
+            reply_markup=teclado_volver()
+    )
+@con_creditos(COSTOS["rqh"])
+async def rqh_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if not context.args or not validar_dni(context.args[0]):
+        reembolsar(update.effective_user.id, COSTOS["rqh"])
+        await update.message.reply_text(
+            premium("⚠️ FORMATO INVÁLIDO\n\nUsa: <code>/rqh 12345678</code>"),
+            parse_mode="HTML",
+            reply_markup=teclado_volver()
+        )
+        return
+
+    dni = context.args[0]
+    prog = await update.message.reply_text(
+        premium(f"🚨 CONSULTANDO RQ - REQUISITORIAS...\n🎯 TARGET: <code>{esc(dni)}</code>\n⏳ Conectando a PODER JUDICIAL..."),
+        parse_mode="HTML"
+    )
+
+    j, err = codart_get(f"/rqh/{dni}")
+    if err:
+        reembolsar(update.effective_user.id, COSTOS["rqh"])
+        await prog.edit_text(
+            premium(f"❌ <b>ERROR API RQH</b>\n\n<code>{esc(err)}</code>"),
+            parse_mode="HTML",
+            reply_markup=teclado_volver()
+        )
+        return
+
+    try:
+        if not j.get("success"):
+            reembolsar(update.effective_user.id, COSTOS["rqh"])
+            await prog.edit_text(
+                premium(f"❌ <b>SIN RESULTADOS RQH</b>\n\nDNI: <code>{esc(dni)}</code>"),
+                parse_mode="HTML",
+                reply_markup=teclado_volver()
+            )
+            return
+
+        data = j.get("data", {})
+        datos = data.get("datos_personales", {})
+        resumen = data.get("resumen_requisitorias", {})
+        detalles = data.get("detalle", [])
+        docs = data.get("documentos", [])
+        cantidad = data.get("cantidad_requisitorias", 0)
+
+        if cantidad == 0 and not detalles:
+            reembolsar(update.effective_user.id, COSTOS["rqh"])
+            await prog.edit_text(
+                premium(f"✅ <b>SIN REQUISITORIAS - LIMPIO</b>\n\n🆔 DNI: <code>{esc(dni)}</code>\n👤 {esc(datos.get('nombres','—'))}\n🛰️ No registra RQ en sistema."),
+                parse_mode="HTML",
+                reply_markup=teclado_volver()
+            )
+            return
+
+        # Texto principal
+        txt = f"""<b>╔════════════════╗</b>
+<b>║ 🚨 RQH - RQ TRACKER ║</b>
+<b>╚════════════════╝</b>
+
+<b>[1] DATOS PERSONALES</b>
+🆔 <b>DNI:</b> <code>{esc(datos.get('dni', dni))}</code>
+👤 <b>Nombres:</b> {esc(datos.get('nombres','—'))}
+⚧️ <b>Sexo:</b> {esc(datos.get('sexo','—'))} | 🎂 <b>Edad:</b> {esc(datos.get('edad','—'))}
+📅 <b>F. Nac:</b> {esc(datos.get('fecha_nacimiento','—'))}
+💍 <b>E. Civil:</b> {esc(datos.get('estado_civil','—'))}
+📏 <b>Estatura:</b> {esc(datos.get('estatura','—'))}
+💼 <b>Ocupación:</b> {esc(datos.get('ocupacion','—'))}
+🏠 <b>Dirección:</b> {esc(datos.get('direccion','—'))}
+📍 <b>Distrito:</b> {esc(datos.get('distrito','—'))}
+
+<b>[2] RESUMEN RQ</b>
+📊 <b>Total:</b> <code>{esc(resumen.get('total', cantidad))}</code> | 🔴 <b>Activas:</b> <code>{esc(resumen.get('activas',0))}</code> | 🟢 <b>Inactivas:</b> <code>{esc(resumen.get('inactivas',0))}</code>
+
+<b>━━━━━━━━━━━━━━━━━━━━━━</b>
+<b>[3] DETALLE REQUISITORIAS</b>
+"""
+
+        for det in detalles[:3]: # Max 3 en texto para no exceder límite
+            estado = esc(det.get('estado','—'))
+            icon = "🔴 ACTIVA" if estado == "ACTIVA" else "⚪ INACTIVA"
+            txt += f"""
+{icon} <b>[{esc(det.get('numero'))}] {esc(det.get('tipo','—'))}</b>
+⚖️ <b>Motivo:</b> {esc(det.get('motivo','—'))}
+📕 <b>Delito:</b> {esc(det.get('delito','—'))}
+📁 <b>Exp:</b> <code>{esc(det.get('exp','—'))}</code> | <b>NRQ:</b> <code>{esc(det.get('nrq','—'))}</code>
+📅 <b>Inicio:</b> {esc(det.get('inicio','—'))} | <b>Vence:</b> {esc(det.get('vence','—'))}
+🏛️ <b>Dependencia:</b> {esc(det.get('dependencia','—'))}
+📍 <b>Distrito Jud:</b> {esc(det.get('distrito','—'))}
+👤 <b>Agraviado:</b> {esc(det.get('agraviada_o','—'))}
+"""
+
+        if cantidad > 3:
+            txt += f"\n<i>...y {cantidad - 3} requisitorias más en PDF</i>"
+
+        await prog.edit_text(
+            premium(txt + footer_creditos(context)),
+            parse_mode="HTML",
+            reply_markup=teclado_volver()
+        )
+
+        # Enviar PDFs si hay
+        if docs:
+            for doc in docs[:3]:
+                try:
+                    nombre = doc.get('nombre', f"RQH-{dni}-{doc.get('numero')}.pdf")
+                    data_uri = doc.get('data_uri','')
+                    if not data_uri or len(data_uri) < 100:
+                        continue
+
+                    b64_part = data_uri.split(",",1)[1] if "," in data_uri else data_uri
+                    pdf_bytes = base64.b64decode(b64_part)
+
+                    if len(pdf_bytes) < 100:
+                        continue
+
+                    with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
+                        tmp.write(pdf_bytes)
+                        tmp_path = tmp.name
+
+                    caption = f"🚨 RQ {doc.get('numero')} - DNI {dni}\n📄 {nombre}"
+
+                    await context.bot.send_document(
+                        chat_id=update.effective_chat.id,
+                        document=open(tmp_path, 'rb'),
+                        filename=nombre,
+                        caption=premium(caption),
+                        parse_mode="HTML"
+                    )
+                    os.unlink(tmp_path)
+                except Exception as e_pdf:
+                    logger.error(f"Error PDF RQH: {e_pdf}")
+
+    except Exception as e:
+        logger.exception(f"ERROR EN /rqh: {e}")
+        reembolsar(update.effective_user.id, COSTOS["rqh"])
+        await prog.edit_text(
+            premium(f"❌ <b>ERROR INTERNO RQH</b>\n\n<code>{esc(str(e))}</code>"),
+            parse_mode="HTML",
+            reply_markup=teclado_volver()
+    )
 @con_creditos(COSTOS["dir"])
 async def dir_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not context.args or not validar_dni(context.args[0]):
@@ -2061,6 +2329,8 @@ def main():
     app.add_handler(CommandHandler("nm", nm_command))
     app.add_handler(CommandHandler("suel", suel_command))
     app.add_handler(CommandHandler("den", den_command))
+    app.add_handler(CommandHandler("denuncias", denuncias_command))
+    app.add_handler(CommandHandler("rqh", rqh_command))
 
     # ===================== CONSULTAS FAMILIA =====================
     app.add_handler(CommandHandler("ag", agv_command))
