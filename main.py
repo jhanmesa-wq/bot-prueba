@@ -1485,8 +1485,7 @@ async def otros_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         ]
     ]
 
-    txt = """<b>👋 Hola, estos son algunos de nuestros servicios:</b>
-
+    txt = """Hola, estos son algunos de nuestros servicios
 Selecciona una opción 👇"""
 
     await update.message.reply_text(
@@ -1543,7 +1542,7 @@ async def otros_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
 [52] 15 UNIDADES MINIMO
 
 [26] NO CONTRA ENTREGA 
-[48] t.me/zxxxxx_michi_xxxxxx"),
+[48] t.me/zxxxxx_michi_xxxxxx"""),
             parse_mode="HTML",
             reply_markup=InlineKeyboardMarkup([
                 [InlineKeyboardButton("📩 Contactar", url="t.me/zxxxxx_michi_xxxxxx")],
@@ -1579,8 +1578,8 @@ async def otros_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
             ]
         ]
 
-        txt = """<b>👋 Hola, estos son algunos de nuestros servicios:</b>
-
+        txt = """Hola, estos son algunos de nuestros servicios
+        
 Selecciona una opción 👇"""
 
         await query.message.edit_text(
