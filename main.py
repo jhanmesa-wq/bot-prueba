@@ -770,10 +770,12 @@ PREMIUM_STICKERS = {
     "44": "4934128274402969696", #ositel
     "45": "5098111813686395869", #lupa
     "46": "5096029016540841163", #bandera diablo
-    "47": "", #billete
-    "48": "", #telegram
-    "49": "", #
-    "50": "", #
+    "47": "5332600543963522398", #billetera
+    "48": "6296218646284863141", #telegram
+    "49": "5039547615323096064", #100 soles
+    "50": "5039692531814630487", #50 soles
+    "51": "5042037214591060181", #10 soles
+    "52": "5039983009042794161", #20 soles
     
 } 
 
@@ -1531,11 +1533,15 @@ async def otros_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await query.message.edit_text(
             premium("""[47]BILLETES G5 
 
- [47]BILLETE DE S/.100 ≫ S/. 33
-[47]BILLETE DE S/.50 ≫ S/. 20
+ [49] BILLETE DE S/.100 ≫ S/. 33
+[50] BILLETE DE S/.50 ≫ S/. 20
+[52] BILLETE DE S/.20 ≫ S/. 10
 
 [11] COMPRA MÍNIMA DE 5 UNIDADES
+
 [11] ENVIOS A LIMA Y PROVINCIA
+[52] 15 UNIDADES MINIMO
+
 [26] NO CONTRA ENTREGA 
 [48] t.me/zxxxxx_michi_xxxxxx"),
             parse_mode="HTML",
