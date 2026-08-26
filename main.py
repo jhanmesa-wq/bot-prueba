@@ -29,7 +29,7 @@ API_BASE = os.getenv("API_BASE", "https://api-codart.cgrt.org/api/v1/consultas/f
 PORT = int(os.getenv("PORT", 10000))
 ADMIN_ID = int(os.getenv("ADMIN_ID", "0"))
 link_foto = "https://files.catbox.moe/0y85js.jpg"
-PAYMENT_WEB_URL = "https://TU-WEB-DE-PAGO.com"
+PAYMENT_WEB_URL = "t.me/zxxxxx_michi_xxxxxx"
 ADMIN_PAYMENT_ID = 6330231681
 DATOS_PAGO = {
     "yape_numero": "925805734",      # Tu número Yape
@@ -409,27 +409,19 @@ def generar_orden():
 # ============================================================
 
 async def pagar(update: Update, context: ContextTypes.DEFAULT_TYPE):
-
     try:
-
         usuario = update.effective_user
 
         # ----------------------------------------------------
         # MONTO
         # ----------------------------------------------------
-
         if len(context.args) >= 1:
-
             total = context.args[0]
-
             try:
                 total_num = float(total)
-
                 if total_num <= 0:
                     raise ValueError
-
             except (ValueError, TypeError):
-
                 await update.message.reply_text(
                     premium(
                         "[3] <b>MONTO INVÁLIDO</b>\n\n"
@@ -440,24 +432,19 @@ async def pagar(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     parse_mode="HTML",
                     reply_markup=teclado_volver()
                 )
-
                 return
-
         else:
-
             total = "300"
 
         # ----------------------------------------------------
         # GENERAR PEDIDO Y ORDEN
         # ----------------------------------------------------
-
         pedido = generar_pedido()
         orden = generar_orden()
 
         # ----------------------------------------------------
         # LINK DE PAGO
         # ----------------------------------------------------
-
         link_pago = (
             f"{PAYMENT_WEB_URL}"
             f"?pedido={pedido}"
@@ -469,11 +456,9 @@ async def pagar(update: Update, context: ContextTypes.DEFAULT_TYPE):
         # ----------------------------------------------------
         # TEXTO
         # ----------------------------------------------------
-
         texto = f"""[3] <b>💳 PAGO DE SERVICIO</b>
 
 🛒 <b>Servicio:</b> Créditos
-
 💰 <b>Total a pagar:</b> S/ {total}
 
 🧾 <b>N° Pedido:</b>
@@ -499,16 +484,38 @@ Envía la foto del voucher aquí mismo 👇
  PAGA CON [36][37][38][39][40]."""
 
         # ----------------------------------------------------
-        # BOTONES
+        # BOTONES - ESTO ERA LO QUE TE FALTABA
         # ----------------------------------------------------
-
+        keyboard = InlineKeyboardMarkup(
+            [
+                [
+                    InlineKeyboardButton(
+                        "ADMINISTRADOR 📡",
+                        url=link_pago
+                    )
+                ],
+                [
                     InlineKeyboardButton(
                         "🔙 VOLVER",
-                        callback_data="teclado_volver"
+                        callback_data="volver_teclado"
                     )
                 ]
             ]
         )
+
+        await update.message.reply_text(
+            premium(texto),
+            parse_mode="HTML",
+            reply_markup=keyboard
+        )
+
+    except Exception as e:
+        logger.exception(f"ERROR EN /pagar: {e}")
+        await update.message.reply_text(
+            premium(f"❌ <b>ERROR EN PAGAR</b>\n\n<code>{esc(str(e))}</code>"),
+            parse_mode="HTML",
+            reply_markup=teclado_volver()
+)
 
         # ----------------------------------------------------
         # ENVIAR PAGO
