@@ -2829,7 +2829,8 @@ def main():
     app.add_handler(CommandHandler("pla", pla_command))
     app.add_handler(CommandHandler("denpla", denpla_command))
     app.add_handler(CommandHandler("plat", plat_command))
-    app.add_handler(CommandHandler("revtec", revtec_command))app.add_handler(CommandHandler("dir", dir_command))
+    app.add_handler(CommandHandler("revtec", revtec_command))
+    app.add_handler(CommandHandler("dir", dir_command))
     app.add_handler(CommandHandler("hsoat", hsoat_command))
 
     # ===================== CONSULTAS FAMILIA =====================
