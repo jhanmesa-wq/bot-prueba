@@ -1563,7 +1563,99 @@ async def suel_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             parse_mode="HTML",
             reply_markup=teclado_volver()
                 )
+@con_creditos(COSTOS["plat"])
+async def plat_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if not context.args or not validar_placa(context.args[0]):
+        reembolsar(update.effective_user.id, COSTOS["plat"])
+        await update.message.reply_text(
+            premium("⚠️ FORMATO INVÁLIDO\n\nUsa: <code>/plat D5G960</code>"),
+            parse_mode="HTML",
+            reply_markup=teclado_volver()
+        )
+        return
 
+    placa = context.args[0].upper()
+    prog = await update.message.reply_text(
+        premium(f"🚗 CONSULTANDO FICHA TÉCNICA...\n🎯 PLACA: <code>{esc(placa)}</code>\n⏳ Conectando a SUNARP..."),
+        parse_mode="HTML"
+    )
+
+    j, err = codart_get(f"/plat/{placa}")
+    if err:
+        reembolsar(update.effective_user.id, COSTOS["plat"])
+        await prog.edit_text(
+            premium(f"❌ <b>ERROR API PLAT</b>\n\n<code>{esc(err)}</code>"),
+            parse_mode="HTML",
+            reply_markup=teclado_volver()
+        )
+        return
+
+    try:
+        if not j.get("success"):
+            reembolsar(update.effective_user.id, COSTOS["plat"])
+            await prog.edit_text(
+                premium(f"❌ <b>PLACA NO ENCONTRADA</b>\n\nPlaca: <code>{esc(placa)}</code>"),
+                parse_mode="HTML",
+                reply_markup=teclado_volver()
+            )
+            return
+
+        data = j.get("data", {})
+        carac = data.get("caracteristicas", {})
+        extra = data.get("extra", {})
+        props = data.get("propietarios", [])
+
+        txt = f"""<b>╔════════════════╗</b>
+<b>║ 🚗 PLAT TRACKER ║</b>
+<b>╚════════════════╝</b>
+
+🚗 <b>Placa:</b> <code>{esc(data.get('placa', placa))}</code>
+🔢 <b>Serie:</b> <code>{esc(data.get('numero_serie','—'))}</code>
+🔧 <b>VIN:</b> <code>{esc(data.get('numero_vin','—'))}</code>
+⚙️ <b>Motor:</b> <code>{esc(data.get('numero_motor','—'))}</code>
+
+<b>[1] CARACTERÍSTICAS</b>
+🏭 <b>Marca:</b> {esc(carac.get('marca','—'))}
+🚙 <b>Modelo:</b> {esc(carac.get('modelo','—'))}
+🚦 <b>Estado:</b> {esc(carac.get('estado','—'))}
+⛽ <b>Combustible:</b> {esc(carac.get('tipo_combustible','—'))}
+
+<b>[2] DATOS TÉCNICOS</b>
+💺 <b>Asientos:</b> {esc(extra.get('asientos','—'))}
+👥 <b>Pasajeros:</b> {esc(extra.get('pasajeros','—'))}
+⚖️ <b>Peso Bruto:</b> {esc(extra.get('peso_bruto','—'))} TN
+⚖️ <b>Peso Neto:</b> {esc(extra.get('peso_neto','—'))} TN
+
+<b>━━━━━━━━━━━━━━━━━━━━━━</b>
+<b>[3] PROPIETARIOS ({len(props)})</b>
+"""
+
+        for i, p in enumerate(props[:2], 1): # Max 2 propietarios en texto
+            txt += f"""
+<b>[{i}] {esc(p.get('nombres','—'))}</b>
+🆔 <b>DNI/RUC:</b> <code>{esc(p.get('dni') or p.get('le') or '—')}</code>
+📄 <b>Partida:</b> <code>{esc(p.get('partida','—'))}</code>
+📅 <b>Desde:</b> {esc(p.get('fecha_propietario','—'))}
+🏠 <b>Dir:</b> {esc(p.get('direccion','—'))}
+"""
+
+        if len(props) > 2:
+            txt += f"\n<i>...y {len(props)-2} propietarios más</i>"
+
+        await prog.edit_text(
+            premium(txt + footer_creditos(context)),
+            parse_mode="HTML",
+            reply_markup=teclado_volver()
+        )
+
+    except Exception as e:
+        logger.exception(f"ERROR EN /plat: {e}")
+        reembolsar(update.effective_user.id, COSTOS["plat"])
+        await prog.edit_text(
+            premium(f"❌ <b>ERROR INTERNO PLAT</b>\n\n<code>{esc(str(e))}</code>"),
+            parse_mode="HTML",
+            reply_markup=teclado_volver()
+    )
 @con_creditos(COSTOS["denuncias"])
 async def denuncias_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not context.args or not validar_dni(context.args[0]):
@@ -2302,7 +2394,141 @@ async def telcel_command(update:Update, context:ContextTypes.DEFAULT_TYPE):
         return
     data=j.get("data",{}); texto=format_telcel_futurista(data, context, num)
     await prog.edit_text(premium(texto), parse_mode="HTML", reply_markup=teclado_volver())
+@con_creditos(COSTOS["hsoat"])
+async def hsoat_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if not context.args or not validar_placa(context.args[0]):
+        reembolsar(update.effective_user.id, COSTOS["hsoat"])
+        await update.message.reply_text(
+            premium("⚠️ FORMATO INVÁLIDO\n\nUsa: <code>/hsoat D5G960</code>"),
+            parse_mode="HTML",
+            reply_markup=teclado_volver()
+        )
+        return
 
+    placa = context.args[0].upper()
+    prog = await update.message.reply_text(
+        premium(f"🛡️ CONSULTANDO HISTORIAL SOAT...\n🎯 PLACA: <code>{esc(placa)}</code>\n⏳ Conectando a CODART..."),
+        parse_mode="HTML"
+    )
+
+    j, err = codart_get(f"/hsoat/{placa}")
+    if err:
+        reembolsar(update.effective_user.id, COSTOS["hsoat"])
+        await prog.edit_text(
+            premium(f"❌ <b>ERROR API HSOAT</b>\n\n<code>{esc(err)}</code>"),
+            parse_mode="HTML",
+            reply_markup=teclado_volver()
+        )
+        return
+
+    try:
+        if not j.get("success"):
+            reembolsar(update.effective_user.id, COSTOS["hsoat"])
+            await prog.edit_text(
+                premium(f"❌ <b>SIN RESULTADOS HSOAT</b>\n\nPlaca: <code>{esc(placa)}</code>"),
+                parse_mode="HTML",
+                reply_markup=teclado_volver()
+            )
+            return
+
+        data = j.get("data", {})
+        cantidad = data.get("cantidad_registros", 0)
+        historial = data.get("histor
+@con_creditos(COSTOS["revtec"])
+async def revtec_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if not context.args or not validar_placa(context.args[0]):
+        reembolsar(update.effective_user.id, COSTOS["revtec"])
+        await update.message.reply_text(
+            premium("⚠️ FORMATO INVÁLIDO\n\nUsa: <code>/revtec ABC123</code>"),
+            parse_mode="HTML",
+            reply_markup=teclado_volver()
+        )
+        return
+
+    placa = context.args[0].upper()
+    prog = await update.message.reply_text(
+        premium(f"🔧 CONSULTANDO REVISIÓN TÉCNICA...\n🎯 PLACA: <code>{esc(placa)}</code>\n⏳ Conectando a MTC..."),
+        parse_mode="HTML"
+    )
+
+    j, err = codart_get(f"/revtec/{placa}")
+    if err:
+        reembolsar(update.effective_user.id, COSTOS["revtec"])
+        await prog.edit_text(
+            premium(f"❌ <b>ERROR API REVTEC</b>\n\n<code>{esc(err)}</code>"),
+            parse_mode="HTML",
+            reply_markup=teclado_volver()
+        )
+        return
+
+    try:
+        if not j.get("success"):
+            reembolsar(update.effective_user.id, COSTOS["revtec"])
+            await prog.edit_text(
+                premium(f"❌ <b>SIN RESULTADOS REVTEC</b>\n\nPlaca: <code>{esc(placa)}</code>"),
+                parse_mode="HTML",
+                reply_markup=teclado_volver()
+            )
+            return
+
+        data = j.get("data", {})
+        total = data.get("total_resultados", 0)
+        registros = data.get("registros", [])
+        placa_resp = data.get("placa", placa)
+
+        if total == 0 or not registros:
+            reembolsar(update.effective_user.id, COSTOS["revtec"])
+            await prog.edit_text(
+                premium(f"⚠️ <b>SIN REGISTROS DE REV. TÉCNICA</b>\n\n🚗 Placa: <code>{esc(placa_resp)}</code>\nNo tiene historial en sistema."),
+                parse_mode="HTML",
+                reply_markup=teclado_volver()
+            )
+            return
+
+        txt = f"""<b>╔════════════════╗</b>
+<b>║ 🔧 REVTEC TRACKER ║</b>
+<b>╚════════════════╝</b>
+
+🚗 <b>Placa:</b> <code>{esc(placa_resp)}</code>
+📊 <b>Total:</b> <code>{esc(total)} REGISTROS</code>
+🛰️ <b>SOURCE:</b> <code>{esc(j.get('source','CODART_X_API_V1'))}</code>
+
+<b>━━━━━━━━━━━━━━━━━━━━━━</b>
+"""
+
+        for i, r in enumerate(registros[:3], 1): # Max 3 registros
+            estado = esc(r.get('estado','—'))
+            resultado = esc(r.get('resultado','—'))
+            icon = "🟢" if estado.upper() == "VIGENTE" and resultado.upper() == "APROBADO" else "🔴" if resultado.upper()!= "APROBADO" else "🟡"
+
+            txt += f"""
+{icon} <b>[{i}] {estado} - {resultado}</b>
+📜 <b>Certificado:</b> <code>{esc(r.get('certificado','—'))}</code>
+🏢 <b>Entidad:</b> {esc(r.get('entidad','—'))}
+📍 <b>Dirección:</b> {esc(r.get('direccion','—'))}
+📅 <b>Inspección:</b> {esc(r.get('fecha_inspeccion','—'))}
+⏰ <b>Vence:</b> {esc(r.get('fecha_vencimiento','—'))}
+🚚 <b>Servicio:</b> {esc(r.get('servicio','—'))}
+📝 <b>Obs:</b> {esc(r.get('observaciones','—'))}
+"""
+
+        if total > 3:
+            txt += f"\n<i>...y {total - 3} registros más en historial</i>"
+
+        await prog.edit_text(
+            premium(txt + footer_creditos(context)),
+            parse_mode="HTML",
+            reply_markup=teclado_volver()
+        )
+
+    except Exception as e:
+        logger.exception(f"ERROR EN /revtec: {e}")
+        reembolsar(update.effective_user.id, COSTOS["revtec"])
+        await prog.edit_text(
+            premium(f"❌ <b>ERROR INTERNO REVTEC</b>\n\n<code>{esc(str(e))}</code>"),
+            parse_mode="HTML",
+            reply_markup=teclado_volver()
+    )
 @con_creditos(costo=COSTOS["facial"])
 async def facial_command(update:Update, context:ContextTypes.DEFAULT_TYPE):
     photo_file_id=None; msg=update.message
@@ -2553,6 +2779,9 @@ def main():
     app.add_handler(CommandHandler("rqh", rqh_command))
     app.add_handler(CommandHandler("pla", pla_command))
     app.add_handler(CommandHandler("denpla", denpla_command))
+    app.add_handler(CommandHandler("plat", plat_command))
+    app.add_handler(CommandHandler("revtec", revtec_command))app.add_handler(CommandHandler("dir", dir_command))
+    app.add_handler(CommandHandler("hsoat", hsoat_command))
 
     # ===================== CONSULTAS FAMILIA =====================
     app.add_handler(CommandHandler("ag", agv_command))
