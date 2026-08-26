@@ -766,7 +766,16 @@ PREMIUM_STICKERS = {
     "38": "5095905836878791606", #bbva
     "39": "5098117878180218353", #interbanc
     "40": "5098171771429848438", #plin
-    
+    "41": "5474610502279637013", #rayo
+    "42": "5188455471505221070", #persona chocando su cabeza 
+    "43": "", #
+    "44": "", #
+    "45": "", #
+    "46": "", #
+    "47": "", #
+    "48": "", #
+    "49": "", #
+    "50": "", #
     
 } 
 
@@ -2924,7 +2933,7 @@ async def register_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 "[26] <b>YA ESTÁS REGISTRADO</b>\n\n"
                 "[28] Tu cuenta ya se encuentra registrada en SPECTER.\n\n"
                 "💳 No puedes reclamar nuevamente los <b>10 CRD</b> de bienvenida.\n"
-                "🚀 Puedes continuar usando el sistema."
+                "DEJE DE INSISTIR EL BOT TAMBIÉN SE CANSA [42]."
             ),
             parse_mode="HTML",
             reply_markup=teclado_volver()
