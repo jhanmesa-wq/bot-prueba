@@ -959,10 +959,10 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 def texto_menu_cmds():
     return (
         """╔═════════════════════╗
-  MENÚ COMANDOS [3] 
+  MENÚ COMANDOS [3]
 ╚═════════════════════╝
 
-Accede a información oficial y verificada [14] en tiempo real desde 
+Accede a información oficial y verificada [14] en tiempo real desde
 [8] [15] [16] [17] [18] [19] [20] [21] [22] [23] y mucho mas
 
 [24] Selecciona una categoría.
@@ -972,26 +972,118 @@ Accede a información oficial y verificada [14] en tiempo real desde
  ▰▰▰ SELECCIONA MÓDULO ▰▰▰"""
     )
 
+
 def teclado_menu_cmds():
     return InlineKeyboardMarkup([
-        [InlineKeyboardButton("🧩 RENIEC", callback_data="cat_reniec"), InlineKeyboardButton("🚙 VEHÍCULOS", callback_data="cat_placa")],
-        [InlineKeyboardButton("🛰️ FAMILIARES", callback_data="cat_familiares"), InlineKeyboardButton("📱 TELÉFONOS", callback_data="cat_telcel")],
-        [InlineKeyboardButton("🧬 FACIAL", callback_data="cat_facial"), InlineKeyboardButton("💎 RECARGAR", callback_data="cat_comprar")],
-        [InlineKeyboardButton("🛑 DENUNCIAS", callback_data="cat_denuncias"), InlineKeyboardButton("📡 GEOLOCALIZACIÓN", callback_data="cat_localizar")],
+        [
+            InlineKeyboardButton(
+                "🧩 RENIEC",
+                callback_data="cat_reniec"
+            ),
+            InlineKeyboardButton(
+                "🚙 VEHÍCULOS",
+                callback_data="cat_placa"
+            )
+        ],
+        [
+            InlineKeyboardButton(
+                "🛰️ FAMILIARES",
+                callback_data="cat_familiares"
+            ),
+            InlineKeyboardButton(
+                "📱 TELÉFONOS",
+                callback_data="cat_telcel"
+            )
+        ],
+        [
+            InlineKeyboardButton(
+                "🧬 FACIAL",
+                callback_data="cat_facial"
+            ),
+            InlineKeyboardButton(
+                "💎 RECARGAR",
+                callback_data="cat_comprar"
+            )
+        ],
+        [
+            InlineKeyboardButton(
+                "🛑 DENUNCIAS",
+                callback_data="cat_denuncias"
+            ),
+            InlineKeyboardButton(
+                "📡 GEOLOCALIZACIÓN",
+                callback_data="cat_localizar"
+            )
+        ],
     ])
 
-async def cmds_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text(premium(texto_menu_cmds()), parse_mode="HTML", reply_markup=teclado_menu_cmds())
 
-async def botones_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def cmds_command(
+    update: Update,
+    context: ContextTypes.DEFAULT_TYPE
+):
+    await update.message.reply_text(
+        text=premium(texto_menu_cmds()),
+        parse_mode="HTML",
+        reply_markup=teclado_menu_cmds()
+    )
+
+
+async def botones_callback(
+    update: Update,
+    context: ContextTypes.DEFAULT_TYPE
+):
     q = update.callback_query
-    await q.answer()
-    
+
+    if not q:
+        return
+
+    try:
+        await q.answer()
+    except Exception:
+        pass
+
+    # ==========================================================
+    # VOLVER AL MENÚ PRINCIPAL
+    # ==========================================================
+    if q.data == "teclado_volver":
+        try:
+            await q.edit_message_text(
+                text=premium(texto_menu_cmds()),
+                parse_mode="HTML",
+                reply_markup=teclado_menu_cmds()
+            )
+        except Exception as e:
+            logger.exception(
+                f"ERROR BOTÓN VOLVER: {e}"
+            )
+
+        return
+
+    # ==========================================================
+    # BOTÓN MENU
+    # ==========================================================
     if q.data == "menu":
-        await q.edit_message_text(premium(texto_menu_cmds()), parse_mode="HTML", reply_markup=teclado_menu_cmds())
+        try:
+            await q.edit_message_text(
+                text=premium(texto_menu_cmds()),
+                parse_mode="HTML",
+                reply_markup=teclado_menu_cmds()
+            )
+        except Exception as e:
+            logger.exception(
+                f"ERROR BOTÓN MENU: {e}"
+            )
+
+        return
+
+    # ==========================================================
+    # GEOLOCALIZACIÓN
+    # ==========================================================
     elif q.data == "cat_localizar":
-        await q.edit_message_text("""╔═════════╗
- [30] DIRECCIÓNES 
+
+        texto_localizar = """╔═════════╗
+ [30] DIRECCIÓNES
 ╚═════════╝
 
  DIRECCIÓNES POR DNI [3]
@@ -999,32 +1091,53 @@ async def botones_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 [01] /dir
      ↳ consulta dirección × dni
-     ↳ COSTO: 6 CRD 
+     ↳ COSTO: 6 CRD
 
 ————————
  Base  2026 [29]
-        """, parse_mode="HTML", reply_markup=teclado_volver())
+"""
+
+        await q.edit_message_text(
+            text=premium(texto_localizar),
+            parse_mode="HTML",
+            reply_markup=teclado_volver()
+        )
+
+    # ==========================================================
+    # DENUNCIAS
+    # ==========================================================
     elif q.data == "cat_denuncias":
-        await q.edit_message_text("""╔═════════╗
- [8] DENUNCIAS 
+
+        texto_denuncias = """╔═════════╗
+ [8] DENUNCIAS
 ╚═════════╝
 
  DENUNCIAS POR DNI [3]
 ————————————————
 
 [01] /den 12345678
-     ↳ denuncias por dni 
-     ↳ COSTO: 20 CRD 
+     ↳ denuncias por dni
+     ↳ COSTO: 20 CRD
+
 [02] /denuncias 12345678
      ↳ denuncias asociadas a un dni PDF
      ↳ COSTO: 40 CRD
 
 ————————
  Base  2026 [17]
-        """, parse_mode="HTML", reply_markup=teclado_volver())
-                    
-    
+"""
+
+        await q.edit_message_text(
+            text=premium(texto_denuncias),
+            parse_mode="HTML",
+            reply_markup=teclado_volver()
+        )
+
+    # ==========================================================
+    # RENIEC
+    # ==========================================================
     elif q.data == "cat_reniec":
+
         texto_reniec = """╔════════════╗
   [8] RENIEC
 ╚════════════╝
@@ -1063,11 +1176,13 @@ CONSULTA POR DNI [3]
             )
 
         except Exception as e:
-            logger.exception(f"ERROR BOTÓN RENIEC: {e}")
+            logger.exception(
+                f"ERROR BOTÓN RENIEC: {e}"
+            )
 
             try:
                 await q.message.reply_text(
-                    premium(
+                    text=premium(
                         "❌ <b>ERROR AL ABRIR RENIEC</b>\n\n"
                         "No se pudo editar el menú anterior.\n"
                         f"<code>{esc(str(e))}</code>"
@@ -1076,10 +1191,16 @@ CONSULTA POR DNI [3]
                     reply_markup=teclado_volver()
                 )
             except Exception as e2:
-                logger.exception(f"ERROR RESPUESTA ALTERNATIVA RENIEC: {e2}")
+                logger.exception(
+                    f"ERROR RESPUESTA ALTERNATIVA RENIEC: {e2}"
+                )
+
+    # ==========================================================
+    # VEHÍCULOS / PLACA
+    # ==========================================================
     elif q.data == "cat_placa":
-        await q.edit_message_text("""
-╔═════════╗
+
+        texto_placa = """╔═════════╗
  [15] PLACA
 ╚═════════╝
 
@@ -1092,12 +1213,21 @@ CONSULTA POR DNI [3]
 
 ————————
  Base SUNARP 2026 [15]
-""", parse_mode="HTML", reply_markup=teclado_volver())
+"""
 
+        await q.edit_message_text(
+            text=premium(texto_placa),
+            parse_mode="HTML",
+            reply_markup=teclado_volver()
+        )
+
+    # ==========================================================
+    # FAMILIARES
+    # ==========================================================
     elif q.data == "cat_familiares":
-        await q.edit_message_text("""
-╔════════════╗
- 🗯️ FAMILIARES  
+
+        texto_familiares = """╔════════════╗
+ 🗯️ FAMILIARES
 ╚════════════╝
 
 ⚡ SISTEMA DE FAMILIARES ⚡
@@ -1113,12 +1243,21 @@ CONSULTA POR DNI [3]
 
 ————————
 🛡️ Datos en tiempo real
-""", parse_mode="HTML", reply_markup=teclado_volver())
+"""
 
+        await q.edit_message_text(
+            text=premium(texto_familiares),
+            parse_mode="HTML",
+            reply_markup=teclado_volver()
+        )
+
+    # ==========================================================
+    # TELÉFONOS
+    # ==========================================================
     elif q.data == "cat_telcel":
-        await q.edit_message_text("""
-╔════════════╗
- 📱 TELÉFONOS 
+
+        texto_telcel = """╔════════════╗
+ 📱 TELÉFONOS
 ╚════════════╝
 
  CONSULTA POR TELÉFONO [3]
@@ -1127,17 +1266,27 @@ CONSULTA POR DNI [3]
 [01] /telcel 9XXXXXXXX
      ↳ TITULAR + OPERADOR
      ↳ COSTO: 20 CRD [████░░░░░░]
+
 [02] /telp 9XXXXXXXX
      ↳ NÚMEROS × DNI
      ↳ COSTO: 20 CRD [████░░░░░░]
-    
 
 ————————
 BASE DE DATOS DE [32] [33] [34] [35]
-""", parse_mode="HTML", reply_markup=teclado_volver())
+"""
 
+        await q.edit_message_text(
+            text=premium(texto_telcel),
+            parse_mode="HTML",
+            reply_markup=teclado_volver()
+        )
+
+    # ==========================================================
+    # COMPRAR / RECARGAR
+    # ==========================================================
     elif q.data == "cat_comprar":
-        await q.edit_message_text("""╔═════════════════════╗
+
+        texto_comprar = """╔═════════════════════╗
 [3]  PLANES PREMIUM
 ╚═════════════════════╝
 
@@ -1163,11 +1312,21 @@ BASE DE DATOS DE [32] [33] [34] [35]
 💳 PAGOS: [36][37][38][39][40]
 👤 CONTACTO: @zxxxxx_michi_xxxxxx
 
-⚡  USE /pagar +monto""", parse_mode="HTML", reply_markup=teclado_volver())
+⚡ USE /pagar +monto
+"""
 
+        await q.edit_message_text(
+            text=premium(texto_comprar),
+            parse_mode="HTML",
+            reply_markup=teclado_volver()
+        )
+
+    # ==========================================================
+    # FACIAL
+    # ==========================================================
     elif q.data == "cat_facial":
-        await q.edit_message_text("""
-╔════════════╗
+
+        texto_facial = """╔════════════╗
  🧬 FACIAL
 ╚════════════╝
 
@@ -1180,8 +1339,24 @@ BASE DE DATOS DE [32] [33] [34] [35]
 
 ————————
 🛡️ Precisión 99.9%
-""", parse_mode="HTML", reply_markup=teclado_volver())
+"""
 
+        await q.edit_message_text(
+            text=premium(texto_facial),
+            parse_mode="HTML",
+            reply_markup=teclado_volver()
+        )
+
+    # ==========================================================
+    # CALLBACK DESCONOCIDO
+    # ==========================================================
+    else:
+        logger.warning(
+            f"CALLBACK NO RECONOCIDO: {q.data}"
+        )
+
+
+        
 @con_creditos(costo=COSTOS["dnivel"])
 async def dnivel_command(update:Update, context:ContextTypes.DEFAULT_TYPE):
     if not context.args or not validar_dni(context.args[0]):
