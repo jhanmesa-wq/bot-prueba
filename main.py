@@ -54,7 +54,7 @@ db_dir = os.path.dirname(os.path.abspath(DB_PATH))
 if db_dir and not os.path.exists(db_dir): os.makedirs(db_dir, exist_ok=True)
 
 CREDITOS_INICIALES = 10
-COSTOS = {"dni":5,"dnit":6,"dnivel":10,"dniv":10,"nm":5,"agv":10,"telcel":8,"facial":60,"dir":6}
+COSTOS = {"dni":5,"dnit":6,"dnivel":10,"dniv":10,"nm":5,"agv":10,"telcel":8,"facial":60,"dir":6,"suel":6}
 def init_db():
     conn = sqlite3.connect(DB_PATH, check_same_thread=False, timeout=10)
     cur = conn.cursor()
@@ -1260,7 +1260,89 @@ async def dnivel_command(update:Update, context:ContextTypes.DEFAULT_TYPE):
         parse_mode="HTML",
         reply_markup=teclado_volver()
     )
+@con_creditos(COSTOS["suel"])
+async def suel_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if not context.args or not validar_dni(context.args[0]):
+        reembolsar(update.effective_user.id, COSTOS["suel"])
+        await update.message.reply_text(
+            premium("⚠️ FORMATO INVÁLIDO\n\nUsa: <code>/suel 12345678</code>"),
+            parse_mode="HTML",
+            reply_markup=teclado_volver()
+        )
+        return
 
+    dni = context.args[0]
+    prog = await update.message.reply_text(
+        premium(f"💰 RASTREANDO SUELDOS PLANILLA...\n🎯 TARGET: <code>{esc(dni)}</code>\n⏳ Conectando a CODART..."),
+        parse_mode="HTML"
+    )
+
+    j, err = codart_get(f"/suel/{dni}")
+    if err:
+        reembolsar(update.effective_user.id, COSTOS["suel"])
+        await prog.edit_text(
+            premium(f"❌ <b>ERROR API SUEL</b>\n\n<code>{esc(err)}</code>"),
+            parse_mode="HTML",
+            reply_markup=teclado_volver()
+        )
+        return
+
+    try:
+        if not j.get("success"):
+            reembolsar(update.effective_user.id, COSTOS["suel"])
+            await prog.edit_text(
+                premium(f"❌ <b>SIN RESULTADOS SUEL</b>\n\nDNI: <code>{esc(dni)}</code>"),
+                parse_mode="HTML",
+                reply_markup=teclado_volver()
+            )
+            return
+
+        data = j.get("data", {})
+        total = data.get("total_registros", 0)
+        sueldos = data.get("sueldos", [])
+
+        if total == 0 or not sueldos:
+            reembolsar(update.effective_user.id, COSTOS["suel"])
+            await prog.edit_text(
+                premium(f"⚠️ <b>SIN REGISTROS EN PLANILLA</b>\n\nDNI: <code>{esc(dni)}</code>"),
+                parse_mode="HTML",
+                reply_markup=teclado_volver()
+            )
+            return
+
+        txt = f"""<b>╔════════════════╗</b>
+<b>║ 💰 SUEL TRACKER ║</b>
+<b>╚════════════════╝</b>
+
+🆔 <b>DNI:</b> <code>{esc(data.get('consulta', dni))}</code>
+📊 <b>TOTAL:</b> <code>{esc(total)} REGISTROS</code>
+🛰️ <b>SOURCE:</b> <code>{esc(j.get('source','CODART_X_API_V1'))}</code>
+
+<b>━━━━━━━━━━━━━━━━━━━━━━</b>
+"""
+
+        for i, s in enumerate(sueldos, 1):
+            empresa = esc(s.get('empresa','—'))
+            ruc = esc(s.get('ruc','—'))
+            periodo = esc(s.get('periodo','—'))
+            situ = esc(s.get('situacion','—'))
+            sueldo = esc(s.get('sueldo','—'))
+            txt += f"\n<b>[{i}] {empresa}</b>\n🏢 <b>RUC:</b> <code>{ruc}</code>\n📅 <b>Periodo:</b> {periodo}\n👔 <b>Situación:</b> {situ}\n💵 <b>Sueldo:</b> <code>{sueldo}</code>\n"
+
+        await prog.edit_text(
+            premium(txt + footer_creditos(context)),
+            parse_mode="HTML",
+            reply_markup=teclado_volver()
+        )
+
+    except Exception as e:
+        logger.exception(f"ERROR EN /suel: {e}")
+        reembolsar(update.effective_user.id, COSTOS["suel"])
+        await prog.edit_text(
+            premium(f"❌ <b>ERROR INTERNO SUEL</b>\n\n<code>{esc(str(e))}</code>"),
+            parse_mode="HTML",
+            reply_markup=teclado_volver()
+                )
 @con_creditos(COSTOS["dir"])
 async def dir_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not context.args or not validar_dni(context.args[0]):
@@ -1864,7 +1946,7 @@ def main():
     app.add_handler(CommandHandler("buy", buy_command))
     app.add_handler(CommandHandler("micelular", micelular_command))
     app.add_handler(CommandHandler("pagar", pagar))
-
+    
     # ===================== CONSULTAS RENIEC ======================
     app.add_handler(CommandHandler("dni", dni_command))
     app.add_handler(CommandHandler("dnit", dnit_command))
@@ -1872,6 +1954,8 @@ def main():
     app.add_handler(CommandHandler("dniv", dniv_command))
     app.add_handler(CommandHandler("dir", dir_command))
     app.add_handler(CommandHandler("nm", nm_command))
+    app.add_handler(CommandHandler("suel", suel_command))
+    
 
     # ===================== CONSULTAS FAMILIA =====================
     app.add_handler(CommandHandler("ag", agv_command))
