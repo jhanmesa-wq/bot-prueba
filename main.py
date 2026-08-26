@@ -1542,7 +1542,7 @@ async def otros_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
 [52] 15 UNIDADES MINIMO
 
 [26] NO CONTRA ENTREGA 
-[48] t.me/zxxxxx_michi_xxxxxx"""),
+[48] @zxxxxx_michi_xxxxxx"""),
             parse_mode="HTML",
             reply_markup=InlineKeyboardMarkup([
                 [InlineKeyboardButton("📩 Contactar", url="t.me/zxxxxx_michi_xxxxxx")],
