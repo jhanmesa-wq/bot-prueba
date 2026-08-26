@@ -2871,10 +2871,46 @@ Cuidado con las estafas."""
             )
         except Exception:
             pass
-async def me_command(update:Update, context:ContextTypes.DEFAULT_TYPE):
-    u=update.effective_user; saldo=get_creditos(u.id)
-    txt=f"<b>╔════════════════╗</b>\n<b>║  👤 USER PROFILE       ║</b>\n<b>╚═══════════════════╝</b>\n\n🆔 ID: <code>{esc(u.id)}</code>\n👤 Nombre: <b>{esc(u.full_name)}</b>\n🔖 User: @{esc(u.username)}\n💳 Créditos: <code>{esc(saldo)} CRD</code>\n🛰️ Status: ONLINE"
-    await update.message.reply_text(premium(txt), parse_mode="HTML", reply_markup=teclado_volver())
+
+async def me_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    u = update.effective_user
+    saldo = get_creditos(u.id)
+
+    username = f"@{esc(u.username)}" if u.username else "Sin username"
+
+    txt = f"""
+╔══════════════╗
+║  [9] MI PERFIL  ║
+╚══════════════╝
+
+INFORMACIÓN DE USUARIO [3]
+━━━━━━━━━━━━━━━━━━━━
+
+[4] ID:
+<code>{esc(u.id)}</code>
+
+[12] NOMBRE:
+<code>{esc(u.full_name)}</code>
+
+[1] USUARIO:
+<code>{username}</code>
+
+[10] SALDO:
+<code>{esc(saldo)} CRD</code>
+
+[41] ESTADO: [11] ONLINE
+
+━━━━━━━━━━━━━━━━━━━━
+ SPECTER OS v2.5 [3]
+[25] Sistema operativo activo
+"""
+
+    await update.message.reply_text(
+        text=premium(txt),
+        parse_mode="HTML",
+        reply_markup=teclado_volver()
+    )
+    
 async def register_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
 
