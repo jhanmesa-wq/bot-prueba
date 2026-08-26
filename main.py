@@ -768,7 +768,7 @@ PREMIUM_STICKERS = {
     "40": "5098171771429848438", #plin
     "41": "5474610502279637013", #rayo
     "42": "5188455471505221070", #persona chocando su cabeza 
-    "43": "", #
+    "43": "4933732338547820655", #arbol genealógico 
     "44": "", #
     "45": "", #
     "46": "", #
@@ -1252,22 +1252,22 @@ CONSULTA POR DNI [3]
     elif q.data == "cat_familiares":
 
         texto_familiares = """╔════════════╗
- 🗯️ FAMILIARES
+ [43] FAMILIARES
 ╚════════════╝
 
-⚡ SISTEMA DE FAMILIARES ⚡
+ÁRBOL GENEALÓGICO [3]
 ————————
 
 [01] /ag 12345678
-     ↳ ÁRBOL FAMILIAR
-     ↳ COSTO: 10 CRD [████████░░]
+     ↳ ÁRBOL FAMILIAR texto 
+     ↳ COSTO: 10 CRD 
 
-[02] /nm NOMBRE APELLIDO1 APELLIDO2
-     ↳ BÚSQUEDA POR NOMBRES
-     ↳ COSTO: 5 CRD
+[02] /agv 12345678
+     ↳ FOTO DE ÁRBOL GENEALÓGICO 
+     ↳ COSTO: 20 CRD
 
 ————————
-🛡️ Datos en tiempo real
+ Datos en tiempo real de [8]
 """
 
         await q.edit_message_text(
