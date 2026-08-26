@@ -769,9 +769,9 @@ PREMIUM_STICKERS = {
     "41": "5474610502279637013", #rayo
     "42": "5188455471505221070", #persona chocando su cabeza 
     "43": "4933732338547820655", #arbol genealógico 
-    "44": "", #
-    "45": "", #
-    "46": "", #
+    "44": "4934128274402969696", #ositel
+    "45": "5098111813686395869", #lupa
+    "46": "5096029016540841163", #bandera diablo
     "47": "", #
     "48": "", #
     "49": "", #
@@ -1282,14 +1282,14 @@ CONSULTA POR DNI [3]
     elif q.data == "cat_telcel":
 
         texto_telcel = """╔════════════╗
- 📱 TELÉFONOS
+ [44] TELÉFONOS
 ╚════════════╝
 
  CONSULTA POR TELÉFONO [3]
 ————————
 
 [01] /telcel 9XXXXXXXX
-     ↳ TITULAR + OPERADOR
+     ↳ NÚMEROS ASOCIADOS A UN DNI
      ↳ COSTO: 20 CRD [████░░░░░░]
 
 [02] /telp 9XXXXXXXX
@@ -1352,18 +1352,18 @@ BASE DE DATOS DE [32] [33] [34] [35]
     elif q.data == "cat_facial":
 
         texto_facial = """╔════════════╗
- 🧬 FACIAL
+ [45] FACIAL
 ╚════════════╝
 
-⚡ RECONOCIMIENTO FACIAL ⚡
+ RECONOCIMIENTO FACIAL [3] 
 ————————
 
 [01] /facial [foto]
      ↳ COMPARACIÓN CON BASE
-     ↳ COSTO: 50 CRD [█████████░]
+     ↳ COSTO: 60 CRD [█████████░]
 
 ————————
-🛡️ Precisión 99.9%
+ Precisión 99.9% [46]
 """
 
         await q.edit_message_text(
