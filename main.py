@@ -128,13 +128,14 @@ def clean(v):
 
 def validar_dni(d): return bool(re.match(r"^\d{8}$", d))
 def validar_cel(n): return bool(re.match(r"^\d{9}$", n))
+def validar_placa(p): return bool(re.match(r"^[A-Z0-9]{6,7}$", p.upper()))
 def decodificar_imagen(uri):
     try:
         b64 = uri.split(",",1)[1] if "," in uri else uri
         return base64.b64decode(b64)
     except: return None
 
-def teclado_volver(): return InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ VOLVER AL SISTEMA", callback_data="menu")]])
+def teclado_volver(): return InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ VOLVER AL SISTEMA", callback_data="teclado_volver")]])
 def footer_creditos(ctx):
     c=ctx.user_data.get('costo_actual',0); s=ctx.user_data.get('saldo_actual',0)
     return f"\n\n▰▰▰▰▰▰▰▰▰▰▰▰\n💠 COSTO: {c} CRD | 🔋 SALDO: {s} CRD\n⚜️ SPECTER_OS v2.5"
@@ -1260,6 +1261,102 @@ async def dnivel_command(update:Update, context:ContextTypes.DEFAULT_TYPE):
         parse_mode="HTML",
         reply_markup=teclado_volver()
     )
+@con_creditos(COSTOS["pla"])
+async def pla_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if not context.args or not validar_placa(context.args[0]):
+        reembolsar(update.effective_user.id, COSTOS["pla"])
+        await update.message.reply_text(
+            premium("⚠️ FORMATO INVÁLIDO\n\nUsa: <code>/pla D5G960</code>\n<code>/pla ABC123</code>"),
+            parse_mode="HTML",
+            reply_markup=teclado_volver()
+        )
+        return
+
+    placa = context.args[0].upper()
+    prog = await update.message.reply_text(
+        premium(f"🚗 CONSULTANDO PLACA SUNARP...\n🎯 PLACA: <code>{esc(placa)}</code>\n⏳ Conectando a CODART..."),
+        parse_mode="HTML"
+    )
+
+    j, err = codart_get(f"/pla/{placa}")
+    if err:
+        reembolsar(update.effective_user.id, COSTOS["pla"])
+        await prog.edit_text(
+            premium(f"❌ <b>ERROR API PLA</b>\n\n<code>{esc(err)}</code>"),
+            parse_mode="HTML",
+            reply_markup=teclado_volver()
+        )
+        return
+
+    try:
+        if not j.get("success"):
+            reembolsar(update.effective_user.id, COSTOS["pla"])
+            await prog.edit_text(
+                premium(f"❌ <b>PLACA NO ENCONTRADA</b>\n\nPlaca: <code>{esc(placa)}</code>"),
+                parse_mode="HTML",
+                reply_markup=teclado_volver()
+            )
+            return
+
+        data = j.get("data", {})
+        images = data.get("images", [])
+        placa_resp = data.get("placa", placa)
+
+        if not images:
+            reembolsar(update.effective_user.id, COSTOS["pla"])
+            await prog.edit_text(
+                premium(f"⚠️ <b>SIN IMÁGENES</b>\n\nPlaca: <code>{esc(placa_resp)}</code>\nLa SUNARP no devolvió fotos."),
+                parse_mode="HTML",
+                reply_markup=teclado_volver()
+            )
+            return
+
+        await prog.edit_text(
+            premium(f"<b>╔════════════════╗</b>\n<b>║ 🚗 PLA TRACKER ║</b>\n<b>╚════════════════╝</b>\n\n🚗 <b>Placa:</b> <code>{esc(placa_resp)}</code>\n🖼️ <b>Imágenes:</b> <code>{len(images)}</code>\n🛰️ <b>SOURCE:</b> <code>{esc(j.get('source','CODART_X_API_V1'))}</code>\n\n⏳ <i>Enviando fotos...</i>" + footer_creditos(context)),
+            parse_mode="HTML"
+        )
+
+        # Enviar imágenes
+        for idx, img_obj in enumerate(images[:5], 1): # Max 5 fotos
+            try:
+                data_uri = img_obj.get('data_uri','')
+                if not data_uri:
+                    continue
+
+                img_bytes = decodificar_imagen(data_uri)
+                if not img_bytes:
+                    try:
+                        b64_part = data_uri.split(",",1)[1] if "," in data_uri else data_uri
+                        img_bytes = base64.b64decode(b64_part)
+                    except:
+                        continue
+
+                if not img_bytes or len(img_bytes) < 100:
+                    continue
+
+                with tempfile.NamedTemporaryFile(delete=False, suffix=".jpg") as tmp:
+                    tmp.write(img_bytes)
+                    tmp_path = tmp.name
+
+                await context.bot.send_photo(
+                    chat_id=update.effective_chat.id,
+                    photo=open(tmp_path, 'rb'),
+                    caption=premium(f"🚗 <b>PLACA {esc(placa_resp)}</b> - Foto {idx}/{len(images)}"),
+                    parse_mode="HTML"
+                )
+                os.unlink(tmp_path)
+
+            except Exception as e_img:
+                logger.error(f"Error imagen PLA {idx}: {e_img}")
+
+    except Exception as e:
+        logger.exception(f"ERROR EN /pla: {e}")
+        reembolsar(update.effective_user.id, COSTOS["pla"])
+        await prog.edit_text(
+            premium(f"❌ <b>ERROR INTERNO PLA</b>\n\n<code>{esc(str(e))}</code>"),
+            parse_mode="HTML",
+            reply_markup=teclado_volver()
+        )
 @con_creditos(COSTOS["suel"])
 async def suel_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not context.args or not validar_dni(context.args[0]):
@@ -2331,6 +2428,7 @@ def main():
     app.add_handler(CommandHandler("den", den_command))
     app.add_handler(CommandHandler("denuncias", denuncias_command))
     app.add_handler(CommandHandler("rqh", rqh_command))
+    app.add_handler(CommandHandler("pla", pla_command))
 
     # ===================== CONSULTAS FAMILIA =====================
     app.add_handler(CommandHandler("ag", agv_command))
