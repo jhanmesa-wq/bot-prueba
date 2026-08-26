@@ -1479,7 +1479,7 @@ async def otros_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             InlineKeyboardButton("💻 Página Web", callback_data="otros_pagina")
         ],
         [
-            InlineKeyboardButton("🔙 Volver al Menú", callback_data="menu_principal")
+            InlineKeyboardButton("🔙 Volver al Menú", callback_data="texto_menu_cmds")
         ]
     ]
 
@@ -1512,7 +1512,7 @@ async def otros_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
             premium("🌐 <b>CREA TU PROPIO WEB/BOT</b>\n\n💬 Contacta a @TU_USUARIO para cotizar\n⚡ Entrega rápida + hosting incluido"),
             parse_mode="HTML",
             reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton("📩 Contactar", url="https://t.me/TU_USUARIO")],
+                [InlineKeyboardButton("📩 Contactar", url="t.me/zxxxxx_michi_xxxxxx")],
                 [InlineKeyboardButton("🔙 Volver", callback_data="otros_menu")]
             ])
         )
@@ -1522,7 +1522,7 @@ async def otros_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
             premium("📱 <b>NÚMEROS VIRTUALES</b>\n\n✅ WhatsApp / Telegram / etc.\n💬 Contacta a @TU_USUARIO para stock y precios"),
             parse_mode="HTML",
             reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton("📩 Contactar", url="https://t.me/TU_USUARIO")],
+                [InlineKeyboardButton("📩 Contactar", url="t.me/zxxxxx_michi_xxxxxx")],
                 [InlineKeyboardButton("🔙 Volver", callback_data="otros_menu")]
             ])
         )
@@ -1532,7 +1532,7 @@ async def otros_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
             premium("💵 <b>BILLETES 5G</b>\n\n✅ Alta velocidad y conexión estable\n💬 Contacta a @TU_USUARIO para disponibilidad y precios"),
             parse_mode="HTML",
             reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton("📩 Contactar", url="https://t.me/TU_USUARIO")],
+                [InlineKeyboardButton("📩 Contactar", url="t.me/zxxxxx_michi_xxxxxx")],
                 [InlineKeyboardButton("🔙 Volver", callback_data="otros_menu")]
             ])
         )
@@ -1542,7 +1542,7 @@ async def otros_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
             premium("🏦 <b>BANCAS</b>\n\n✅ Varias opciones disponibles\n💬 Contacta a @TU_USUARIO para más información"),
             parse_mode="HTML",
             reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton("📩 Contactar", url="https://t.me/TU_USUARIO")],
+                [InlineKeyboardButton("📩 Contactar", url="t.me/zxxxxx_michi_xxxxxx")],
                 [InlineKeyboardButton("🔙 Volver", callback_data="otros_menu")]
             ])
         )
@@ -1561,7 +1561,7 @@ async def otros_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 InlineKeyboardButton("💻 Página Web", callback_data="otros_pagina")
             ],
             [
-                InlineKeyboardButton("🔙 Volver al Menú", callback_data="menu_principal")
+                InlineKeyboardButton("🔙 Volver al Menú", callback_data="texto_menu_cmds")
             ]
         ]
 
