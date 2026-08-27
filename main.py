@@ -1590,10 +1590,10 @@ async def otros_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     elif data == "otros_bancas":
     # Borra el mensaje anterior para no duplicar
-    await query.message.delete()
+        await query.message.delete()
 
     # Envía la foto con tu texto completo y botones
-    await query.message.chat.send_photo(
+        await query.message.chat.send_photo(
         photo="https://files.catbox.moe/ksykip.jpg",
         caption=premium("""SIMULADORES DE BANCA 2026 [3]
 
