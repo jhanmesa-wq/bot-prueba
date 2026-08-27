@@ -1589,28 +1589,30 @@ async def otros_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
 
     elif data == "otros_bancas":
-    # ──────────────────────────────────────────────────────────────
-    # Opción 1: Enviar foto nueva + texto (recomendado)
-    # ──────────────────────────────────────────────────────────────
-        await query.message.reply_photo(
-        photo="https://files.catbox.moe/ksykip.jpg",  # 📷 Pon tu link de foto aquí
-        caption=premium(""" SIMULADORES DE BANCA 2026 [3]
+    # Borra el mensaje anterior para no duplicar
+    await query.message.delete()
 
-[36] Yape SOLO ➡️S/25 
+    # Envía la foto con tu texto completo y botones
+    await query.message.chat.send_photo(
+        photo="https://files.catbox.moe/ksykip.jpg",
+        caption=premium("""SIMULADORES DE BANCA 2026 [3]
+
+[36] Yape SOLO ➡️ S/25 
 +
-[37]BCP|[38] BBVA| [39] Interbank
-  [40] PLIN 
-50 SOLES
+[37] BCP | [38] BBVA | [39] Interbank
+[40] PLIN 
+S/50 SOLES
 
-[26]  Requisito Mínimo: CORREO.
+[26] Requisito Mínimo: CORREO.
 
-ENTRGA 100 % SEGURA [1]"""),
+ENTREGA 100 % SEGURA [1]"""),
         parse_mode="HTML",
         reply_markup=InlineKeyboardMarkup([
             [InlineKeyboardButton("📩 Contactar", url="t.me/zxxxxx_michi_xxxxxx")],
             [InlineKeyboardButton("🔙 Volver", callback_data="otros_menu")]
         ])
     )
+    
 
     elif data == "otros_menu":
         keyboard = [
