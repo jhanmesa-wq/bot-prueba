@@ -1473,8 +1473,6 @@ FOTOS = {
     "pagina": "https://files.catbox.moe/7s8vps.jpg",
 }
 
-def premium(texto: str) -> str:
-    return texto
 
 async def otros_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     keyboard = [
