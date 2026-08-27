@@ -1466,11 +1466,11 @@ async def dnivel_command(update:Update, context:ContextTypes.DEFAULT_TYPE):
 # pon tus fotos aquí
 FOTOS = {
     "menu": "https://files.catbox.moe/3gxp26.jpg",
-    "billetes": "https://files.catbox.moe/billetes.jpg",
-    "webbot": "https://files.catbox.moe/webbot.jpg",
-    "bancas": "https://files.catbox.moe/bancas.jpg",
+    "billetes": "https://files.catbox.moe/y4u71l.jpg",
+    "webbot": "https://files.catbox.moe/wu71lw.jpeg",
+    "bancas": "https://files.catbox.moe/udw7be.jpg",
     "numeros": "https://files.catbox.moe/jzu92r.jpg",
-    "pagina": "https://files.catbox.moe/pagina.jpg",
+    "pagina": "https://files.catbox.moe/7s8vps.jpg",
 }
 
 def premium(texto: str) -> str:
