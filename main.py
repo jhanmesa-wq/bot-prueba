@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import os
 import re
 import base64
@@ -1652,13 +1651,14 @@ NECESITAS
             parse_mode="HTML",
             reply_markup=InlineKeyboardMarkup(keyboard)
 )
-            
+
+
 @con_creditos(COSTOS["denpla"])
 async def denpla_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not context.args or not validar_placa(context.args[0]):
         reembolsar(update.effective_user.id, COSTOS["denpla"])
         await update.message.reply_text(
-            premium("⚠️ FORMATO INVÁLIDO\n\nUsa: <code>/denpla D4G860</code>"),
+            premium("⚠️ FORMATO INVÁLIDO\n\nUsa: <code>/denpla D4G860</code>\n<code>/denpla ABC123</code>"),
             parse_mode="HTML",
             reply_markup=teclado_volver()
         )
@@ -1698,23 +1698,25 @@ async def denpla_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if cantidad == 0 or not denuncias:
             reembolsar(update.effective_user.id, COSTOS["denpla"])
             await prog.edit_text(
-                premium(f"✅ <b>SIN DENUNCIAS - PLACA LIMPIA</b>\n\n🚗 Placa: <code>{esc(placa_resp)}</code>"),
+                premium(f"✅ <b>SIN DENUNCIAS - PLACA LIMPIA</b>\n\n🚗 Placa: <code>{esc(placa_resp)}</code>\n🛰️ Limpio en PNP."),
                 parse_mode="HTML",
                 reply_markup=teclado_volver()
             )
             return
 
+        # Resumen texto
         txt = f"""<b>╔════════════════╗</b>
 <b>║ 🚨 DENPLA TRACKER ║</b>
 <b>╚════════════════╝</b>
 
 🚗 <b>Placa:</b> <code>{esc(placa_resp)}</code>
-📊 <b>TOTAL:</b> <code>{cantidad} DENUNCIAS</code>
+📊 <b>TOTAL:</b> <code>{esc(cantidad)} DENUNCIAS</code>
 🛰️ <b>SOURCE:</b> <code>{esc(j.get('source','CODART_X_API_V1'))}</code>
 
 <b>━━━━━━━━━━━━━━━━━━━━━━</b>
 """
-        for d in denuncias[:3]:
+
+        for d in denuncias[:3]: # 3 en texto para no saturar
             txt += f"""
 <b>[{esc(d.get('numero'))}] {esc(d.get('tipo','—'))}</b>
 🏢 <b>Comisaría:</b> {esc(d.get('comisaria','—'))}
@@ -1723,6 +1725,7 @@ async def denpla_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 📝 <b>F. Registro:</b> {esc(d.get('f_registro','—'))}
 📄 <b>Archivo:</b> <code>{esc(d.get('nombre','—'))}</code>
 """
+
         if cantidad > 3:
             txt += f"\n<i>...y {cantidad - 3} más en PDF</i>"
 
@@ -1732,21 +1735,46 @@ async def denpla_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             reply_markup=teclado_volver()
         )
 
+        # Enviar PDFs (max 4)
         for d in denuncias[:4]:
             try:
                 nombre = d.get('nombre', f"DENPLA-{placa_resp}-{d.get('numero')}.pdf")
                 data_uri = d.get('data_uri','')
                 if not data_uri or len(data_uri) < 100:
                     continue
+
                 b64_part = data_uri.split(",",1)[1] if "," in data_uri else data_uri
                 pdf_bytes = base64.b64decode(b64_part)
+
                 if len(pdf_bytes) < 100:
                     continue
+
                 with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
                     tmp.write(pdf_bytes)
                     tmp_path = tmp.name
-                caption = f"DENPLA {d.get('numero')} - {esc(d.get('tipo'))}\
 
+                caption = f"🚨 DENPLA {d.get('numero')} - {esc(d.get('tipo'))}\n🚗 Placa: {placa_resp}\n🏢 {esc(d.get('comisaria'))}\n🗂️ {esc(d.get('n_orden'))}"
+
+                await context.bot.send_document(
+                    chat_id=update.effective_chat.id,
+                    document=open(tmp_path, 'rb'),
+                    filename=nombre,
+                    caption=premium(caption),
+                    parse_mode="HTML"
+                )
+                os.unlink(tmp_path)
+
+            except Exception as e_pdf:
+                logger.error(f"Error PDF DENPLA {d.get('numero')}: {e_pdf}")
+
+    except Exception as e:
+        logger.exception(f"ERROR EN /denpla: {e}")
+        reembolsar(update.effective_user.id, COSTOS["denpla"])
+        await prog.edit_text(
+            premium(f"❌ <b>ERROR INTERNO DENPLA</b>\n\n<code>{esc(str(e))}</code>"),
+            parse_mode="HTML",
+            reply_markup=teclado_volver()
+                      )
 @con_creditos(COSTOS["pla"])
 async def pla_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not context.args or not validar_placa(context.args[0]):
