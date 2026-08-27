@@ -53,7 +53,7 @@ DB_PATH = os.getenv("DB_PATH", "bot.db")
 db_dir = os.path.dirname(os.path.abspath(DB_PATH))
 if db_dir and not os.path.exists(db_dir): os.makedirs(db_dir, exist_ok=True)
 
-CREDITOS_INICIALES = 10
+CREDITOS_INICIALES = 2
 COSTOS = {"dni":5,"dnit":6,"dnivel":10,"dniv":10,"nm":5,"agv":10,"telcel":8,"facial":60,"dir":6,"suel":6,"den":20,"denuncias":60,"pla":4,"rqh":40,"denpla":40,"hsoat":10,"revtec":10,"plat":6}
 def init_db():
     conn = sqlite3.connect(DB_PATH, check_same_thread=False, timeout=10)
@@ -1479,14 +1479,25 @@ async def otros_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         ],
         [
             InlineKeyboardButton("💻 Página Web", callback_data="otros_pagina")
-        ],
-        [
-            InlineKeyboardButton("🔙 Volver al Menú", callback_data="texto_menu_cmds")
         ]
     ]
 
-    txt = """Hola, estos son algunos de nuestros servicios
-Selecciona una opción 👇"""
+    txt = """
+HOLA, AMIGO [3] 
+
+ESTOS SON ALGUNOS DE
+NUESTROS SERVICIOS
+
+
+
+TENEMOS MUCHAS OPCIONES
+PARA TI, ELIGE LA QUE
+NECESITAS 
+
+
+
+
+        [1]"""
 
     await update.message.reply_text(
         premium(txt),
@@ -1593,15 +1604,27 @@ async def otros_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
             ],
             [
                 InlineKeyboardButton("💻 Página Web", callback_data="otros_pagina")
-            ],
-            [
-                InlineKeyboardButton("🔙 Volver al Menú", callback_data="texto_menu_cmds")
             ]
         ]
 
-        txt = """Hola, estos son algunos de nuestros servicios
-        
-Selecciona una opción 👇"""
+        txt = """
+
+HOLA, AMIGO [3] 
+
+ESTOS SON ALGUNOS DE
+NUESTROS SERVICIOS
+
+
+
+TENEMOS MUCHAS OPCIONES
+PARA TI, ELIGE LA QUE
+NECESITAS 
+
+
+
+
+        [1]
+        """
 
         await query.message.edit_text(
             premium(txt),
