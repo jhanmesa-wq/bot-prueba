@@ -1552,7 +1552,13 @@ async def otros_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     elif data == "otros_numeros":
         await query.message.edit_text(
-            premium("📱 <b>NÚMEROS VIRTUALES</b>\n\n✅ WhatsApp / Telegram / etc.\n💬 Contacta a @TU_USUARIO para stock y precios"),
+            premium(""" ¡Hola! Bienvenido a  specter SMS [3]
+ 
+🤖 El bot más rápido para comprar números virtuales al mejor precio.
+📱 Úsalos para activar WhatsApp, Telegram, Facebook y más de 30 servicios.
+ 
+ 
+⚡ ¿Qué deseas hacer hoy [43]"""),
             parse_mode="HTML",
             reply_markup=InlineKeyboardMarkup([
                 [InlineKeyboardButton("📩 Contactar", url="t.me/zxxxxx_michi_xxxxxx")],
@@ -1583,14 +1589,28 @@ async def otros_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
 
     elif data == "otros_bancas":
-        await query.message.edit_text(
-            premium("🏦 <b>BANCAS</b>\n\n✅ Varias opciones disponibles\n💬 Contacta a @TU_USUARIO para más información"),
-            parse_mode="HTML",
-            reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton("📩 Contactar", url="t.me/zxxxxx_michi_xxxxxx")],
-                [InlineKeyboardButton("🔙 Volver", callback_data="otros_menu")]
-            ])
-        )
+    # ──────────────────────────────────────────────────────────────
+    # Opción 1: Enviar foto nueva + texto (recomendado)
+    # ──────────────────────────────────────────────────────────────
+    await query.message.reply_photo(
+        photo="https://files.catbox.moe/ksykip.jpg",  # 📷 Pon tu link de foto aquí
+        caption=premium(""" SIMULADORES DE BANCA 2026 [3]
+
+[36] Yape SOLO ➡️S/25 
++
+[37]BCP|[38] BBVA| [39] Interbank
+  [40] PLIN 
+50 SOLES
+
+[26]  Requisito Mínimo: CORREO.
+
+ENTRGA 100 % SEGURA [1]"),
+        parse_mode="HTML",
+        reply_markup=InlineKeyboardMarkup([
+            [InlineKeyboardButton("📩 Contactar", url="t.me/zxxxxx_michi_xxxxxx")],
+            [InlineKeyboardButton("🔙 Volver", callback_data="otros_menu")]
+        ])
+    )
 
     elif data == "otros_menu":
         keyboard = [
