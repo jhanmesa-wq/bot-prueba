@@ -1704,14 +1704,6 @@ async def denpla_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             )
             return
                 
-
-def esc(v):
-    return html.escape(str(v) if v is not None else "—")
-
-try:
-    cantidad = len(denuncias)
-    j_source = j.get('source', 'CODART_X_API_V1') if isinstance(j, dict) else 'CODART_X_API_V1'
-
     txt = f"""<b>=================</b>
 <b>| 🚨 DENPLA TRACKER |</b>
 <b>=================</b>
