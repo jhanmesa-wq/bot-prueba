@@ -1463,44 +1463,31 @@ async def dnivel_command(update:Update, context:ContextTypes.DEFAULT_TYPE):
     )
 
 
-# ← Función premium asumiendo que ya la tienes definida
+# pon tus fotos aquí
+FOTOS = {
+    "menu": "https://files.catbox.moe/3gxp26.jpg",
+    "billetes": "https://files.catbox.moe/billetes.jpg",
+    "webbot": "https://files.catbox.moe/webbot.jpg",
+    "bancas": "https://files.catbox.moe/bancas.jpg",
+    "numeros": "https://files.catbox.moe/jzu92r.jpg",
+    "pagina": "https://files.catbox.moe/pagina.jpg",
+}
+
 def premium(texto: str) -> str:
-    return texto  # Mantén tu implementación original
+    return texto
 
 async def otros_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     keyboard = [
-        [
-            InlineKeyboardButton("💵 Billetes 5G", callback_data="otros_billetes"),
-            InlineKeyboardButton("🌐 Crea tu web/bot", callback_data="otros_webbot")
-        ],
-        [
-            InlineKeyboardButton("🏦 Bancas", callback_data="otros_bancas"),
-            InlineKeyboardButton("📱 Números Virtuales", callback_data="otros_numeros")
-        ],
-        [
-            InlineKeyboardButton("💻 Página Web", callback_data="otros_pagina")
-        ]
+        [InlineKeyboardButton("💵 Billetes 5G", callback_data="otros_billetes"),
+         InlineKeyboardButton("🌐 Crea tu web/bot", callback_data="otros_webbot")],
+        [InlineKeyboardButton("🏦 Bancas", callback_data="otros_bancas"),
+         InlineKeyboardButton("📱 Números Virtuales", callback_data="otros_numeros")],
+        [InlineKeyboardButton("💻 Página Web", callback_data="otros_pagina")]
     ]
-
-    txt = """
-HOLA, AMIGO [3] 
-
-ESTOS SON ALGUNOS DE
-NUESTROS SERVICIOS
-
-
-
-TENEMOS MUCHAS OPCIONES
-PARA TI, ELIGE LA QUE
-NECESITAS 
-
-
-
-
-        [1]"""
-
-    await update.message.reply_text(
-        premium(txt),
+    txt = "HOLA, AMIGO [3]\n\nESTOS SON ALGUNOS DE\nNUESTROS SERVICIOS"
+    await update.message.reply_photo(
+        photo=FOTOS["menu"],
+        caption=premium(txt),
         parse_mode="HTML",
         reply_markup=InlineKeyboardMarkup(keyboard)
     )
@@ -1510,65 +1497,9 @@ async def otros_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await query.answer()
     data = query.data
 
-    if data == "otros_pagina":
-        await query.message.edit_text(
-            premium("🚧 <b>PROYECTO EN DESARROLLO...</b>\n\n⏳ Estamos trabajando en esto, pronto estará disponible."),
-            parse_mode="HTML",
-            reply_markup=InlineKeyboardMarkup([[
-                InlineKeyboardButton("🔙 Volver", callback_data="otros_menu")
-            ]])
-        )
-
-    elif data == "otros_webbot":
-        await query.message.edit_text(
-            premium("""╔══════════════╗
- SERVICIOS DIGITALES [3]
-╚══════════════╝
-
-🌐 CREACIÓN DE PÁGINAS WEB
-├─ Diseño profesional y responsivo
-├─ Estilo personalizados 
-├─ Optimizado para móviles
-├─ Integración con botones, enlaces y pagos
-└─ Hosting incluido — Solo compártelo
-
-🤖 BOTS DE TELEGRAM A MEDIDA
-├─ Comandos personalizados
-├─ Sistema de créditos y usuarios
-├─ Conexión a APIs 
-├─ Recargas automáticas + QR de pago
-├─ Menús con botones y navegación completa
-└─ Despliegue en  — 24/7 ONLINE
-
-⚡ RÁPIDO • SEGURO • A TU MEDIDA
-💬 Cotiza — ¡Respuesta inmediata!
-"""),
-            parse_mode="HTML",
-            reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton("📩 Contactar", url="t.me/zxxxxx_michi_xxxxxx")],
-                [InlineKeyboardButton("🔙 Volver", callback_data="otros_menu")]
-            ])
-        )
-
-    elif data == "otros_numeros":
-        await query.message.edit_text(
-            premium(""" ¡Hola! Bienvenido a  specter SMS [3]
- 
-🤖 El bot más rápido para comprar números virtuales al mejor precio.
-📱 Úsalos para activar WhatsApp, Telegram, Facebook y más de 30 servicios.
- 
- 
-⚡ ¿Qué deseas hacer hoy [43]"""),
-            parse_mode="HTML",
-            reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton("📩 Contactar", url="t.me/zxxxxx_michi_xxxxxx")],
-                [InlineKeyboardButton("🔙 Volver", callback_data="otros_menu")]
-            ])
-        )
-
-    elif data == "otros_billetes":
-        await query.message.edit_text(
-            premium("""[47]BILLETES G5 
+    if data == "otros_billetes":
+        await query.edit_message_media(
+            media=InputMediaPhoto(media=FOTOS["billetes"], caption=premium("""[47]BILLETES G5 
 
  [49] BILLETE DE S/.100 ≫ S/. 35
 [50] BILLETE DE S/.50 ≫ S/. 22
@@ -1580,79 +1511,69 @@ async def otros_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
 [52] 15 UNIDADES MINIMO
 
 [26] NO CONTRA ENTREGA 
-[48] @zxxxxx_michi_xxxxxx"""),
-            parse_mode="HTML",
+[48] @zxxxxx_michi_xxxxxx"""), parse_mode="HTML"),
             reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton("📩 Contactar", url="t.me/zxxxxx_michi_xxxxxx")],
+                [InlineKeyboardButton("📩 Contactar", url="https://t.me/zxxxxx_michi_xxxxxx")],
+                [InlineKeyboardButton("🔙 Volver", callback_data="otros_menu")]
+            ])
+        )
+        )
+
+    elif data == "otros_bancas":
+        await query.edit_message_media(
+            media=InputMediaPhoto(media=FOTOS["bancas"], caption=premium("""BANCA 2026 [3]
+
+[36]  SOLO  S/25
++
+ [37] + [38] + [39] +
+ [40]
+S/50 SOLES
+
+ Requisito Mínimo: CORREO. [11]
+
+ACTUALIZACIONES DE POR VIDA[1]"""), parse_mode="HTML"),
+            reply_markup=InlineKeyboardMarkup([
+                [InlineKeyboardButton("📩 Contactar", url="https://t.me/zxxxxx_michi_xxxxxx")],
                 [InlineKeyboardButton("🔙 Volver", callback_data="otros_menu")]
             ])
         )
 
-    elif data == "otros_bancas":
-    # Borra el mensaje anterior para no duplicar
-        await query.message.delete()
+    elif data == "otros_numeros":
+        await query.edit_message_media(
+            media=InputMediaPhoto(media=FOTOS["numeros"], caption=premium("¡Hola! Bienvenido a specter SMS [3]\n\n🤖 Números virtuales para WhatsApp, Telegram, etc."), parse_mode="HTML"),
+            reply_markup=InlineKeyboardMarkup([
+                [InlineKeyboardButton("📩 Contactar", url="https://t.me/zxxxxx_michi_xxxxxx")],
+                [InlineKeyboardButton("🔙 Volver", callback_data="otros_menu")]
+            ])
+        )
 
-    # Envía la foto con tu texto completo y botones
-        await query.message.chat.send_photo(
-        photo="https://files.catbox.moe/ksykip.jpg",
-        caption=premium("""SIMULADORES DE BANCA 2026 [3]
+    elif data == "otros_webbot":
+        await query.edit_message_media(
+            media=InputMediaPhoto(media=FOTOS["webbot"], caption=premium("🌐 CREA TU WEB/BOT\n\nHosting + bot a medida."), parse_mode="HTML"),
+            reply_markup=InlineKeyboardMarkup([
+                [InlineKeyboardButton("📩 Contactar", url="https://t.me/zxxxxx_michi_xxxxxx")],
+                [InlineKeyboardButton("🔙 Volver", callback_data="otros_menu")]
+            ])
+        )
 
-[36] Yape SOLO ➡️ S/25 
-+
-[37] BCP | [38] BBVA | [39] Interbank
-[40] PLIN 
-S/50 SOLES
-
-[26] Requisito Mínimo: CORREO.
-
-ENTREGA 100 % SEGURA [1]"""),
-        parse_mode="HTML",
-        reply_markup=InlineKeyboardMarkup([
-            [InlineKeyboardButton("📩 Contactar", url="t.me/zxxxxx_michi_xxxxxx")],
-            [InlineKeyboardButton("🔙 Volver", callback_data="otros_menu")]
-        ])
-    )
-    
+    elif data == "otros_pagina":
+        await query.edit_message_media(
+            media=InputMediaPhoto(media=FOTOS["pagina"], caption=premium("🚧 PROYECTO EN DESARROLLO..."), parse_mode="HTML"),
+            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Volver", callback_data="otros_menu")]])
+        )
 
     elif data == "otros_menu":
         keyboard = [
-            [
-                InlineKeyboardButton("💵 Billetes 5G", callback_data="otros_billetes"),
-                InlineKeyboardButton("🌐 Crea tu web/bot", callback_data="otros_webbot")
-            ],
-            [
-                InlineKeyboardButton("🏦 Bancas fake", callback_data="otros_bancas"),
-                InlineKeyboardButton("📱 Números Virtuales", callback_data="otros_numeros")
-            ],
-            [
-                InlineKeyboardButton("💻 Página Web", callback_data="otros_pagina")
-            ]
+            [InlineKeyboardButton("💵 Billetes 5G", callback_data="otros_billetes"),
+             InlineKeyboardButton("🌐 Crea tu web/bot", callback_data="otros_webbot")],
+            [InlineKeyboardButton("🏦 Bancas", callback_data="otros_bancas"),
+             InlineKeyboardButton("📱 Números Virtuales", callback_data="otros_numeros")],
+            [InlineKeyboardButton("💻 Página Web", callback_data="otros_pagina")]
         ]
-
-        txt = """
-
-HOLA, AMIGO [3] 
-
-ESTOS SON ALGUNOS DE
-NUESTROS SERVICIOS
-
-
-
-TENEMOS MUCHAS OPCIONES
-PARA TI, ELIGE LA QUE
-NECESITAS 
-
-
-
-
-        [1]
-        """
-
-        await query.message.edit_text(
-            premium(txt),
-            parse_mode="HTML",
+        await query.edit_message_media(
+            media=InputMediaPhoto(media=FOTOS["menu"], caption=premium("HOLA, AMIGO [3]\n\nNUESTROS SERVICIOS"), parse_mode="HTML"),
             reply_markup=InlineKeyboardMarkup(keyboard)
-)
+    )
 
 
 @con_creditos(COSTOS["denpla"])
