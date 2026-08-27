@@ -1593,7 +1593,7 @@ async def otros_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # ──────────────────────────────────────────────────────────────
     # Opción 1: Enviar foto nueva + texto (recomendado)
     # ──────────────────────────────────────────────────────────────
-    await query.message.reply_photo(
+        await query.message.reply_photo(
         photo="https://files.catbox.moe/ksykip.jpg",  # 📷 Pon tu link de foto aquí
         caption=premium(""" SIMULADORES DE BANCA 2026 [3]
 
