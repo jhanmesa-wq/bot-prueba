@@ -1517,7 +1517,7 @@ async def otros_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 [InlineKeyboardButton("🔙 Volver", callback_data="otros_menu")]
             ])
         )
-        )
+
 
     elif data == "otros_bancas":
         await query.edit_message_media(
