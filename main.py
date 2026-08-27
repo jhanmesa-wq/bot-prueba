@@ -1745,7 +1745,7 @@ async def denpla_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
                     tmp.write(pdf_bytes)
                     tmp_path = tmp.name
-                caption = f"🚨 DENPLA {d.get('numero')} - {esc(d.get('tipo'))}\
+                caption = f"DENPLA {d.get('numero')} - {esc(d.get('tipo'))}\
 
 @con_creditos(COSTOS["pla"])
 async def pla_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
