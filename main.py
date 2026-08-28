@@ -1445,12 +1445,14 @@ BASE DE DATOS DE [32] [33] [34] [35]
         )
 
 
-# ═══════════════════════════════════════════════════════
-# 📡 COMANDO /spam — MENÚ PRINCIPAL
-# ═══════════════════════════════════════════════════════
+# ══════════════════════════════════════════════════
 async def spam(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user_id = str(update.effective_user.id)
-    # Verificar créditos si quieres, o directamente mostrar menú
+    user_id = update.effective_user.id
+
+    # Limpiar cualquier estado anterior de Spam
+    context.user_data["esperando_spam_numero"] = False
+    context.user_data["esperando_spam_correo"] = False
+
     texto = """<b>📡 SISTEMA DE SPAM MASIVO</b>
 
 Selecciona el tipo de ataque que deseas realizar 👇
@@ -1458,206 +1460,323 @@ Selecciona el tipo de ataque que deseas realizar 👇
 ⚠️ <b>Costo por operación:</b> 4 créditos
 🔒 <b>Se descuenta al confirmar</b>
 """
+
     await update.message.reply_text(
         texto,
         parse_mode="HTML",
         reply_markup=InlineKeyboardMarkup([
-            [InlineKeyboardButton("📱 Spam por Número", callback_data="spam_numero")],
-            [InlineKeyboardButton("📧 Spam por Correo", callback_data="spam_correo")],
+            [
+                InlineKeyboardButton(
+                    "📱 Spam por Número",
+                    callback_data="spam_numero"
+                )
+            ],
+            [
+                InlineKeyboardButton(
+                    "📧 Spam por Correo",
+                    callback_data="spam_correo"
+                )
+            ]
         ])
     )
 
 
 # ═══════════════════════════════════════════════════════
-# 📱 SPAM POR NÚMERO — SOLICITUD DE NÚMERO
+# 📱 SPAM POR NÚMERO
 # ═══════════════════════════════════════════════════════
+
 async def spam_numero_pedir(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
 
+    # Activar únicamente el modo número
+    context.user_data["esperando_spam_numero"] = True
+    context.user_data["esperando_spam_correo"] = False
+
     texto = """<b>📡 SPAM POR NÚMERO</b>
 
 🔢 Escribe el número de teléfono objetivo:
-✅ <b>Formato:</b> 9 dígitos (ej: 987654321)
+
+✅ <b>Formato:</b> 9 dígitos
+📌 Ejemplo: <code>987654321</code>
+
 💰 <b>Costo:</b> 4 créditos
 
-⚠️ Se iniciará automáticamente al enviar el número
+⚠️ Se iniciará automáticamente al enviar el número.
 """
+
     await query.edit_message_text(
         texto,
         parse_mode="HTML",
         reply_markup=InlineKeyboardMarkup([
-            [InlineKeyboardButton("🔙 Volver", callback_data="spam_menu")]
+            [
+                InlineKeyboardButton(
+                    "🔙 Volver",
+                    callback_data="spam_menu"
+                )
+            ]
         ])
     )
-    # Guardar estado para saber que el usuario debe escribir un número
-    context.user_data["esperando_spam_numero"] = True
 
 
 # ═══════════════════════════════════════════════════════
-# 📧 SPAM POR CORREO — SOLICITUD DE CORREO
+# 📧 SPAM POR CORREO
 # ═══════════════════════════════════════════════════════
+
 async def spam_correo_pedir(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
 
+    # Activar únicamente el modo correo
+    context.user_data["esperando_spam_numero"] = False
+    context.user_data["esperando_spam_correo"] = True
+
     texto = """<b>📡 SPAM POR CORREO</b>
 
 📧 Escribe el correo electrónico objetivo:
+
 ✅ <b>Formato:</b> ejemplo@dominio.com
+
 💰 <b>Costo:</b> 4 créditos
 
-⚠️ Se iniciará automáticamente al enviar el correo
+⚠️ Se iniciará automáticamente al enviar el correo.
 """
+
     await query.edit_message_text(
         texto,
         parse_mode="HTML",
         reply_markup=InlineKeyboardMarkup([
-            [InlineKeyboardButton("🔙 Volver", callback_data="spam_menu")]
+            [
+                InlineKeyboardButton(
+                    "🔙 Volver",
+                    callback_data="spam_menu"
+                )
+            ]
         ])
     )
-    context.user_data["esperando_spam_correo"] = True
 
 
 # ═══════════════════════════════════════════════════════
-# 🔄 PROCESAR ENTRADA DEL USUARIO (NÚMERO O CORREO)
+# 🔄 PROCESAR ENTRADA DEL USUARIO
 # ═══════════════════════════════════════════════════════
+
 async def procesar_spam(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user_id = str(update.effective_user.id)
+
+    user_id = update.effective_user.id
     texto_usuario = update.message.text.strip()
 
-    # ─── 📱 SPAM POR NÚMERO ───
+    # ═══════════════════════════════════════════════════
+    # 📱 SPAM POR NÚMERO
+    # ═══════════════════════════════════════════════════
+
     if context.user_data.get("esperando_spam_numero"):
-        if not re.match(r"^\d{9}$", texto_usuario):
+
+        # Validar número
+        if not re.fullmatch(r"\d{9}", texto_usuario):
             await update.message.reply_text(
                 "❌ <b>Número inválido</b>\n\n"
-                "Debe tener exactamente <b>9 dígitos</b>.\n"
-                "Ejemplo: 987654321",
+                "Debe tener exactamente <b>9 dígitos</b>.\n\n"
+                "📌 Ejemplo: <code>987654321</code>",
                 parse_mode="HTML"
             )
             return
 
-        # Verificar y descontar créditos
+        # Consultar saldo
         saldo = get_creditos(user_id)
+
         if saldo < 4:
+            context.user_data["esperando_spam_numero"] = False
+
             await update.message.reply_text(
-                f"❌ <b>Saldo insuficiente</b>\n\n"
+                "❌ <b>Saldo insuficiente</b>\n\n"
                 f"💰 Saldo actual: <b>{saldo}</b>\n"
-                f"💳 Requiere: <b>4</b> créditos",
+                "💳 Requiere: <b>4 créditos</b>",
                 parse_mode="HTML"
             )
-            context.user_data["esperando_spam_numero"] = False
             return
 
-        # ✅ Descontar créditos
-        descontar_creditos(user_id, 4)
+        # Descontar créditos usando la función existente
+        descontar(user_id, 4)
+
+        # Limpiar estado
         context.user_data["esperando_spam_numero"] = False
 
-        # 🚀 INICIAR SPAM — Mensaje bonito
+        # Resultado del simulador
         await update.message.reply_text(
-f"""╔══════════════════════════╗
-📡 <b>INICIANDO SPAM MASIVO</b>
+            f"""╔══════════════════════════╗
+📡 <b>SIMULACIÓN DE SPAM</b>
 ╚══════════════════════════╝
 
 🎯 <b>Objetivo:</b> <code>{texto_usuario}</code>
-💰 <b>Costo:</b> 4 créditos — ✅ Descontado
-⚡ <b>Estado:</b> EN PROCESO...
 
-▰▰▰▰▰▰▰▰▰▰ 0% — Preparando...
-▰▰▰▰▰▰▱▱▱▱ 60% — Enviando peticiones...
-▰▰▰▰▰▰▰▰▰▰ 100% — ✅ COMPLETADO
+💰 <b>Costo:</b> 4 créditos
+✅ <b>Créditos descontados</b>
 
-📡 <b>Spam masivo finalizado</b>
+⚡ <b>Estado:</b> PROCESANDO...
+
+▰▰▰▰▰▰▰▰▰▰ 0%
+▰▰▰▰▰▰▱▱▱▱ 60%
+▰▰▰▰▰▰▰▰▰▰ 100%
+
+✅ <b>SIMULACIÓN COMPLETADA</b>
+
 📱 Número: <code>{texto_usuario}</code>
-📊 Mensajes enviados: <b>500+</b>
+📊 Solicitudes simuladas: <b>500+</b>
 ⏱️ Tiempo: <b>8.2s</b>
 
 ━━━━━━━━━━━━━━━━━━━━━━
-⚜️ <b>SPECTER PERÚ</b> — SISTEMA ACTIVO
+⚜️ <b>SPECTER PERÚ</b>
+🧪 Modo simulación
+━━━━━━━━━━━━━━━━━━━━━━
 """,
             parse_mode="HTML"
         )
 
-    # ─── 📧 SPAM POR CORREO ───
+        return
+
+
+    # ═══════════════════════════════════════════════════
+    # 📧 SPAM POR CORREO
+    # ═══════════════════════════════════════════════════
+
     elif context.user_data.get("esperando_spam_correo"):
-        if not re.match(r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$", texto_usuario):
+
+        # Validar correo
+        patron_correo = (
+            r"^[a-zA-Z0-9_.+-]+@"
+            r"[a-zA-Z0-9-]+\."
+            r"[a-zA-Z0-9-.]+$"
+        )
+
+        if not re.fullmatch(patron_correo, texto_usuario):
             await update.message.reply_text(
                 "❌ <b>Correo inválido</b>\n\n"
-                "Formato: ejemplo@dominio.com",
+                "📧 Formato correcto:\n"
+                "<code>ejemplo@dominio.com</code>",
                 parse_mode="HTML"
             )
             return
 
+        # Consultar saldo
         saldo = get_creditos(user_id)
+
         if saldo < 4:
+            context.user_data["esperando_spam_correo"] = False
+
             await update.message.reply_text(
-                f"❌ <b>Saldo insuficiente</b>\n\n"
+                "❌ <b>Saldo insuficiente</b>\n\n"
                 f"💰 Saldo actual: <b>{saldo}</b>\n"
-                f"💳 Requiere: <b>4</b> créditos",
+                "💳 Requiere: <b>4 créditos</b>",
                 parse_mode="HTML"
             )
-            context.user_data["esperando_spam_correo"] = False
             return
 
-        descontar_creditos(user_id, 4)
+        # Descontar créditos
+        descontar(user_id, 4)
+
+        # Limpiar estado
         context.user_data["esperando_spam_correo"] = False
 
+        # Resultado del simulador
         await update.message.reply_text(
-f"""╔══════════════════════════╗
-📡 <b>INICIANDO SPAM MASIVO</b>
+            f"""╔══════════════════════════╗
+📡 <b>SIMULACIÓN DE SPAM</b>
 ╚══════════════════════════╝
 
 🎯 <b>Objetivo:</b> <code>{texto_usuario}</code>
-💰 <b>Costo:</b> 4 créditos — ✅ Descontado
-⚡ <b>Estado:</b> EN PROCESO...
 
-▰▰▰▰▰▰▰▰▰▰ 0% — Conectando servidores...
-▰▰▰▰▰▰▱▱▱▱ 65% — Enviando correos...
-▰▰▰▰▰▰▰▰▰▰ 100% — ✅ COMPLETADO
+💰 <b>Costo:</b> 4 créditos
+✅ <b>Créditos descontados</b>
 
-📡 <b>Spam masivo finalizado</b>
+⚡ <b>Estado:</b> PROCESANDO...
+
+▰▰▰▰▰▰▰▰▰▰ 0%
+▰▰▰▰▰▰▱▱▱▱ 65%
+▰▰▰▰▰▰▰▰▰▰ 100%
+
+✅ <b>SIMULACIÓN COMPLETADA</b>
+
 📧 Correo: <code>{texto_usuario}</code>
-📊 Correos enviados: <b>1,200+</b>
+📊 Solicitudes simuladas: <b>1,200+</b>
 ⏱️ Tiempo: <b>12.5s</b>
 
 ━━━━━━━━━━━━━━━━━━━━━━
-⚜️ <b>SPECTER PERÚ</b> — SISTEMA ACTIVO
+⚜️ <b>SPECTER PERÚ</b>
+🧪 Modo simulación
+━━━━━━━━━━━━━━━━━━━━━━
 """,
             parse_mode="HTML"
         )
 
+        return
+
 
 # ═══════════════════════════════════════════════════════
-# 🔘 MANEJADOR DE BOTONES
+# 🔘 MANEJADOR DE BOTONES DE SPAM
 # ═══════════════════════════════════════════════════════
+
 async def callback_spam(update: Update, context: ContextTypes.DEFAULT_TYPE):
+
     query = update.callback_query
     data = query.data
 
     if data == "spam_numero":
+
         await spam_numero_pedir(update, context)
+        return
+
     elif data == "spam_correo":
+
         await spam_correo_pedir(update, context)
+        return
+
     elif data == "spam_menu":
-        # Volver al menú principal de spam
+
+        await query.answer()
+
+        # Limpiar estados
+        context.user_data["esperando_spam_numero"] = False
+        context.user_data["esperando_spam_correo"] = False
+
         texto = """<b>📡 SISTEMA DE SPAM MASIVO</b>
 
-Selecciona el tipo de ataque que deseas realizar 👇
+Selecciona el tipo de operación que deseas simular 👇
 
 ⚠️ <b>Costo por operación:</b> 4 créditos
 🔒 <b>Se descuenta al confirmar</b>
 """
+
         await query.edit_message_text(
             texto,
             parse_mode="HTML",
             reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton("📱 Spam por Número", callback_data="spam_numero")],
-                [InlineKeyboardButton("📧 Spam por Correo", callback_data="spam_correo")],
-                [InlineKeyboardButton("🔙 Volver", callback_data="menu_principal")]
+                [
+                    InlineKeyboardButton("📱 Spam por Número",
+                        callback_data="spam_numero"
+                    )
+                ],
+                [
+                    InlineKeyboardButton(
+                        "📧 Spam por Correo",
+                        callback_data="spam_correo"
+                    )
+                ],
+                [
+                    InlineKeyboardButton(
+                        "🔙 Volver",
+                        callback_data="menu_principal"
+                    )
+                ]
             ])
         )
+
+        return
+
     else:
+
         await query.answer()
+
+
                 
 
 async def dnivel_command(update:Update, context:ContextTypes.DEFAULT_TYPE):
@@ -3786,8 +3905,14 @@ def main():
     app.add_handler(CommandHandler("codigos", codigos))
     app.add_handler(CommandHandler("verificar", verificar))
     app.add_handler(CommandHandler("cancelar", cancelar_cmd))
-    app.add_handler(CallbackQueryHandler(callback_spam, pattern="^spam_"))
-    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, procesar_spam))
+    app.add_handler(CommandHandler("spam", spam))
+app.add_handler(CallbackQueryHandler(callback_spam, pattern=r"^spam_"))
+app.add_handler(
+    MessageHandler(
+        filters.TEXT & ~filters.COMMAND,
+        procesar_spam
+    )
+)
     
     logger.info("⚜️ SPECTER FUTURISTA ONLINE")
     app.run_polling(allowed_updates=Update.ALL_TYPES, drop_pending_updates=True)
