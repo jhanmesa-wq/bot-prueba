@@ -1557,13 +1557,92 @@ ACTUALIZACIONES DE POR VIDA[1]"""), parse_mode="HTML"),
         )
 
     elif data == "otros_numeros":
-        await query.edit_message_media(
-            media=InputMediaPhoto(media=FOTOS["numeros"], caption=premium("¡Hola! Bienvenido a specter SMS [3]\n\n🤖 Números virtuales para WhatsApp, Telegram, etc."), parse_mode="HTML"),
-            reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton("📩 Contactar", url="https://t.me/zxxxxx_michi_xxxxxx")],
-                [InlineKeyboardButton("🔙 Volver", callback_data="otros_menu")]
-            ])
-        )
+    await query.edit_message_media(
+        media=InputMediaPhoto(
+            media=FOTOS["numeros"],
+            caption=premium(
+                "¡Hola! Bienvenido a specter SMS [3]\n\n"
+                "🤖 Números virtuales para WhatsApp, Telegram, etc."
+            ),
+            parse_mode="HTML"
+        ),
+        reply_markup=InlineKeyboardMarkup([
+            [
+                InlineKeyboardButton(
+                    "📋 Comandos Grizzly",
+                    callback_data="grizzly_comandos"
+                )
+            ],
+            [
+                InlineKeyboardButton(
+                    "📩 Contactar",
+                    url="https://t.me/zxxxxx_michi_xxxxxx"
+                ),
+                InlineKeyboardButton(
+                    "🔙 Volver",
+                    callback_data="otros_menu"
+                )
+            ]
+        ])
+    )
+
+elif data == "grizzly_comandos":
+    txt = """
+╔═══════════════╗
+║ SPECTER SMS    ║
+╚═══════════════╝
+
+COMANDOS DISPONIBLES [3]
+
+━━━━━━━━━━━━━━━
+
+🌍 <b>/paises</b>
+Ver países y servicios disponibles.
+
+📲 <b>/comprar</b>
+Comprar un número virtual.
+
+Ejemplo:
+<code>/comprar pe wa</code>
+
+También:
+<code>/comprar any wa</code>
+
+🔢 <b>/codigos</b>
+Ver tus números activos y códigos recibidos.
+
+🔍 <b>/verificar</b>
+Consultar el estado/código de una activación.
+
+Ejemplo:
+<code>/verificar ACTIVATION_ID</code>
+
+❌ <b>/cancelar</b>
+Cancelar una activación.
+
+Ejemplo:
+<code>/cancelar ACTIVATION_ID</code>
+
+━━━━━━━━━━━
+
+ <b>SPECTER SMS</b> [11]
+"""
+
+    await query.edit_message_media(
+        media=InputMediaPhoto(
+            media=FOTOS["numeros"],
+            caption=premium(txt),
+            parse_mode="HTML"
+        ),
+        reply_markup=InlineKeyboardMarkup([
+            [
+                InlineKeyboardButton(
+                    "🔙 Volver",
+                    callback_data="otros_numeros"
+                )
+            ]
+        ])
+    )
 
     elif data == "otros_webbot":
         await query.edit_message_media(
@@ -3021,9 +3100,13 @@ Cuidado con las estafas."""
         except Exception:
             pass
 
+
 async def me_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     u = update.effective_user
-    saldo = get_creditos(u.id)
+
+    # Créditos separados
+    saldo_codart = get_creditos(u.id)
+    saldo_grizzly = get_creditos_grizzly(u.id)
 
     username = f"@{esc(u.username)}" if u.username else "Sin username"
 
@@ -3044,8 +3127,11 @@ INFORMACIÓN DE USUARIO [3]
 [1] USUARIO:
 <code>{username}</code>
 
-[10] SALDO:
-<code>{esc(saldo)} CRD</code>
+[10] CRÉDITOS CODART:
+<code>{esc(saldo_codart)} CRD</code>
+
+[42] CRÉDITOS GRIZZLY:
+<code>{esc(saldo_grizzly)} CRD</code>
 
 [41] ESTADO: [11] ONLINE
 
@@ -3269,7 +3355,7 @@ async def comprar(update, context):
         await update.message.reply_text("País/servicio inválido. /paises", parse_mode="HTML"); return
 
     pais=PAISES[kp]; serv=SERVICIOS[ks]
-    msg=await update.message.reply_text(f"[2] 🔄 Comprando {cant}x {pais['nombre']} {serv['nombre']} con getNumberV2...", parse_mode="HTML")
+    msg=await update.message.reply_text(f"[2]  Comprando {cant}x {pais['nombre']} {serv['nombre']} con getNumberV2...", parse_mode="HTML")
 
     oks=[]; errs=[]
     for _ in range(cant):
@@ -3290,7 +3376,7 @@ async def comprar(update, context):
             errs.append(res["err"])
 
     if oks: desc(uid, len(oks))
-    tx=f"[7] ✅ <b>COMPRA V2</b> 🌍 {pais['nombre']} 📱 {serv['nombre']}\n📱 {len(oks)}/{cant}\n\n"
+    tx=f"[7] <b>COMPRA V2</b> 🌍 {pais['nombre']} 📱 {serv['nombre']}\n📱 {len(oks)}/{cant}\n\n"
     kb=[]
     if oks:
         for d in oks:
@@ -3337,7 +3423,7 @@ async def botones(update, context):
     if d.startswith("cancel_"):
         aid=d.split("cancel_")[1]; r=await cancelar(aid)
         if uid in numeros_activos: numeros_activos[uid]=[x for x in numeros_activos[uid] if str(x["id"])!=aid]
-        try: await q.edit_message_text(f"[7] ✅ Cancelado {aid}\nRespuesta Grizzly: {r}\n💰 Saldo devuelto", parse_mode="HTML")
+        try: await q.edit_message_text(f"[7]  Cancelado {aid}\nRespuesta Grizzly: {r}\n💰 Saldo devuelto", parse_mode="HTML")
         except: await q.message.reply_text(f"Cancelado {aid}: {r}", parse_mode="HTML")
     else:
         aid=d.split("check_")[1]; c=await get_status(aid)
@@ -3345,9 +3431,33 @@ async def botones(update, context):
         else: await q.answer("⏳ Aún no llega", show_alert=True)
 
 async def paises_cmd(update, context):
-    tx="[1] 🌍 Países: pe,mx,ar,cl,co,es,us,ve,br,any\n[2] Servicios: wa=WhatsApp, tg=Telegram\nEj: /comprar pe wa\n"
-    await update.message.reply_text(tx, parse_mode="HTML")
+    tx = """ PAÍSES DISPONIBLES [3]
 
+🇵🇪 pe — Perú
+🇲🇽 mx — México
+🇦🇷 ar — Argentina
+🇨🇱 cl — Chile
+🇨🇴 co — Colombia
+🇪🇸 es — España
+🇺🇸 us — Estados Unidos
+🇻🇪 ve — Venezuela
+🇧🇷 br — Brasil
+🌐 any — Cualquier país (automático)
+
+<b> [1] SERVICIOS DISPONIBLES</b>
+💬 wa — WhatsApp
+✈️ tg — Telegram
+📘 fb — Facebook
+📸 ig — Instagram
+🔍 gg — Google
+🎵 tk — TikTok
+
+<b> [11] EJEMPLO DE USO</b>
+<code>/comprar pe wa</code> — Perú + WhatsApp
+<code>/comprar any tg</code> — Cualquier país + Telegram
+"""
+    await update.message.reply_text(tx, parse_mode="HTML")
+    
 # ===================== MAIN =====================
 
 def main():
