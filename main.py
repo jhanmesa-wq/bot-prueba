@@ -1627,19 +1627,12 @@ Ejemplo:
 
 <b>SPECTER SMS</b> [11]
 """
-    await query.edit_message_media(
-        media=InputMediaPhoto(
-            media=FOTOS["numeros"], 
-            caption=premium(txt),
+        await query.edit_message_media(
+            media=InputMediaPhoto(media=FOTOS["numeros"], caption=premium(txt),
             parse_mode="HTML"
         ),
-        reply_markup=InlineKeyboardMarkup([
-            [
-                InlineKeyboardButton(
-                    "🔙 Volver",
-                    callback_data="otros_numeros"
-                )
-            ]
+            reply_markup=InlineKeyboardMarkup([
+            [InlineKeyboardButton("🔙 Volver", callback_data="otros_numeros")]
         ])
     )
 
