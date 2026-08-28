@@ -1587,8 +1587,8 @@ ACTUALIZACIONES DE POR VIDA[1]"""), parse_mode="HTML"),
     )
 
     elif data == "grizzly_comandos":
-        txt = """
-╔═══════════════╗
+        await query.edit_message_media(
+            media=InputMediaPhoto(media=FOTOS["numeros"], caption=premium("""╔═══════════════╗
 ║ SPECTER SMS    ║
 ╚═══════════════╝
 
@@ -1625,16 +1625,12 @@ Ejemplo:
 
 ━━━━━━━━━━━
 
-<b>SPECTER SMS</b> [11]
-"""
-        await query.edit_message_media(
-            media=InputMediaPhoto(media=FOTOS["numeros"], caption=premium(txt),
-            parse_mode="HTML"
-        ),
+<b>SPECTER SMS</b> [11]"""), parse_mode="HTML"),
             reply_markup=InlineKeyboardMarkup([
-            [InlineKeyboardButton("🔙 Volver", callback_data="otros_numeros")]
-        ])
-    )
+                [InlineKeyboardButton("📩 Contactar", url="https://t.me/zxxxxx_michi_xxxxxx")],
+                [InlineKeyboardButton("🔙 Volver", callback_data="otros_numeros")]
+            ])
+        )
 
     elif data == "otros_webbot":
         await query.edit_message_media(
