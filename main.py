@@ -138,6 +138,7 @@ FOTOS = {
     "bancas": "https://files.catbox.moe/udw7be.jpg",
     "numeros": "https://files.catbox.moe/jzu92r.jpg",
     "pagina": "https://files.catbox.moe/7s8vps.jpg",
+    "nu": "https://files.catbox.moe/4fhoom.jpeg",
 }
 
 GRIZZLY_API_KEY = os.getenv("GRIZZLY_API_KEY", "4c1325ba06e9504705a356530769f598")
@@ -1570,7 +1571,7 @@ ACTUALIZACIONES DE POR VIDA[1]"""), parse_mode="HTML"),
             [
                 InlineKeyboardButton(
                     "COMANDOS SMS",
-                    callback_data="grizzly_comandos"
+                    callback_data="nu_comandos"
                 )
             ],
             [
@@ -1586,9 +1587,9 @@ ACTUALIZACIONES DE POR VIDA[1]"""), parse_mode="HTML"),
         ])
     )
 
-    elif data == "grizzly_comandos":
+    elif data == "nu_comandos":
         await query.edit_message_media(
-            media=InputMediaPhoto(media=FOTOS["numeros"], caption=premium("""╔═══════════════╗
+            media=InputMediaPhoto(media=FOTOS["nu"], caption=premium("""╔═══════════════╗
 ║ SPECTER SMS    ║
 ╚═══════════════╝
 
