@@ -1558,7 +1558,10 @@ ACTUALIZACIONES DE POR VIDA[1]"""), parse_mode="HTML"),
 
     elif data == "otros_numeros":
         await query.edit_message_media(
-            media=InputMediaPhoto(media=FOTOS["numeros"], caption=premium("¡Hola! Bienvenido a specter SMS [3]\n\n🤖 Números virtuales para WhatsApp, Telegram, etc."), parse_mode="HTML"),
+            media=InputMediaPhoto(media=FOTOS["numeros"], caption=premium("""[3] ¡Hola! Bienvenido a SPECTER SMS
+
+  [42] El bot más rápido para comprar números virtuales al mejor precio.
+[11] Úsalos para activar WhatsApp, Telegram, Facebook y más de 40 servicios."""), parse_mode="HTML"),
             reply_markup=InlineKeyboardMarkup([
                 [InlineKeyboardButton("📩 Contactar", url="https://t.me/zxxxxx_michi_xxxxxx")],
                 [InlineKeyboardButton("🔙 Volver", callback_data="otros_menu")]
