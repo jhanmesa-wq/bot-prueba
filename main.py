@@ -3334,15 +3334,9 @@ Cuidado con las estafas."""
             pass
 
 
-def esc(txt):
-    return html.escape(str(txt)) if txt is not None else ""
 
-def get_creditos(uid):
-    # tu saldo CODART - ajusta si tu función se llama diferente
-    try:
-        return cargar().get(str(uid), 0)
-    except:
-        return 0
+   
+
 
 def get_creditos_grizzly(uid):
     # saldo Grizzly separado
@@ -3763,7 +3757,12 @@ def main():
     app.add_handler(CommandHandler("ag", agv_command))
     app.add_handler(CommandHandler("agv", agv_command))
     app.add_handler(CommandHandler("otros", otros_command))
-    app.add_handler(CallbackQueryHandler(otros_callback, pattern="^otros_"))
+    app.add_handler(
+    CallbackQueryHandler(
+        otros_callback,
+        pattern=r"^(otros_|nu_)"
+    )
+)
 
 
     # ===================== TELEFONÍA / FACIAL ====================
