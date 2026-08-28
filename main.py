@@ -1586,7 +1586,7 @@ ACTUALIZACIONES DE POR VIDA[1]"""), parse_mode="HTML"),
         ])
     )
 
-elif data == "grizzly_comandos":
+    elif data == "grizzly_comandos":
     txt = """
 ╔═══════════════╗
 ║ SPECTER SMS    ║
