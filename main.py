@@ -1557,10 +1557,10 @@ ACTUALIZACIONES DE POR VIDA[1]"""), parse_mode="HTML"),
         )
 
     elif data == "otros_numeros":
-    await query.edit_message_media(
-        media=InputMediaPhoto(
-            media=FOTOS["numeros"],
-            caption=premium(
+        await query.edit_message_media(
+            media=InputMediaPhoto(
+            media=FOTOS["numeros"], 
+                caption=premium(
                 "¡Hola! Bienvenido a specter SMS [3]\n\n"
                 "🤖 Números virtuales para WhatsApp, Telegram, etc."
             ),
@@ -1569,7 +1569,7 @@ ACTUALIZACIONES DE POR VIDA[1]"""), parse_mode="HTML"),
         reply_markup=InlineKeyboardMarkup([
             [
                 InlineKeyboardButton(
-                    "📋 Comandos Grizzly",
+                    "COMANDOS SMS",
                     callback_data="grizzly_comandos"
                 )
             ],
