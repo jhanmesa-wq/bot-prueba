@@ -1558,9 +1558,9 @@ ACTUALIZACIONES DE POR VIDA[1]"""), parse_mode="HTML"),
 
     elif data == "otros_numeros":
         await query.edit_message_media(
-            media=InputMediaPhoto(
+        media=InputMediaPhoto(
             media=FOTOS["numeros"], 
-                caption=premium(
+            caption=premium(
                 "¡Hola! Bienvenido a specter SMS [3]\n\n"
                 "🤖 Números virtuales para WhatsApp, Telegram, etc."
             ),
@@ -1587,7 +1587,7 @@ ACTUALIZACIONES DE POR VIDA[1]"""), parse_mode="HTML"),
     )
 
     elif data == "grizzly_comandos":
-    txt = """
+        txt = """
 ╔═══════════════╗
 ║ SPECTER SMS    ║
 ╚═══════════════╝
@@ -1625,13 +1625,12 @@ Ejemplo:
 
 ━━━━━━━━━━━
 
- <b>SPECTER SMS</b> [11]
+<b>SPECTER SMS</b> [11]
 """
-
-        await query.edit_message_media(
-           media=InputMediaPhoto(
+    await query.edit_message_media(
+        media=InputMediaPhoto(
             media=FOTOS["numeros"], 
-               caption=premium(txt),
+            caption=premium(txt),
             parse_mode="HTML"
         ),
         reply_markup=InlineKeyboardMarkup([
