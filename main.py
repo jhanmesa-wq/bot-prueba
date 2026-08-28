@@ -3293,14 +3293,14 @@ async def comprar(update, context):
             errs.append(res["err"])
 
     if oks: desc(uid, len(oks))
-    tx=f"[7] ✅ <b>COMPRA V2</b> 🌍 {pais['nombre']} 📱 {serv['nombre']}\n📱 {len(oks)}/{cant}\n\n"
+    tx=f"[7]  <b>COMPRA V2</b> 🌍 {pais['nombre']} 📱 {serv['nombre']}\n📱 {len(oks)}/{cant}\n\n"
     kb=[]
     if oks:
         for d in oks:
             tx+=f"📱 <code>+{d['phoneNumber']}</code>\n🆔 <code>{d['activationId']}</code> 💵 ${d.get('activationCost')} ⏰ Fin: {d.get('activationEnd')}\n\n"
             kb.append([
                 InlineKeyboardButton(f"❌ Cancelar +{d['phoneNumber']}", callback_data=f"cancel_{d['activationId']}"),
-                InlineKeyboardButton(f"🔍 Código", callback_data=f"check_{d['activationId']}")
+                InlineKeyboardButton(f"ver Código", callback_data=f"check_{d['activationId']}")
             ])
     if errs:
         tx+=f"[9] ❌ Errores:\n"+"\n".join(errs[:5])
@@ -3340,7 +3340,7 @@ async def botones(update, context):
     if d.startswith("cancel_"):
         aid=d.split("cancel_")[1]; r=await cancelar(aid)
         if uid in numeros_activos: numeros_activos[uid]=[x for x in numeros_activos[uid] if str(x["id"])!=aid]
-        try: await q.edit_message_text(f"[7] ✅ Cancelado {aid}\nRespuesta Grizzly: {r}\n💰 Saldo devuelto", parse_mode="HTML")
+        try: await q.edit_message_text(f"[7]  Cancelado {aid}\nRespuesta Grizzly: {r}\n💰 Saldo devuelto", parse_mode="HTML")
         except: await q.message.reply_text(f"Cancelado {aid}: {r}", parse_mode="HTML")
     else:
         aid=d.split("check_")[1]; c=await get_status(aid)
@@ -3348,8 +3348,33 @@ async def botones(update, context):
         else: await q.answer("⏳ Aún no llega", show_alert=True)
 
 async def paises_cmd(update, context):
-    tx="[1] 🌍 Países: pe,mx,ar,cl,co,es,us,ve,br,any\n[2] Servicios: wa=WhatsApp, tg=Telegram\nEj: /comprar pe wa\n"
+    tx = """PAÍSES DISPONIBLES [3]
+
+🇵🇪 pe — Perú
+🇲🇽 mx — México
+🇦🇷 ar — Argentina
+🇨🇱 cl — Chile
+🇨🇴 co — Colombia
+🇪🇸 es — España
+🇺🇸 us — Estados Unidos
+🇻🇪 ve — Venezuela
+🇧🇷 br — Brasil
+🌐 any — Cualquier país (automático)
+
+<b>📱 SERVICIOS DISPONIBLES</b>
+💬 wa — WhatsApp
+✈️ tg — Telegram
+📘 fb — Facebook
+📸 ig — Instagram
+🔍 gg — Google
+🎵 tk — TikTok
+
+<b>📝 EJEMPLO DE USO</b>
+<code>/comprar pe wa</code> — Perú + WhatsApp
+<code>/comprar any tg</code> — Cualquier país + Telegram
+"""
     await update.message.reply_text(tx, parse_mode="HTML")
+                                                         
 
 # ===================== MAIN =====================
 
