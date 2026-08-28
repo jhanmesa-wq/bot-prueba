@@ -11,6 +11,7 @@ import asyncio
 import urllib.parse
 import secrets
 import json
+import html
 import functools
 from datetime import datetime
 from urllib.parse import quote_plus
@@ -3333,18 +3334,42 @@ Cuidado con las estafas."""
             pass
 
 
+def esc(txt):
+    return html.escape(str(txt)) if txt is not None else ""
+
+def get_creditos(uid):
+    # tu saldo CODART - ajusta si tu función se llama diferente
+    try:
+        return cargar().get(str(uid), 0)
+    except:
+        return 0
+
+def get_creditos_grizzly(uid):
+    # saldo Grizzly separado
+    try:
+        if os.path.exists("creditos_grizzly.json"):
+            with open("creditos_grizzly.json","r",encoding="utf-8") as f:
+                db = json.load(f)
+                return db.get(str(uid), 0)
+    except:
+        pass
+    return 0
+
+def teclado_volver():
+    return InlineKeyboardMarkup([
+        [InlineKeyboardButton("🔙 Volver al Menú", callback_data="volver_menu")]
+    ])
+
 async def me_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    u = update.effective_user
+    try:
+        u = update.effective_user
+        saldo_codart = get_creditos(u.id)
+        saldo_grizzly = get_creditos_grizzly(u.id)
+        username = f"@{esc(u.username)}" if u.username else "Sin username"
 
-    # Créditos separados
-    saldo_codart = get_creditos(u.id)
-    saldo_grizzly = get_creditos_grizzly(u.id)
-
-    username = f"@{esc(u.username)}" if u.username else "Sin username"
-
-    txt = f"""
+        txt = f"""
 ╔══════════════╗
-║  [9] MI PERFIL  ║
+║ [9] MI PERFIL ║
 ╚══════════════╝
 
 INFORMACIÓN DE USUARIO [3]
@@ -3371,12 +3396,14 @@ INFORMACIÓN DE USUARIO [3]
  SPECTER OS v2.5 [3]
 [25] Sistema operativo activo
 """
-
-    await update.message.reply_text(
-        text=premium(txt),
-        parse_mode="HTML",
-        reply_markup=teclado_volver()
-    )
+        await update.message.reply_text(
+            text=premium(txt),
+            parse_mode="HTML",
+            reply_markup=teclado_volver()
+        )
+    except Exception as e:
+        print(f"Error /me: {e}")
+        await update.message.reply_text(f"[9] Error: {esc(str(e))}", parse_mode="HTML")
 
 async def register_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
