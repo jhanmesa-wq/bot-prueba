@@ -1497,11 +1497,11 @@ async def dnivel_command(update:Update, context:ContextTypes.DEFAULT_TYPE):
 
 async def otros_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     keyboard = [
-        [InlineKeyboardButton("💵 Billetes 5G", callback_data="otros_billetes"),
-         InlineKeyboardButton("🌐 Crea tu web/bot", callback_data="otros_webbot")],
-        [InlineKeyboardButton("🏦 Bancas", callback_data="otros_bancas"),
-         InlineKeyboardButton("📱 Números Virtuales", callback_data="otros_numeros")],
-        [InlineKeyboardButton("💻 Página Web", callback_data="otros_pagina")]
+        [InlineKeyboardButton("DINERO 5G", callback_data="otros_billetes"),
+         InlineKeyboardButton("tu web/bot", callback_data="otros_webbot")],
+        [InlineKeyboardButton("Bancas", callback_data="otros_bancas"),
+         InlineKeyboardButton("NÚMEROS SMS", callback_data="otros_numeros")],
+        [InlineKeyboardButton("Página Web", callback_data="otros_pagina")]
     ]
     txt = "HOLA, AMIGO [3]\n\nESTOS SON ALGUNOS DE\nNUESTROS SERVICIOS"
     await update.message.reply_photo(
@@ -1650,11 +1650,11 @@ Ejemplo:
 
     elif data == "otros_menu":
         keyboard = [
-            [InlineKeyboardButton("💵 Billetes 5G", callback_data="otros_billetes"),
-             InlineKeyboardButton("🌐 Crea tu web/bot", callback_data="otros_webbot")],
-            [InlineKeyboardButton("🏦 Bancas", callback_data="otros_bancas"),
-             InlineKeyboardButton("📱 Números Virtuales", callback_data="otros_numeros")],
-            [InlineKeyboardButton("💻 Página Web", callback_data="otros_pagina")]
+            [InlineKeyboardButton("DINERO 5G", callback_data="otros_billetes"),
+             InlineKeyboardButton("tu web/bot", callback_data="otros_webbot")],
+            [InlineKeyboardButton("Bancas", callback_data="otros_bancas"),
+             InlineKeyboardButton("Números SMS", callback_data="otros_numeros")],
+            [InlineKeyboardButton("Página Web", callback_data="otros_pagina")]
         ]
         await query.edit_message_media(
             media=InputMediaPhoto(media=FOTOS["menu"], caption=premium("HOLA, AMIGO [3]\n\nNUESTROS SERVICIOS"), parse_mode="HTML"),
