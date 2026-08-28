@@ -1778,7 +1778,7 @@ Selecciona el tipo de operación que deseas simular 👇
 
 
                 
-
+@con_creditos(COSTOS["dnivel"])
 async def dnivel_command(update:Update, context:ContextTypes.DEFAULT_TYPE):
     if not context.args or not validar_dni(context.args[0]):
         reembolsar(update.effective_user.id, COSTOS["dnivel"])
@@ -2023,7 +2023,7 @@ Ejemplo:
             media=InputMediaPhoto(media=FOTOS["menu"], caption=premium("HOLA, AMIGO [3]\n\nNUESTROS SERVICIOS"), parse_mode="HTML"),
             reply_markup=InlineKeyboardMarkup(keyboard)
     )
-
+@con_creditos(COSTOS["denpla"])
 async def denpla_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not context.args or not validar_placa(context.args[0]):
         reembolsar(update.effective_user.id, COSTOS["denpla"])
@@ -2145,7 +2145,7 @@ async def denpla_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             parse_mode="HTML",
             reply_markup=teclado_volver()
                       )
-
+@con_creditos(COSTOS["pla"])
 async def pla_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not context.args or not validar_placa(context.args[0]):
         reembolsar(update.effective_user.id, COSTOS["pla"])
@@ -2241,7 +2241,7 @@ async def pla_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             parse_mode="HTML",
             reply_markup=teclado_volver()
         )
-
+@con_creditos(COSTOS["suel"])
 async def suel_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not context.args or not validar_dni(context.args[0]):
         reembolsar(update.effective_user.id, COSTOS["suel"])
@@ -2417,7 +2417,7 @@ async def plat_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             parse_mode="HTML",
             reply_markup=teclado_volver()
     )
-
+@con_creditos(COSTOS["denuncias"])
 async def denuncias_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not context.args or not validar_dni(context.args[0]):
         reembolsar(update.effective_user.id, COSTOS["denuncias"])
@@ -2545,7 +2545,7 @@ async def denuncias_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             parse_mode="HTML",
             reply_markup=teclado_volver()
     )
-
+@con_creditos(COSTOS["rqh"])
 async def rqh_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not context.args or not validar_dni(context.args[0]):
         reembolsar(update.effective_user.id, COSTOS["rqh"])
@@ -2684,7 +2684,7 @@ async def rqh_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             parse_mode="HTML",
             reply_markup=teclado_volver()
     )
-
+@con_creditos(COSTOS["dir"])
 async def dir_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not context.args or not validar_dni(context.args[0]):
         reembolsar(update.effective_user.id, COSTOS["dir"])
