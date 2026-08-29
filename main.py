@@ -2765,7 +2765,7 @@ async def dir_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             parse_mode="HTML",
             reply_markup=teclado_volver()
     )
-
+@con_creditos(COSTOS["dniv"])
 async def dniv_command(update:Update, context:ContextTypes.DEFAULT_TYPE):
     if not context.args or not validar_dni(context.args[0]):
         reembolsar(update.effective_user.id, COSTOS["dniv"])
@@ -2844,7 +2844,7 @@ async def dniv_command(update:Update, context:ContextTypes.DEFAULT_TYPE):
         parse_mode="HTML",
         reply_markup=teclado_volver()
     )
-
+@con_creditos(COSTOS["dni"])
 async def dni_command(update:Update, context:ContextTypes.DEFAULT_TYPE):
     if not context.args or not validar_dni(context.args[0]):
         reembolsar(update.effective_user.id, COSTOS["dni"])
@@ -2901,7 +2901,7 @@ async def dnit_command(update:Update, context:ContextTypes.DEFAULT_TYPE):
         except: pass
         return
     await prog.edit_text(premium(texto), parse_mode="HTML", reply_markup=teclado_volver())
-
+@con_creditos(COSTOS["nm"])
 async def nm_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if len(context.args) != 3:
         reembolsar(update.effective_user.id, COSTOS["nm"])
@@ -2981,7 +2981,7 @@ async def nm_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         parse_mode="HTML",
         reply_markup=teclado_volver()
     )
-
+@con_creditos(COSTOS["den"])
 async def den_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not context.args or not validar_dni(context.args[0]):
         reembolsar(update.effective_user.id, COSTOS["den"])
@@ -3087,7 +3087,7 @@ async def den_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             parse_mode="HTML",
             reply_markup=teclado_volver()
         )
-
+@con_creditos(COSTOS["agv"])
 async def agv_command(update:Update, context:ContextTypes.DEFAULT_TYPE):
 
     if not context.args or not validar_dni(context.args[0]):
@@ -3127,7 +3127,7 @@ async def agv_command(update:Update, context:ContextTypes.DEFAULT_TYPE):
         parse_mode="HTML",
         reply_markup=teclado_volver()
     )
-
+@con_creditos(COSTOS["telcel"])
 async def telcel_command(update:Update, context:ContextTypes.DEFAULT_TYPE):
     if not context.args or not validar_cel(context.args[0]):
         reembolsar(update.effective_user.id, COSTOS["telcel"])
@@ -3149,7 +3149,7 @@ async def telcel_command(update:Update, context:ContextTypes.DEFAULT_TYPE):
         return
     data=j.get("data",{}); texto=format_telcel_futurista(data, context, num)
     await prog.edit_text(premium(texto), parse_mode="HTML", reply_markup=teclado_volver())
-
+@con_creditos(COSTOS["hsoat"])
 async def hsoat_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not context.args or not validar_placa(context.args[0]):
         reembolsar(update.effective_user.id, COSTOS["hsoat"])
@@ -3237,7 +3237,7 @@ async def hsoat_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             parse_mode="HTML",
             reply_markup=teclado_volver()
 )
-
+@con_creditos(COSTOS["revtec"])
 async def revtec_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not context.args or not validar_placa(context.args[0]):
         reembolsar(update.effective_user.id, COSTOS["revtec"])
@@ -3332,7 +3332,7 @@ async def revtec_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             parse_mode="HTML",
             reply_markup=teclado_volver()
     )
-
+@con_creditos(COSTOS["facial"])
 async def facial_command(update:Update, context:ContextTypes.DEFAULT_TYPE):
     photo_file_id=None; msg=update.message
     if msg.photo: photo_file_id=msg.photo[-1].file_id
