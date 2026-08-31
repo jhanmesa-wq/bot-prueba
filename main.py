@@ -1487,14 +1487,14 @@ Selecciona el tipo de ataque que deseas realizar 👇
         reply_markup=InlineKeyboardMarkup([
             [
                 InlineKeyboardButton(
-                    "📱 Spam por Número",
+                    "📱 Spam por Número_pedir",
                     callback_data="spam_numero"
                 )
             ],
             [
                 InlineKeyboardButton(
                     "📧 Spam por Correo",
-                    callback_data="spam_correo"
+                    callback_data="spam_correo_pedir"
                 )
             ]
         ])
