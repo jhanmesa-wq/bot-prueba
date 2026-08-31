@@ -1438,7 +1438,7 @@ BASE DE DATOS DE [32] [33] [34] [35]
     # ==========================================================
     else:
         logger.warning(
-            f"CALLBACK NO RECONOCIDO: {q.data}"
+            f"CALLBACK NO RECONOCIDO: {q.data}")
 
 
 async def otros_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
