@@ -1608,9 +1608,11 @@ Ejemplo:
     )
 
 @con_creditos(COSTOS["dnivel"])
-async def dnivel_command(update:Update, context:ContextTypes.DEFAULT_TYPE):
+async def dnivel_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+
     if not context.args or not validar_dni(context.args[0]):
-        reembolsar(update.effective_user.id, COSTOS["dnivel"])
+        reembolsar(user_id, COSTOS["dnivel"])
         await update.message.reply_text(
             premium("⚠️ FORMATO INVÁLIDO\n\nUsa: <code>/dnivel 12345678</code>"),
             parse_mode="HTML",
@@ -1618,16 +1620,16 @@ async def dnivel_command(update:Update, context:ContextTypes.DEFAULT_TYPE):
         )
         return
 
-    dni=context.args[0]
-    prog=await update.message.reply_text(
+    dni = context.args[0]
+    prog = await update.message.reply_text(
         premium(f"🛰️ INICIANDO DNIVEL...\n🎯 TARGET: <code>{esc(dni)}</code>\n⏳ Conectando..."),
         parse_mode="HTML"
     )
 
-    j,err=codart_get(f"/dnivel/{dni}")
+    j, err = codart_get(f"/dnivel/{dni}")
 
     if err:
-        reembolsar(update.effective_user.id, COSTOS["dnivel"])
+        reembolsar(user_id, COSTOS["dnivel"])
         await prog.edit_text(
             premium(f"❌ ERROR API\n{esc(err)}\n🔋 CRÉDITOS DEVUELTOS"),
             parse_mode="HTML",
@@ -1636,15 +1638,26 @@ async def dnivel_command(update:Update, context:ContextTypes.DEFAULT_TYPE):
         return
 
     if not j or not j.get("success"):
-        reembolsar(update.effective_user.
-format_dnivel_futurista(data, context, "DNIVEL")
-    imgs=data.get("images") or []
-    fotos_decod=[
+        reembolsar(user_id, COSTOS["dnivel"])
+        await prog.edit_text(
+            premium("❌ DNI NO ENCONTRADO\n🔋 CRÉDITOS DEVUELTOS"),
+            parse_mode="HTML",
+            reply_markup=teclado_volver()
+        )
+        return # <- FALTABA ESTE RETURN
+
+    data = j.get("data", {}) # <- FALTABA ESTO
+
+    # Aquí llamas a tu formateador
+    texto = format_dnivel_futurista(data, context, "DNIVEL") # <- y guardas el resultado
+
+    imgs = data.get("images") or []
+    fotos_decod = [
         decodificar_imagen(im.get("data_uri"))
         for im in imgs
         if isinstance(im, dict) and im.get("data_uri")
     ]
-    fotos_decod=[f for f in fotos_decod if f]
+    fotos_decod = [f for f in fotos_decod if f]
 
     if fotos_decod:
         await update.message.reply_photo(
