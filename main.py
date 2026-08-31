@@ -3554,7 +3554,6 @@ def main():
     )
     # ======================= ADMINISTRACIÓN ======================
     app.add_handler(CommandHandler("addcreditos", addcreditos_command))
-    app.add_handler(CommandHandler("spam", spam))
     # ====================== BOTONES INLINE =======================
     app.add_handler(CallbackQueryHandler(botones, pattern="^(cancel_|check_)"))
     app.add_handler(CallbackQueryHandler(botones_callback))
@@ -3564,9 +3563,6 @@ def main():
     app.add_handler(CommandHandler("codigos", codigos))
     app.add_handler(CommandHandler("verificar", verificar))
     app.add_handler(CommandHandler("cancelar", cancelar_cmd))
-    app.add_handler(CommandHandler("spam", spam))
-    app.add_handler(CallbackQueryHandler(callback_spam, pattern=r"^spam_"))
-    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND,procesar_spam))
     
     logger.info("⚜️ SPECTER FUTURISTA ONLINE")
     app.run_polling(allowed_updates=Update.ALL_TYPES, drop_pending_updates=True)
