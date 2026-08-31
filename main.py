@@ -3185,7 +3185,7 @@ def main():
     app.add_handler(CommandHandler("ag", agv_command))
     app.add_handler(CommandHandler("agv", agv_command))
     app.add_handler(CommandHandler("otros", otros_command))
-    app.add_handler(CallbackQueryHandler(otros_callback, pattern="^otros_"))
+    app.add_handler(CallbackQueryHandler(otros_callback, pattern="^otros_nu"))
 
 
     # ===================== TELEFONÍA / FACIAL ====================
