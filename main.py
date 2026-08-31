@@ -528,6 +528,11 @@ async def pagar(update: Update, context: ContextTypes.DEFAULT_TYPE):
         usuario = update.effective_user
 
         # ----------------------------------------------------
+        # URL DE LA FOTO QUE QUIERES MANDAR
+        # ----------------------------------------------------
+        URL_FOTO = "https://ibb.co/tM3S047x" # <-- CAMBIA ESTO POR TU URL
+
+        # ----------------------------------------------------
         # MONTO
         # ----------------------------------------------------
         if len(context.args) >= 1:
@@ -594,7 +599,7 @@ Adjuntar comprobante de pago.
 📸 <b>ATENCIÓN:</b>
 Envía la foto del voucher aquí mismo 👇
 
-━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━
 
  PAGA CON [36][37][38][39][40]."""
 
@@ -617,6 +622,21 @@ Envía la foto del voucher aquí mismo 👇
                 ]
             ]
         )
+
+        # ----------------------------------------------------
+        # ENVIAR FOTO + TEXTO
+        # ----------------------------------------------------
+        await context.bot.send_photo(
+            chat_id=update.effective_chat.id,
+            photo=URL_FOTO,
+            caption=texto,
+            parse_mode="HTML",
+            reply_markup=keyboard
+        )
+
+    except Exception as e:
+        print(f"Error en /pagar: {e}")
+        await update.message.reply_text("Ocurrió un error. Intenta de nuevo.")
 
         await update.message.reply_text(
             premium(texto),
