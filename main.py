@@ -1441,70 +1441,6 @@ BASE DE DATOS DE [32] [33] [34] [35]
             f"CALLBACK NO RECONOCIDO: {q.data}"
 
 
-
-@con_creditos(COSTOS["dnivel"])
-async def dnivel_command(update:Update, context:ContextTypes.DEFAULT_TYPE):
-    if not context.args or not validar_dni(context.args[0]):
-        reembolsar(update.effective_user.id, COSTOS["dnivel"])
-        await update.message.reply_text(
-            premium("⚠️ FORMATO INVÁLIDO\n\nUsa: <code>/dnivel 12345678</code>"),
-            parse_mode="HTML",
-            reply_markup=teclado_volver()
-        )
-        return
-
-    dni=context.args[0]
-    prog=await update.message.reply_text(
-        premium(f"🛰️ INICIANDO DNIVEL...\n🎯 TARGET: <code>{esc(dni)}</code>\n⏳ Conectando..."),
-        parse_mode="HTML"
-    )
-
-    j,err=codart_get(f"/dnivel/{dni}")
-
-    if err:
-        reembolsar(update.effective_user.id, COSTOS["dnivel"])
-        await prog.edit_text(
-            premium(f"❌ ERROR API\n{esc(err)}\n🔋 CRÉDITOS DEVUELTOS"),
-            parse_mode="HTML",
-            reply_markup=teclado_volver()
-        )
-        return
-
-    if not j or not j.get("success"):
-        reembolsar(update.effective_user.
-format_dnivel_futurista(data, context, "DNIVEL")
-    imgs=data.get("images") or []
-    fotos_decod=[
-        decodificar_imagen(im.get("data_uri"))
-        for im in imgs
-        if isinstance(im, dict) and im.get("data_uri")
-    ]
-    fotos_decod=[f for f in fotos_decod if f]
-
-    if fotos_decod:
-        await update.message.reply_photo(
-            photo=fotos_decod[0],
-            caption=premium(texto),
-            parse_mode="HTML",
-            reply_markup=teclado_volver()
-        )
-        for f in fotos_decod[1:]:
-            try:
-                await update.message.reply_photo(photo=f)
-            except Exception as e:
-                logger.warning(f"dnivel segunda imagen: {e}")
-        try:
-            await prog.delete()
-        except Exception:
-            pass
-        return
-
-    await prog.edit_text(
-        premium(texto),
-        parse_mode="HTML",
-        reply_markup=teclado_volver()
-    )
-
 async def otros_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     keyboard = [
         [InlineKeyboardButton("DINERO 5G", callback_data="otros_billetes"),
@@ -1669,6 +1605,69 @@ Ejemplo:
         await query.edit_message_media(
             media=InputMediaPhoto(media=FOTOS["menu"], caption=premium("HOLA, AMIGO [3]\n\nNUESTROS SERVICIOS"), parse_mode="HTML"),
             reply_markup=InlineKeyboardMarkup(keyboard)
+    )
+
+@con_creditos(COSTOS["dnivel"])
+async def dnivel_command(update:Update, context:ContextTypes.DEFAULT_TYPE):
+    if not context.args or not validar_dni(context.args[0]):
+        reembolsar(update.effective_user.id, COSTOS["dnivel"])
+        await update.message.reply_text(
+            premium("⚠️ FORMATO INVÁLIDO\n\nUsa: <code>/dnivel 12345678</code>"),
+            parse_mode="HTML",
+            reply_markup=teclado_volver()
+        )
+        return
+
+    dni=context.args[0]
+    prog=await update.message.reply_text(
+        premium(f"🛰️ INICIANDO DNIVEL...\n🎯 TARGET: <code>{esc(dni)}</code>\n⏳ Conectando..."),
+        parse_mode="HTML"
+    )
+
+    j,err=codart_get(f"/dnivel/{dni}")
+
+    if err:
+        reembolsar(update.effective_user.id, COSTOS["dnivel"])
+        await prog.edit_text(
+            premium(f"❌ ERROR API\n{esc(err)}\n🔋 CRÉDITOS DEVUELTOS"),
+            parse_mode="HTML",
+            reply_markup=teclado_volver()
+        )
+        return
+
+    if not j or not j.get("success"):
+        reembolsar(update.effective_user.
+format_dnivel_futurista(data, context, "DNIVEL")
+    imgs=data.get("images") or []
+    fotos_decod=[
+        decodificar_imagen(im.get("data_uri"))
+        for im in imgs
+        if isinstance(im, dict) and im.get("data_uri")
+    ]
+    fotos_decod=[f for f in fotos_decod if f]
+
+    if fotos_decod:
+        await update.message.reply_photo(
+            photo=fotos_decod[0],
+            caption=premium(texto),
+            parse_mode="HTML",
+            reply_markup=teclado_volver()
+        )
+        for f in fotos_decod[1:]:
+            try:
+                await update.message.reply_photo(photo=f)
+            except Exception as e:
+                logger.warning(f"dnivel segunda imagen: {e}")
+        try:
+            await prog.delete()
+        except Exception:
+            pass
+        return
+
+    await prog.edit_text(
+        premium(texto),
+        parse_mode="HTML",
+        reply_markup=teclado_volver()
     )
 @con_creditos(COSTOS["denpla"])
 async def denpla_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
