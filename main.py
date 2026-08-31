@@ -1081,10 +1081,6 @@ def teclado_menu_cmds():
             InlineKeyboardButton(
                 "📡 DIRECCIÓN",
                 callback_data="cat_localizar"
-            ),
-            InlineKeyboardButton(
-                "🌐 spam",
-                callback_data="cat_spam"
             )
         ],
     ])
@@ -1416,6 +1412,10 @@ BASE DE DATOS DE [32] [33] [34] [35]
  [45] FACIAL
 ╚════════════╝
 
+ RECONOCI═╗
+ [45] FACIAL
+╚════════════╝
+
  RECONOCIMIENTO FACIAL [3] 
 ————————
 
@@ -1433,231 +1433,15 @@ BASE DE DATOS DE [32] [33] [34] [35]
             reply_markup=teclado_volver()
         )
 
-    elif q.data == "cat_spam":
-
-        texto_spam = """╔════════════╗
-  FACIAL [3]
-╚════════════╝
-
- ATAQUES MASIVOS [3] 
-————————
-
-[01] /spam 
-     ↳ spam por correo y número 
-     ↳ COSTO: 4 CRD [█████████░]
-
-————————
- Precisión 99.9% [46]
-"""
-
-        await q.edit_message_text(
-            text=premium(texto_spam),
-            parse_mode="HTML",
-            reply_markup=teclado_volver()
-        )
-
     # ==========================================================
     # CALLBACK DESCONOCIDO
     # ==========================================================
     else:
         logger.warning(
             f"CALLBACK NO RECONOCIDO: {q.data}"
-        )
 
 
-# ══════════════════════════════════════════════════
 
-
-async def spam(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user_id = update.effective_user.id
-    context.user_data["esperando_spam_numero"] = False
-    context.user_data["esperando_spam_correo"] = False
-
-    texto = """<b>📡 SISTEMA DE SPAM MASIVO</b>
-
-Selecciona el tipo de ataque que deseas realizar 👇
-
-⚠️ <b>Costo por operación:</b> 4 créditos
-🔒 <b>Se descuenta al confirmar</b>
-"""
-
-    await update.message.reply_text(
-        texto,
-        parse_mode="HTML",
-        reply_markup=InlineKeyboardMarkup([
-            [InlineKeyboardButton("📱 Spam por Número", callback_data="spam_numero")],
-            [InlineKeyboardButton("📧 Spam por Correo", callback_data="spam_correo")]
-        ])
-    )
-
-# ═══════════════════════════════════════════════════════
-# 📱 SPAM POR NÚMERO
-# ═══════════════════════════════════════════════════════
-async def spam_numero_pedir(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    query = update.callback_query
-    await query.answer()
-    context.user_data["esperando_spam_numero"] = True
-    context.user_data["esperando_spam_correo"] = False
-
-    texto = """<b>📡 SPAM POR NÚMERO</b>
-
-🔢 Escribe el número de teléfono objetivo:
-
-✅ <b>Formato:</b> 9 dígitos
-📌 Ejemplo: <code>987654321</code>
-
-💰 <b>Costo:</b> 4 créditos
-
-⚠️ Se iniciará automáticamente al enviar el número.
-"""
-    await query.edit_message_text(texto, parse_mode="HTML", reply_markup=InlineKeyboardMarkup([
-        [InlineKeyboardButton("🔙 Volver", callback_data="spam_menu")]
-    ]))
-
-# ═══════════════════════════════════════════════════════
-# 📧 SPAM POR CORREO
-# ═══════════════════════════════════════════════════════
-async def spam_correo_pedir(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    query = update.callback_query
-    await query.answer()
-    context.user_data["esperando_spam_numero"] = False
-    context.user_data["esperando_spam_correo"] = True
-
-    texto = """<b>📡 SPAM POR CORREO</b>
-
-📧 Escribe el correo electrónico objetivo:
-
-✅ <b>Formato:</b> ejemplo@dominio.com
-
-💰 <b>Costo:</b> 4 créditos
-
-⚠️ Se iniciará automáticamente al enviar el correo.
-"""
-    await query.edit_message_text(texto, parse_mode="HTML", reply_markup=InlineKeyboardMarkup([
-        [InlineKeyboardButton("🔙 Volver", callback_data="spam_menu")]
-    ]))
-
-# ═══════════════════════════════════════════════════════
-# 🔘 MANEJADOR DE BOTONES DE SPAM - ARREGLADO
-# ═══════════════
-async def callback_spam(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    query = update.callback_query
-    await query.answer()
-    data = query.data
-
-    if data == "spam_numero":
-        await spam_numero_pedir(update, context)
-    elif data == "spam_correo":
-        await spam_correo_pedir(update, context)
-    elif data == "spam_menu":
-        context.user_data["esperando_spam_numero"] = False
-        context.user_data["esperando_spam_correo"] = False
-        await spam(update.callback_query, context) # reutilizamos el menú
-
-# ═══════════════
-# 🔄 PROCESAR ENTRADA DEL USUARIO CON ANIMACIÓN
-# ═══════════════════════════════════════
-async def procesar_spam(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user_id = update.effective_user.id
-    texto_usuario = update.message.text.strip()
-
-    if context.user_data.get("esperando_spam_numero"):
-        if not re.fullmatch(r"\d{9}", texto_usuario):
-            await update.message.reply_text("❌ <b>Número inválido</b>\nDebe tener 9 dígitos.", parse_mode="HTML")
-            return
-        saldo = get_creditos(user_id)
-        if saldo < 4:
-            context.user_data["esperando_spam_numero"] = False
-            await update.message.reply_text(f"❌ <b>Saldo insuficiente</b>\n💰 Saldo: <b>{saldo}</b>", parse_mode="HTML")
-            return
-        
-        descontar(user_id, 4)
-        context.user_data["esperando_spam_numero"] = False
-        await animacion_spam(update, context, texto_usuario, tipo="numero")
-
-    elif context.user_data.get("esperando_spam_correo"):
-        patron_correo = r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$"
-        if not re.fullmatch(patron_correo, texto_usuario):
-            await update.message.reply_text("❌ <b>Correo inválido</b>", parse_mode="HTML")
-            return
-        saldo = get_creditos(user_id)
-        if saldo < 4:
-            context.user_data["esperando_spam_correo"] = False
-            await update.message.reply_text(f"❌ <b>Saldo insuficiente</b>\n💰 Saldo: <b>{saldo}</b>", parse_mode="HTML")
-            return
-        
-        descontar(user_id, 4)
-        context.user_data["esperando_spam_correo"] = False
-        await animacion_spam(update, context, texto_usuario, tipo="correo")
-
-# ═══════════════════════════════════════════════════════
-# ⚡ ANIMACIÓN 10% 30% 50% 70% 100%
-# ═══════════════════════════════════════════════
-async def animacion_spam(update: Update, context: ContextTypes.DEFAULT_TYPE, objetivo, tipo):
-    msg = await update.message.reply_text(
-        f"""╔══════════════════════════╗
-📡 <b> SPAM</b>
-╚══════════════════════════╝
-
-🎯 <b>Objetivo:</b> <code>{objetivo}</code>
-💰 <b>Costo:</b> 4 créditos
-✅ <b>Créditos descontados</b>
-
-⚡ <b>Estado:</b> INICIANDO FUERZA BRUTA...
-▱▱▱▱▱▱▱▱▱▱ 10%
-
-━━━━━━━━━━━━━━━━━━━━━━
-⚜️ <b>SPECTER PERÚ</b>
-━━━━━━━━━━━━━━━━━━━━━━
-""", parse_mode="HTML")
-
-    pasos = [
-        (30, "▰▱▱▱▱▱▱▱▱ 30%", "ESCALANDO PUERTOS..."),
-        (50, "▰▰▱▱▱ 50%", "INYECTANDO PAQUETES..."),
-        (70, "▰▰▰▰▰▰▰▱▱ 70%", "SATURANDO SERVIDOR..."),
-        (100, "▰▰▰▰▰▰ 100%", "COMPLETADO")
-    ]
-
-    for _, barra, estado in pasos:
-        await asyncio.sleep(1.2)
-        await msg.edit_text(
-            f"""╔══════════════════╗
-📡 </b>SPAM</b>
-╚══════════════════════════╝
-
-🎯 <b>Objetivo:</b> <code>{objetivo}</code>
-💰 <b>Costo:</b> 4 créditos
-
-⚡ <b>Estado:</b> {estado}
-{barra}
-
-━━━━━━━━━━━━━━━━━━━━━━
-⚜️ <b>SPECTER PERÚ</b>
-━━━━━━━━━━━━━━
-""", parse_mode="HTML")
-
-    await asyncio.sleep(0.8)
-    if tipo == "numero":
-        final = f"📱 Número: <code>{objetivo}</code>\n📊 Solicitudes simuladas: <b>500+</b>\n⏱️ Tiempo: <b>8.2s</b>"
-    else:
-        final = f"📧 Correo: <code>{objetivo}</code>\n📊 Solicitudes simuladas: <b>1,200+</b>\n⏱️ Tiempo: <b>12.5s</b>"
-
-    await msg.edit_text(
-        f"""╔══════════════════════════╗
-📡 <b> SPAM</b>
-╚══════════════════════════╝
-
-🎯 <b>Objetivo:</b> <code>{objetivo}</code>
-
-✅ <b> COMPLETADA</b>
-
-{final}
-
-━━━━━━━━━━━━━━
-⚜️ <b>SPECTER PERÚ</b>
-━━━━━━━━━━━━━━━━━━━━━━
-""", parse_mode="HTML")
-                
 @con_creditos(COSTOS["dnivel"])
 async def dnivel_command(update:Update, context:ContextTypes.DEFAULT_TYPE):
     if not context.args or not validar_dni(context.args[0]):
@@ -1687,25 +1471,8 @@ async def dnivel_command(update:Update, context:ContextTypes.DEFAULT_TYPE):
         return
 
     if not j or not j.get("success"):
-        reembolsar(update.effective_user.id, COSTOS["dnivel"])
-        await prog.edit_text(
-            premium(f"❌ SIN RESULTADOS\n{esc((j or {}).get('message', 'No se encontraron datos'))}\n🔋 CRÉDITOS REEMBOLSADOS"),
-            parse_mode="HTML",
-            reply_markup=teclado_volver()
-        )
-        return
-
-    data=j.get("data") or {}
-    if not data:
-        reembolsar(update.effective_user.id, COSTOS["dnivel"])
-        await prog.edit_text(
-            premium("❌ RESPUESTA SIN DATOS\n🔋 CRÉDITOS REEMBOLSADOS"),
-            parse_mode="HTML",
-            reply_markup=teclado_volver()
-        )
-        return
-
-    texto=format_dnivel_futurista(data, context, "DNIVEL")
+        reembolsar(update.effective_user.
+format_dnivel_futurista(data, context, "DNIVEL")
     imgs=data.get("images") or []
     fotos_decod=[
         decodificar_imagen(im.get("data_uri"))
