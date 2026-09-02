@@ -54,7 +54,7 @@ db_dir = os.path.dirname(os.path.abspath(DB_PATH))
 if db_dir and not os.path.exists(db_dir): os.makedirs(db_dir, exist_ok=True)
 
 CREDITOS_INICIALES = 2
-COSTOS = {"dni":5,"dnit":6,"dnivel":10,"dniv":10,"nm":5,"agv":10,"telcel":8,"facial":60,"dir":6,"suel":6,"den":20,"denuncias":60,"pla":4,"rqh":40,"denpla":40,"hsoat":10,"revtec":10,"plat":6}
+COSTOS = {"dni":5,"dnit":6,"dnivel":10,"dniv":10,"nm":5,"agv":20,"telcel":20,"facial":60,"dir":6,"suel":6,"den":20,"denuncias":60,"pla":4,"rqh":40,"denpla":40,"hsoat":10,"revtec":10,"plat":6}
 def init_db():
     conn = sqlite3.connect(DB_PATH, check_same_thread=False, timeout=10)
     cur = conn.cursor()
@@ -214,22 +214,6 @@ def format_dnit_futurista(data, ctx):
     txt=format_dni_futurista(data,ctx)
     return txt.replace("RENIEC CORE v2.5","DNIT X4 // 4 FOTOS")
 
-def format_agv_futurista(data, ctx):
-    txt=f"""
-╔════════════╗
-║  🛰️ AGV TRACE║
-╚════════════╝
-
-👁️ DNI: <code>{esc(data.get('dni'))}</code>
-👤 Nombres: <b>{esc(data.get('nombres'))}</b>
-👥 Apellidos: <b>{esc(data.get('apellidos'))}</b>
-⚧ Género: <code>{esc(data.get('genero'))}</code>
-🎂 Edad: <code>{esc(data.get('edad'))}</code> años
-
-▰▰ SCAN COMPLETADO ▰▰
-"""
-    txt+=footer_creditos(ctx)
-    return txt
 
 def format_nm_futurista(data, ctx, consulta):
     resultados = data.get("resultados") or []
@@ -1968,6 +1952,228 @@ async def plat_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             parse_mode="HTML",
             reply_markup=teclado_volver()
     )
+@con_creditos(COSTOS["agv"])
+async def agv_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+
+    # Validar DNI
+    if not context.args or not validar_dni(context.args[0]):
+        reembolsar(user_id, COSTOS["agv"])
+
+        await update.message.reply_text(
+            premium(
+                "⚠️ <b>FORMATO INVÁLIDO</b>\n\n"
+                "Usa: <code>/agv 12345678</code>"
+            ),
+            parse_mode="HTML",
+            reply_markup=teclado_volver()
+        )
+        return
+
+    dni = context.args[0]
+
+    # Mensaje de progreso
+    prog = await update.message.reply_text(
+        premium(
+            f"🔎 <b>CONSULTA AGV</b>\n\n"
+            f"🎯 TARGET: <code>{esc(dni)}</code>\n"
+            f"💳 COSTO: <code>{COSTOS['agv']} CRD</code>\n"
+            f"⏳ Consultando información..."
+        ),
+        parse_mode="HTML"
+    )
+
+    try:
+        # Endpoint CODART
+        j, err = codart_get(f"/consultas/fd/agv/{dni}")
+
+        # Error de conexión/API
+        if err:
+            reembolsar(user_id, COSTOS["agv"])
+
+            await prog.edit_text(
+                premium(
+                    f"❌ <b>ERROR API AGV</b>\n\n"
+                    f"<code>{esc(err)}</code>\n\n"
+                    f"💰 <b>CRÉDITOS REEMBOLSADOS:</b> "
+                    f"<code>{COSTOS['agv']} CRD</code>"
+                ),
+                parse_mode="HTML",
+                reply_markup=teclado_volver()
+            )
+            return
+
+        # API respondió pero consulta falló
+        if not j.get("success"):
+            reembolsar(user_id, COSTOS["agv"])
+
+            await prog.edit_text(
+                premium(
+                    f"❌ <b>SIN RESULTADOS</b>\n\n"
+                    f"🆔 DNI: <code>{esc(dni)}</code>\n\n"
+                    f"💰 <b>CRÉDITOS REEMBOLSADOS:</b> "
+                    f"<code>{COSTOS['agv']} CRD</code>"
+                ),
+                parse_mode="HTML",
+                reply_markup=teclado_volver()
+            )
+            return
+
+        data = j.get("data", {})
+
+        if not data:
+            reembolsar(user_id, COSTOS["agv"])
+
+            await prog.edit_text(
+                premium(
+                    f"❌ <b>SIN DATOS</b>\n\n"
+                    f"DNI: <code>{esc(dni)}</code>"
+                ),
+                parse_mode="HTML",
+                reply_markup=teclado_volver()
+            )
+            return
+
+        # Datos principales
+        dni_resultado = data.get("dni", dni)
+        nombres = data.get("nombres", "—")
+        apellidos = data.get("apellidos", "—")
+        genero = data.get("genero", "—")
+        edad = data.get("edad", "—")
+        source = j.get("source", "—")
+
+        # Imágenes
+        images = data.get("images", [])
+
+        # Mostrar resultado
+        texto = f"""<b>╔══════════════════╗</b>
+<b>║ 🔎 CONSULTA AGV ║</b>
+<b>╚══════════════════╝</b>
+
+🆔 <b>DNI:</b> <code>{esc(str(dni_resultado))}</code>
+
+👤 <b>NOMBRES:</b>
+<code>{esc(str(nombres))}</code>
+
+👤 <b>APELLIDOS:</b>
+<code>{esc(str(apellidos))}</code>
+
+⚧️ <b>GÉNERO:</b>
+<code>{esc(str(genero))}</code>
+
+🎂 <b>EDAD:</b>
+<code>{esc(str(edad))}</code>
+
+🛰️ <b>SOURCE:</b>
+<code>{esc(str(source))}</code>
+
+💳 <b>COSTO:</b>
+<code>{COSTOS['agv']} CRD</code>
+"""
+
+        if images:
+            texto += f"\n🖼️ <b>IMÁGENES:</b> <code>{len(images)}</code>"
+
+        texto += footer_creditos(context)
+
+        await prog.edit_text(
+            premium(texto),
+            parse_mode="HTML",
+            reply_markup=teclado_volver()
+        )
+
+        # Enviar las imágenes devueltas por la API
+        enviadas = 0
+
+        for i, imagen in enumerate(images, start=1):
+            try:
+                data_uri = imagen.get("data_uri", "")
+
+                if not data_uri:
+                    continue
+
+                # Decodificar base64
+                imagen_bytes = decodificar_imagen(data_uri)
+
+                # Fallback para data:image/png;base64,...
+                if not imagen_bytes:
+                    try:
+                        b64_part = (
+                            data_uri.split(",", 1)[1]
+                            if "," in data_uri
+                            else data_uri
+                        )
+                        imagen_bytes = base64.b64decode(b64_part)
+                    except Exception:
+                        imagen_bytes = None
+
+                if not imagen_bytes or len(imagen_bytes) < 100:
+                    await update.message.reply_text(
+                        premium(
+                            f"⚠️ <b>IMAGEN {i} VACÍA O INVÁLIDA</b>"
+                        ),
+                        parse_mode="HTML"
+                    )
+                    continue
+
+                # Guardar temporalmente
+                with tempfile.NamedTemporaryFile(
+                    delete=False,
+                    suffix=".png"
+                ) as tmp:
+                    tmp.write(imagen_bytes)
+                    tmp_path = tmp.name
+
+                try:
+                    caption = (
+                        f"🖼️ <b>AGV - IMAGEN {i}</b>\n\n"
+                        f"🆔 DNI: <code>{esc(str(dni_resultado))}</code>\n"
+                        f"👤 {esc(str(nombres))} "
+                        f"{esc(str(apellidos))}"
+                    )
+
+                    with open(tmp_path, "rb") as foto:
+                        await context.bot.send_photo(
+                            chat_id=update.effective_chat.id,
+                            photo=foto,
+                            caption=premium(caption),
+                            parse_mode="HTML"
+                        )
+
+                    enviadas += 1
+
+                finally:
+                    if os.path.exists(tmp_path):
+                        os.unlink(tmp_path)
+
+            except Exception as e_img:
+                logger.error(
+                    f"Error enviando imagen AGV {i}: {e_img}"
+                )
+
+        # Si la API tenía imágenes pero ninguna pudo enviarse
+        if images and enviadas == 0:
+            logger.warning(
+                f"AGV {dni}: la API devolvió {len(images)} "
+                f"imágenes pero ninguna pudo enviarse."
+            )
+
+    except Exception as e:
+        logger.exception(f"ERROR EN /agv: {e}")
+
+        # Reembolso por error interno
+        reembolsar(user_id, COSTOS["agv"])
+
+        await prog.edit_text(
+            premium(
+                f"❌ <b>ERROR INTERNO AGV</b>\n\n"
+                f"<code>{esc(str(e))}</code>\n\n"
+                f"💰 <b>CRÉDITOS REEMBOLSADOS:</b> "
+                f"<code>{COSTOS['agv']} CRD</code>"
+            ),
+            parse_mode="HTML",
+            reply_markup=teclado_volver()
+        )
 @con_creditos(COSTOS["denuncias"])
 async def denuncias_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not context.args or not validar_dni(context.args[0]):
@@ -2643,46 +2849,7 @@ async def den_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             parse_mode="HTML",
             reply_markup=teclado_volver()
         )
-@con_creditos(costo=COSTOS["agv"])
-async def agv_command(update:Update, context:ContextTypes.DEFAULT_TYPE):
 
-    if not context.args or not validar_dni(context.args[0]):
-        reembolsar(update.effective_user.id, COSTOS["agv"])
-        await update.message.reply_text(premium("⚠️ Usa: <code>/ag 12345678</code>"), parse_mode="HTML", reply_markup=teclado_volver())
-        return
-    dni=context.args[0]
-    prog=await update.message.reply_text(premium(f"🛰️ AGV TRACE...\n🎯 <code>{esc(dni)}</code>"), parse_mode="HTML")
-    j,err=codart_get(f"/agv/{dni}")
-    if err:
-        reembolsar(update.effective_user.id, COSTOS["agv"])
-        await prog.edit_text(premium(f"❌ ERROR\n{esc(err)}"), parse_mode="HTML", reply_markup=teclado_volver())
-        return
-    if not j or not j.get("success"):
-        reembolsar(update.effective_user.id, COSTOS["agv"])
-        await prog.edit_text(
-            premium(f"❌ SIN RESULTADOS\n{esc((j or {}).get('message', 'No se encontraron relaciones'))}\n🔋 CRÉDITOS REEMBOLSADOS"),
-            parse_mode="HTML",
-            reply_markup=teclado_volver()
-        )
-        return
-
-    data=j.get("data") or {}
-    relaciones=data.get("relaciones") or []
-    if not relaciones:
-        reembolsar(update.effective_user.id, COSTOS["agv"])
-        await prog.edit_text(
-            premium("❌ NO SE ENCONTRARON RELACIONES\n🔋 CRÉDITOS REEMBOLSADOS"),
-            parse_mode="HTML",
-            reply_markup=teclado_volver()
-        )
-        return
-
-    texto=format_ag_futurista(data, context)
-    await prog.edit_text(
-        premium(texto),
-        parse_mode="HTML",
-        reply_markup=teclado_volver()
-    )
 
 @con_creditos(costo=COSTOS["telcel"])
 async def telcel_command(update:Update, context:ContextTypes.DEFAULT_TYPE):
