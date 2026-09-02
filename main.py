@@ -248,7 +248,29 @@ def format_nm_futurista(data, ctx, consulta):
     txt += footer_creditos(ctx)
     return txt
 
+def format_agv_futurista(data, ctx, source="CODART_X_API_V1"):
+    txt = f"""
+╔════════════╗
+║  🧬 AGV SCAN  ║
+╚════════════╝
 
+[41] ⚡ <b>BÚSQUEDA AVANZADA AGV</b> ⚡
+━━━━━━━━━━━━━━━━━━━━
+
+🔍 TARGET: <code>{esc(data.get('dni'))}</code>
+▰▰▰▰▰▰▰▰▰▰▰▰
+
+👤 <b>IDENTIDAD</b>
+├─ Nombres: <b>{esc(data.get('nombres'))}</b>
+├─ Apellidos: <b>{esc(data.get('apellidos'))}</b>
+├─ Género: <code>{esc(data.get('genero'))}</code>
+└─ Edad: <code>{esc(data.get('edad'))} años</code>
+
+🛰️ FUENTE: <code>{esc(source)}</code>
+"""
+    txt += footer_creditos(ctx)
+    return txt
+    
 def format_ag_futurista(data, ctx):
     relaciones = data.get("relaciones") or []
     cantidad = data.get("familiares", len(relaciones))
@@ -1365,6 +1387,76 @@ BASE DE DATOS DE [32] [33] [34] [35]
         )
 
 
+@con_creditos(costo=COSTOS["agv"])
+async def agv_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if not context.args or not validar_dni(context.args[0]):
+        # Reembolsar si el formato es incorrecto
+        reembolsar(update.effective_user.id, COSTOS["agv"])
+        await update.message.reply_text(
+            premium("⚠️ <b>FORMATO INVÁLIDO</b>\n\nUsa: <code>/agv 12345678</code>"),
+            parse_mode="HTML",
+            reply_markup=teclado_volver()
+        )
+        return
+
+    dni = context.args[0]
+    prog = await update.message.reply_text(
+        premium(f"🧬 <b>IDENTIFICANDO AGV...</b>\n🎯 TARGET: <code>{esc(dni)}</code>\n⏳ Extrayendo biometría..."),
+        parse_mode="HTML"
+    )
+
+    # Petición a la API usando tu función codart_get
+    j, err = codart_get(f"/agv/{dni}")
+
+    if err:
+        reembolsar(update.effective_user.id, COSTOS["agv"])
+        await prog.edit_text(
+            premium(f"❌ <b>ERROR API</b>\n<code>{esc(err)}</code>\n🔋 CRÉDITOS REEMBOLSADOS"),
+            parse_mode="HTML",
+            reply_markup=teclado_volver()
+        )
+        return
+
+    if not j or not j.get("success"):
+        reembolsar(update.effective_user.id, COSTOS["agv"])
+        msg_error = (j or {}).get('message', 'No se encontraron datos')
+        await prog.edit_text(
+            premium(f"❌ <b>SIN RESULTADOS</b>\n{esc(msg_error)}\n🔋 CRÉDITOS REEMBOLSADOS"),
+            parse_mode="HTML",
+            reply_markup=teclado_volver()
+        )
+        return
+
+    data = j.get("data") or {}
+    source = j.get("source", "CODART_X_API_V1")
+    
+    # Formatear el texto
+    texto_final = format_agv_futurista(data, context, source)
+    
+    # Manejo de la imagen Base64
+    imgs = data.get("images") or []
+    foto_bytes = None
+    if imgs and isinstance(imgs[0], dict) and imgs[0].get("data_uri"):
+        foto_bytes = decodificar_imagen(imgs[0]["data_uri"])
+
+    try:
+        if foto_bytes:
+            await update.message.reply_photo(
+                photo=foto_bytes,
+                caption=premium(texto_final),
+                parse_mode="HTML",
+                reply_markup=teclado_volver()
+            )
+            await prog.delete()
+        else:
+            await prog.edit_text(
+                premium(texto_final),
+                parse_mode="HTML",
+                reply_markup=teclado_volver()
+            )
+    except Exception as e:
+        logger.error(f"Error enviando respuesta AGV: {e}")
+        await update.message.reply_text(premium(texto_final), parse_mode="HTML", reply_markup=teclado_volver())
         
 @con_creditos(costo=COSTOS["dnivel"])
 async def dnivel_command(update:Update, context:ContextTypes.DEFAULT_TYPE):
