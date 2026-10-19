@@ -960,7 +960,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     bot_username = f"@{context.bot.username}"
     texto = crear_mensaje_premium(bot_username)
 
-    video_url = "https://files.catbox.moe/mfy472.mp4"
+    video_url = "https://ibb.co/DgGpjF94 un i"
 
     # MANDA VIDEO + TEXTO JUNTOS
     # Los stickers premium se procesan mediante HTML.
@@ -1042,8 +1042,6 @@ async def cmds_command(
         parse_mode="HTML",
         reply_markup=teclado_menu_cmds()
     )
-
-
 async def botones_callback(
     update: Update,
     context: ContextTypes.DEFAULT_TYPE
