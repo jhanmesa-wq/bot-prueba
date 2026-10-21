@@ -3173,6 +3173,7 @@ def main():
     # ========================== COMANDOS ==========================
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("register", register_command))
+    app.add_handler(CommandHandler("cmdsbot", cmdsbot_command))
     app.add_handler(CommandHandler("cmds", cmds_command))
     app.add_handler(CommandHandler("me", me_command))
     app.add_handler(CommandHandler("staff", staff_command))
