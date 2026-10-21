@@ -1362,7 +1362,143 @@ BASE DE DATOS DE [32] [33] [34] [35]
             f"CALLBACK NO RECONOCIDO: {q.data}"
         )
 
+# ============== COMANDO /CMDSS ==============
 
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
+from telegram.ext import CommandHandler, ContextTypes
+
+def teclado_cmdss():
+    return InlineKeyboardMarkup([
+        [
+            InlineKeyboardButton("🏦 Bancas", callback_data="cmdss_bancas"),
+            InlineKeyboardButton("🧪 Bancas fake", callback_data="cmdss_fake")
+        ],
+        [
+            InlineKeyboardButton("📱 WhatsApp", callback_data="cmdss_whatsapp"),
+            InlineKeyboardButton("✈️ Telegram", callback_data="cmdss_telegram")
+        ],
+        [
+            InlineKeyboardButton("▶️ YouTube", callback_data="cmdss_youtube"),
+            InlineKeyboardButton("📸 Instagram", callback_data="cmdss_instagram")
+        ],
+        [
+            InlineKeyboardButton("📘 Facebook", callback_data="cmdss_facebook"),
+            InlineKeyboardButton("🤖 Bot", callback_data="cmdss_bot")
+        ],
+        [
+            InlineKeyboardButton("⚙️ Panel", callback_data="cmdss_panel")
+        ]
+    ])
+
+
+async def cmdss_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user = update.effective_user
+    saldo = get_creditos(user.id)
+
+    texto = f"""
+[1] <b>SPECTER DATA</b> [3]
+
+Bienvenido al menú de servicios.
+
+[7] Selecciona una categoría para consultar
+su información y disponibilidad.
+[4] Selecciona una opción:
+"""
+
+    await update.effective_message.reply_text(
+        premium(texto),
+        parse_mode="HTML",
+        reply_markup=teclado_cmdss()
+    )
+
+
+async def cmdss_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    q = update.callback_query
+    await q.answer()
+
+    opciones = {
+        "cmdss_bancas": (
+            "[2] BANCAS",
+            "Información general y educación financiera."
+        ),
+        "cmdss_fake": (
+            "🧪 BANCAS FAKE",
+            "Demostración educativa. No recopila credenciales "
+            "ni datos bancarios reales."
+        ),
+        "cmdss_whatsapp": (
+            "📱 WHATSAPP",
+            "Ayuda sobre privacidad y seguridad de cuentas."
+        ),
+        "cmdss_telegram": (
+            "✈️ TELEGRAM",
+            "Ayuda sobre bots, privacidad y seguridad."
+        ),
+        "cmdss_youtube": (
+            "▶️ YOUTUBE",
+            "Información sobre canales y protección de cuentas."
+        ),
+        "cmdss_instagram": (
+            "📸 INSTAGRAM",
+            "Ayuda sobre privacidad y seguridad."
+        ),
+        "cmdss_facebook": (
+            "📘 FACEBOOK",
+            "Ayuda sobre seguridad y recuperación de cuentas."
+        ),
+        "cmdss_bot": (
+            "🤖 BOT",
+            "Consulta /cmds para ver los comandos disponibles."
+        ),
+        "cmdss_panel": (
+            "⚙️ PANEL",
+            "Usa /me para consultar tu perfil y /buy para "
+            "consultar las opciones de recarga."
+        )
+    }
+
+    if q.data == "cmdss_volver":
+        user = q.from_user
+        saldo = get_creditos(user.id)
+        texto = f"""
+[1] <b>DEXTER PREMIUM STORE</b> [3]
+
+👤 Usuario: <code>{esc(user.username or user.full_name)}</code>
+💰 Tus créditos: <b>{saldo}</b>
+
+[7] Selecciona una categoría:
+"""
+        await q.edit_message_text(
+            premium(texto),
+            parse_mode="HTML",
+            reply_markup=teclado_cmdss()
+        )
+        return
+
+    if q.data not in opciones:
+        return
+
+    titulo, descripcion = opciones[q.data]
+    saldo = get_creditos(q.from_user.id)
+
+    texto = f"""
+[1] <b>{titulo}</b> [3]
+
+{descripcion}
+
+💰 Tus créditos: <b>{saldo}</b>
+"""
+
+    await q.edit_message_text(
+        premium(texto),
+        parse_mode="HTML",
+        reply_markup=InlineKeyboardMarkup([[
+            InlineKeyboardButton(
+                "⬅️ Volver al menú",
+                callback_data="cmdss_volver"
+            )
+        ]])
+    )
 @con_creditos(costo=COSTOS["agv"])
 async def agv_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not context.args or not validar_dni(context.args[0]):
@@ -3174,6 +3310,7 @@ def main():
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("register", register_command))
     app.add_handler(CommandHandler("cmds", cmds_command))
+    app.add_handler(CommandHandler("cmdss", cmdss_command))
     app.add_handler(CommandHandler("me", me_command))
     app.add_handler(CommandHandler("staff", staff_command))
     app.add_handler(CommandHandler("buy", buy_command))
