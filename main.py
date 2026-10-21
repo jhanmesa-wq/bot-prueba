@@ -1386,7 +1386,7 @@ from telegram.ext import (
 IMAGENES_CMDSS = {
     "cmdss_bancas": "https://ibb.co/0Vqx4pfM",
     "cmdss_fake": "https://files.catbox.moe/udw7be.jpg",
-    "cmdss_whatsapp": "https://files.catbox.moe/0y85js.jpg",
+    "cmdss_whatsapp": "https://ibb.co/5gkqqkhG",
     "cmdss_telegram": "https://files.catbox.moe/ENLACE_TELEGRAM.jpg",
     "cmdss_youtube": "https://files.catbox.moe/ENLACE_YOUTUBE.jpg",
     "cmdss_instagram": "https://files.catbox.moe/ENLACE_INSTAGRAM.jpg",
