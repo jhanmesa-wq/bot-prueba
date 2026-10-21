@@ -30,7 +30,7 @@ PORT = int(os.getenv("PORT", 10000))
 ADMIN_ID = int(os.getenv("ADMIN_ID", "0"))
 link_foto = "https://ibb.co/35xtQyVz"
 PAYMENT_WEB_URL = "t.me/zxxxxx_michi_xxxxxx"
-ADMIN_PAYMENT_ID = 6330231681
+ADMIN_PAYMENT_ID = 8271623149
 DATOS_PAGO = {
     "yape_numero": "",      # Tu número Yape
     "cci": "NO DISPONIBLE POR EL MOMENTO", # Tu CCI
@@ -1363,12 +1363,11 @@ BASE DE DATOS DE [32] [33] [34] [35]
         )
 
 # ============== COMANDO /CMDSS ==============
-
-
 from telegram import (
     Update,
     InlineKeyboardButton,
     InlineKeyboardMarkup,
+    InputMediaPhoto,
 )
 from telegram.ext import (
     ContextTypes,
@@ -1380,7 +1379,7 @@ from telegram.ext import (
 IMAGENES_CMDSS = {
     "cmdss_bancas": "https://files.catbox.moe/ENLACE_BANCAS.jpg",
     "cmdss_fake": "https://files.catbox.moe/ENLACE_FAKE.jpg",
-    "cmdss_whatsapp": "https://ibb.co/DHx2nbkY",
+    "cmdss_whatsapp": "https://files.catbox.moe/0y85js.jpg",
     "cmdss_telegram": "https://files.catbox.moe/ENLACE_TELEGRAM.jpg",
     "cmdss_youtube": "https://files.catbox.moe/ENLACE_YOUTUBE.jpg",
     "cmdss_instagram": "https://files.catbox.moe/ENLACE_INSTAGRAM.jpg",
@@ -1414,14 +1413,19 @@ def teclado_cmdss():
     ])
 
 
-async def cmdss_command(
-    update: Update,
-    context: ContextTypes.DEFAULT_TYPE,
-):
-    user = update.effective_user
-    saldo = get_creditos(user.id)
+def teclado_volver():
+    return InlineKeyboardMarkup([
+        [
+            InlineKeyboardButton(
+                "⬅️ Volver al menú",
+                callback_data="cmdss_volver",
+            )
+        ]
+    ])
 
-    texto = f"""
+
+def texto_menu(user, saldo):
+    return f"""
 [1] <b>SPECTER DATA</b> [3]
 
 👤 Usuario: <code>{esc(user.username or user.full_name)}</code>
@@ -1433,8 +1437,18 @@ Selecciona una categoría para consultar
 su información y disponibilidad.
 """
 
+
+async def cmdss_command(
+    update: Update,
+    context: ContextTypes.DEFAULT_TYPE,
+):
+    user = update.effective_user
+    saldo = get_creditos(user.id)
+    texto = premium(texto_menu(user, saldo))
+
+    # Solo crea el mensaje inicial al ejecutar /cmdss.
     await update.effective_message.reply_text(
-        premium(texto),
+        texto,
         parse_mode="HTML",
         reply_markup=teclado_cmdss(),
     )
@@ -1449,22 +1463,33 @@ async def cmdss_callback(
 
     user = q.from_user
     saldo = get_creditos(user.id)
+    mensaje = q.message
 
     if q.data == "cmdss_volver":
-        texto = f"""
-[1] <b>SPECTER DATA</b> [3]
+        texto = premium(texto_menu(user, saldo))
 
-👤 Usuario: <code>{esc(user.username or user.full_name)}</code>
-💰 Créditos: <b>{saldo}</b>
-
-[7] Selecciona una categoría:
-"""
-        # El menú inicial es un mensaje de texto.
-        await q.message.reply_text(
-            premium(texto),
-            parse_mode="HTML",
-            reply_markup=teclado_cmdss(),
-        )
+        # Si el mensaje actual tiene foto, elimina la foto
+        # editando el mismo mensaje a texto.
+        if mensaje.photo:
+            try:
+                await mensaje.delete()
+                await context.bot.send_message(
+                    chat_id=mensaje.chat_id,
+                    text=texto,
+                    parse_mode="HTML",
+                    reply_markup=teclado_cmdss(),
+                )
+            except Exception:
+                pass
+        else:
+            try:
+                await mensaje.edit_text(
+                    texto,
+                    parse_mode="HTML",
+                    reply_markup=teclado_cmdss(),
+                )
+            except Exception:
+                pass
         return
 
     opciones = {
@@ -1513,46 +1538,59 @@ async def cmdss_callback(
 
     titulo, descripcion = opciones[q.data]
 
-    texto = f"""
+    texto = premium(f"""
 <b>{titulo}</b>
 
 {descripcion}
 
 💰 Tus créditos: <b>{saldo}</b>
-"""
-
-    teclado_volver = InlineKeyboardMarkup([
-        [
-            InlineKeyboardButton(
-                "⬅️ Volver al menú",
-                callback_data="cmdss_volver",
-            )
-        ]
-    ])
+""")
 
     url_imagen = IMAGENES_CMDSS.get(q.data)
 
-    if url_imagen and "ENLACE_" not in url_imagen:
-        try:
-            await q.message.reply_photo(
-                photo=url_imagen,
-                caption=premium(texto),
-                parse_mode="HTML",
-                reply_markup=teclado_volver,
-            )
-        except Exception:
-            # Si la URL no funciona, envía el texto como alternativa.
-            await q.message.reply_text(
-                premium(texto + "\n\n⚠️ No se pudo cargar la imagen."),
-                parse_mode="HTML",
-                reply_markup=teclado_volver,
-            )
-    else:
-        await q.message.reply_text(
-            premium(texto + "\n\n⚠️ Falta configurar el enlace de esta imagen."),
-            parse_mode="HTML",
-            reply_markup=teclado_volver,
-        )
+    try:
+        if mensaje.photo:
+            # Ya tiene foto: cambia imagen, texto y botones
+            if url_imagen and "ENLACE_" not in url_imagen:
+                await mensaje.edit_media(
+                    media=InputMediaPhoto(
+                        media=url_imagen,
+                        caption=texto,
+                        parse_mode="HTML",
+                    ),
+                    reply_markup=teclado_volver(),
+                )
+            else:
+                # Telegram no permite convertir directamente
+                # una foto en texto mediante edit_message_text.
+                await mensaje.edit_caption(
+                    caption=texto + "\n\n⚠️ Falta configurar la imagen.",
+                    parse_mode="HTML",
+                    reply_markup=teclado_volver(),
+                )
+        else:
+            # El mensaje inicial era texto: se intenta editarlo
+            if url_imagen and "ENLACE_" not in url_imagen:
+                await mensaje.delete()
+                await context.bot.send_photo(
+                    chat_id=mensaje.chat_id,
+                    photo=url_imagen,
+                    caption=texto,
+                    parse_mode="HTML",
+                    reply_markup=teclado_volver(),
+                )
+            else:
+                await mensaje.edit_text(
+                    texto + "\n\n⚠️ Falta configurar el enlace de esta imagen.",
+                    parse_mode="HTML",
+                    reply_markup=teclado_volver(),
+                )
+
+    except Exception as e:
+        print(f"Error al actualizar el menú: {e}")
+
+
+
 
 
 
