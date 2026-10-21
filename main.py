@@ -759,6 +759,14 @@ PREMIUM_STICKERS = {
     "51": "5042037214591060181", #10 soles
     "52": "5039983009042794161", #20 soles
     "53": "5334998226636390258", #WHATSAPP 
+    "54": "5098101896606909489", #verificado verde
+    "55": "5044243363197355199", #triangulo alerta
+    "56": "5465305077675737325", #sms
+    "57": "5039692531814630487", #50 soles
+    "58": "5042037214591060181", #10 soles
+    "59": "5039983009042794161", #20 soles
+    "60": "5334998226636390258", #WHATSAPP 
+} 
 } 
 
 def premium(texto):
@@ -1509,11 +1517,18 @@ async def cmdss_callback(
             escribeme @gatito_xxxxx.""",
         ),
         "cmdss_whatsapp": (
-            "[53] WHATSAPP",
-            """REACCIONES PARA CANALES
-    TUMBAR NÚMERO 
-    SMS WHATSAPP 
-    Contacta con @gatito_xxxxx[2]""",
+            "[53] WHATSAPP[53]",
+            """REACCIONES PARA CANALES [54]
+/reaccion + link ❤️ &200
+costo 20: CRD
+ 
+TUMBAR NÚMERO [55]
+/banwhats +51999999999
+costo 20 CRD
+ 
+SMS WHATSAPP [56]
+/numWhatsApp 
+costo 50 CRD""",
         ),
         "cmdss_telegram": (
             "✈️ TELEGRAM",
