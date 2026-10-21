@@ -922,7 +922,6 @@ def crear_mensaje_premium(bot_username: str):
 [9] /me ➜ Ver perfil
 [12] /staff ➜ fundador
 [10] /buy ➜ Planes y créditos
-[13] /otros ➜ Servicios secundarios 
 
 ━━━━━━━━━━━━━━━━━━━━━━
 [11] Sistema actualizado y centralizado"""
@@ -1377,8 +1376,8 @@ from telegram.ext import (
 
 # Enlaces directos a las imágenes de Catbox
 IMAGENES_CMDSS = {
-    "cmdss_bancas": "https://files.catbox.moe/ENLACE_BANCAS.jpg",
-    "cmdss_fake": "https://files.catbox.moe/ENLACE_FAKE.jpg",
+    "cmdss_bancas": "https://ibb.co/0Vqx4pfM",
+    "cmdss_fake": "https://files.catbox.moe/udw7be.jpg",
     "cmdss_whatsapp": "https://files.catbox.moe/0y85js.jpg",
     "cmdss_telegram": "https://files.catbox.moe/ENLACE_TELEGRAM.jpg",
     "cmdss_youtube": "https://files.catbox.moe/ENLACE_YOUTUBE.jpg",
@@ -1426,10 +1425,7 @@ def teclado_volver():
 
 def texto_menu(user, saldo):
     return f"""
-[1] <b>SPECTER DATA</b> [3]
-
-👤 Usuario: <code>{esc(user.username or user.full_name)}</code>
-💰 Créditos: <b>{saldo}</b>
+<b>SPECTER DATA</b> [3]
 
 [7] Bienvenido al menú de servicios.
 
@@ -1494,17 +1490,30 @@ async def cmdss_callback(
 
     opciones = {
         "cmdss_bancas": (
-            "🏦 BANCAS",
-            "Información general y educación financiera.",
+            "BANCAS",
+            """Contamos con diferentes bancas 
+            Panda 2
+            lemon 4
+            moni 2
+            pago efectivo 5""",
         ),
         "cmdss_fake": (
             "🧪 BANCAS FAKE",
-            "Demostración educativa. No recopila credenciales "
-            "ni datos bancarios reales.",
+            """YAPE
+            BCP 
+            LEMON
+            PLIM
+            PANDA
+            AGORA
+            INTERBANK
+            escribeme @gatito_xxxxx.""",
         ),
         "cmdss_whatsapp": (
             "📱 WHATSAPP",
-            "Ayuda sobre privacidad y seguridad de cuentas.",
+            """REACCIONES PARA CANALES
+            TUMBAR NÚMERO 
+            SMS WHATSAPP 
+    Contacta con @gatito_xxxxx""",
         ),
         "cmdss_telegram": (
             "✈️ TELEGRAM",
