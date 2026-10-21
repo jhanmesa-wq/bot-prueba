@@ -947,7 +947,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         parse_mode="HTML"
     )
 
-def texto_menu_cmdsbot():
+def texto_menu_cmds():
     return (
         """╔═════════════════════╗
   MENÚ COMANDOS [3]
@@ -964,7 +964,7 @@ Accede a información oficial y verificada [14] en tiempo real desde
     )
 
 
-def teclado_menu_cmdsbot():
+def teclado_menu_cmds():
     return InlineKeyboardMarkup([
         [
             InlineKeyboardButton(
@@ -1009,7 +1009,7 @@ def teclado_menu_cmdsbot():
     ])
 
 
-async def cmdsbot_command(
+async def cmds_command(
     update: Update,
     context: ContextTypes.DEFAULT_TYPE
 ):
@@ -1549,7 +1549,7 @@ async def otros_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     if data == "otros_billetes":
         await query.edit_message_media(
-            media=InputMediaPhoto(media=FOTOS["billetes"], caption=premium("""[47]BILLETES G5 
+            media=InputMediaPhoto(media=FOTOS["otros_billetes"], caption=premium("""[47]BILLETES G5 
 
  [49] BILLETE DE S/.100 ≫ S/. 35
 [50] BILLETE DE S/.50 ≫ S/. 22
@@ -3173,7 +3173,7 @@ def main():
     # ========================== COMANDOS ==========================
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("register", register_command))
-    app.add_handler(CommandHandler("cmdsbot", cmdsbot_command))
+    app.add_handler(CommandHandler("cmds", cmds_command))
     app.add_handler(CommandHandler("me", me_command))
     app.add_handler(CommandHandler("staff", staff_command))
     app.add_handler(CommandHandler("buy", buy_command))
