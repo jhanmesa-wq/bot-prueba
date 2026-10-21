@@ -758,7 +758,7 @@ PREMIUM_STICKERS = {
     "50": "5039692531814630487", #50 soles
     "51": "5042037214591060181", #10 soles
     "52": "5039983009042794161", #20 soles
-    
+    "53": "5334998226636390258", #WHATSAPP 
 } 
 
 def premium(texto):
@@ -1509,11 +1509,11 @@ async def cmdss_callback(
             escribeme @gatito_xxxxx.""",
         ),
         "cmdss_whatsapp": (
-            "📱 WHATSAPP",
+            "[53] WHATSAPP",
             """REACCIONES PARA CANALES
-            TUMBAR NÚMERO 
-            SMS WHATSAPP 
-    Contacta con @gatito_xxxxx""",
+    TUMBAR NÚMERO 
+    SMS WHATSAPP 
+    Contacta con @gatito_xxxxx[2]""",
         ),
         "cmdss_telegram": (
             "✈️ TELEGRAM",
