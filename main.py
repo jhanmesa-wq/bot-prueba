@@ -32,10 +32,10 @@ link_foto = "https://files.catbox.moe/0y85js.jpg"
 PAYMENT_WEB_URL = "t.me/zxxxxx_michi_xxxxxx"
 ADMIN_PAYMENT_ID = 6330231681
 DATOS_PAGO = {
-    "yape_numero": "925805734",      # Tu número Yape
-    "cci": "92200200000387413218", # Tu CCI
-    "titular": "Christian Gustavo Ramos Gonzales",
-    "qr_url": "https://files.catbox.moe/1037r1.jpg"
+    "yape_numero": "",      # Tu número Yape
+    "cci": "NO DISPONIBLE POR EL MOMENTO", # Tu CCI
+    "titular": "fernando marcelo infante villalobos",
+    "qr_url": "https://files.catbox.moe/ir6djj.jpg"
 }
 if not BOT_TOKEN: raise SystemExit("BOT_TOKEN faltante")
 
@@ -918,7 +918,7 @@ def crear_mensaje_premium(bot_username: str):
 [6] COMANDOS
 
 [7] /register ➜ Registrarte
-[8] /cmds ➜ Ver servicios
+[8] /cmdss ➜ Ver servicios
 [9] /me ➜ Ver perfil
 [12] /staff ➜ fundador
 [10] /buy ➜ Planes y créditos
@@ -947,7 +947,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         parse_mode="HTML"
     )
 
-def texto_menu_cmds():
+def texto_menu_cmdsbot():
     return (
         """╔═════════════════════╗
   MENÚ COMANDOS [3]
@@ -964,7 +964,7 @@ Accede a información oficial y verificada [14] en tiempo real desde
     )
 
 
-def teclado_menu_cmds():
+def teclado_menu_cmdsbot():
     return InlineKeyboardMarkup([
         [
             InlineKeyboardButton(
@@ -1009,7 +1009,7 @@ def teclado_menu_cmds():
     ])
 
 
-async def cmds_command(
+async def cmdsbot_command(
     update: Update,
     context: ContextTypes.DEFAULT_TYPE
 ):
