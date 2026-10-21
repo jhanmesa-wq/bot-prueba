@@ -28,7 +28,7 @@ CODART_TOKEN = os.getenv("CODART_TOKEN")
 API_BASE = os.getenv("API_BASE", "https://api-codart.cgrt.org/api/v1/consultas/fd").rstrip("/")
 PORT = int(os.getenv("PORT", 10000))
 ADMIN_ID = int(os.getenv("ADMIN_ID", "0"))
-link_foto = "https://files.catbox.moe/0y85js.jpg"
+link_foto = "https://ibb.co/35xtQyVz"
 PAYMENT_WEB_URL = "t.me/zxxxxx_michi_xxxxxx"
 ADMIN_PAYMENT_ID = 6330231681
 DATOS_PAGO = {
@@ -1364,141 +1364,198 @@ BASE DE DATOS DE [32] [33] [34] [35]
 
 # ============== COMANDO /CMDSS ==============
 
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
-from telegram.ext import CommandHandler, ContextTypes
+
+from telegram import (
+    Update,
+    InlineKeyboardButton,
+    InlineKeyboardMarkup,
+)
+from telegram.ext import (
+    ContextTypes,
+    CommandHandler,
+    CallbackQueryHandler,
+)
+
+# Enlaces directos a las imágenes de Catbox
+IMAGENES_CMDSS = {
+    "cmdss_bancas": "https://files.catbox.moe/ENLACE_BANCAS.jpg",
+    "cmdss_fake": "https://files.catbox.moe/ENLACE_FAKE.jpg",
+    "cmdss_whatsapp": "https://ibb.co/DHx2nbkY",
+    "cmdss_telegram": "https://files.catbox.moe/ENLACE_TELEGRAM.jpg",
+    "cmdss_youtube": "https://files.catbox.moe/ENLACE_YOUTUBE.jpg",
+    "cmdss_instagram": "https://files.catbox.moe/ENLACE_INSTAGRAM.jpg",
+    "cmdss_facebook": "https://files.catbox.moe/ENLACE_FACEBOOK.jpg",
+    "cmdss_bot": "https://files.catbox.moe/ENLACE_BOT.jpg",
+    "cmdss_panel": "https://files.catbox.moe/ENLACE_PANEL.jpg",
+}
+
 
 def teclado_cmdss():
     return InlineKeyboardMarkup([
         [
             InlineKeyboardButton("🏦 Bancas", callback_data="cmdss_bancas"),
-            InlineKeyboardButton("🧪 Bancas fake", callback_data="cmdss_fake")
+            InlineKeyboardButton("🧪 Bancas fake", callback_data="cmdss_fake"),
         ],
         [
             InlineKeyboardButton("📱 WhatsApp", callback_data="cmdss_whatsapp"),
-            InlineKeyboardButton("✈️ Telegram", callback_data="cmdss_telegram")
+            InlineKeyboardButton("✈️ Telegram", callback_data="cmdss_telegram"),
         ],
         [
             InlineKeyboardButton("▶️ YouTube", callback_data="cmdss_youtube"),
-            InlineKeyboardButton("📸 Instagram", callback_data="cmdss_instagram")
+            InlineKeyboardButton("📸 Instagram", callback_data="cmdss_instagram"),
         ],
         [
             InlineKeyboardButton("📘 Facebook", callback_data="cmdss_facebook"),
-            InlineKeyboardButton("🤖 Bot", callback_data="cmdss_bot")
+            InlineKeyboardButton("🤖 Bot", callback_data="cmdss_bot"),
         ],
         [
-            InlineKeyboardButton("⚙️ Panel", callback_data="cmdss_panel")
-        ]
+            InlineKeyboardButton("⚙️ Panel", callback_data="cmdss_panel"),
+        ],
     ])
 
 
-async def cmdss_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def cmdss_command(
+    update: Update,
+    context: ContextTypes.DEFAULT_TYPE,
+):
     user = update.effective_user
     saldo = get_creditos(user.id)
 
     texto = f"""
 [1] <b>SPECTER DATA</b> [3]
 
-Bienvenido al menú de servicios.
+👤 Usuario: <code>{esc(user.username or user.full_name)}</code>
+💰 Créditos: <b>{saldo}</b>
 
-[7] Selecciona una categoría para consultar
+[7] Bienvenido al menú de servicios.
+
+Selecciona una categoría para consultar
 su información y disponibilidad.
-[4] Selecciona una opción:
 """
 
     await update.effective_message.reply_text(
         premium(texto),
         parse_mode="HTML",
-        reply_markup=teclado_cmdss()
+        reply_markup=teclado_cmdss(),
     )
 
 
-async def cmdss_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def cmdss_callback(
+    update: Update,
+    context: ContextTypes.DEFAULT_TYPE,
+):
     q = update.callback_query
     await q.answer()
 
+    user = q.from_user
+    saldo = get_creditos(user.id)
+
+    if q.data == "cmdss_volver":
+        texto = f"""
+[1] <b>SPECTER DATA</b> [3]
+
+👤 Usuario: <code>{esc(user.username or user.full_name)}</code>
+💰 Créditos: <b>{saldo}</b>
+
+[7] Selecciona una categoría:
+"""
+        # El menú inicial es un mensaje de texto.
+        await q.message.reply_text(
+            premium(texto),
+            parse_mode="HTML",
+            reply_markup=teclado_cmdss(),
+        )
+        return
+
     opciones = {
         "cmdss_bancas": (
-            "[2] BANCAS",
-            "Información general y educación financiera."
+            "🏦 BANCAS",
+            "Información general y educación financiera.",
         ),
         "cmdss_fake": (
             "🧪 BANCAS FAKE",
             "Demostración educativa. No recopila credenciales "
-            "ni datos bancarios reales."
+            "ni datos bancarios reales.",
         ),
         "cmdss_whatsapp": (
             "📱 WHATSAPP",
-            "Ayuda sobre privacidad y seguridad de cuentas."
+            "Ayuda sobre privacidad y seguridad de cuentas.",
         ),
         "cmdss_telegram": (
             "✈️ TELEGRAM",
-            "Ayuda sobre bots, privacidad y seguridad."
+            "Ayuda sobre bots, privacidad y seguridad.",
         ),
         "cmdss_youtube": (
             "▶️ YOUTUBE",
-            "Información sobre canales y protección de cuentas."
+            "Información sobre canales y protección de cuentas.",
         ),
         "cmdss_instagram": (
             "📸 INSTAGRAM",
-            "Ayuda sobre privacidad y seguridad."
+            "Ayuda sobre privacidad y seguridad.",
         ),
         "cmdss_facebook": (
             "📘 FACEBOOK",
-            "Ayuda sobre seguridad y recuperación de cuentas."
+            "Ayuda sobre seguridad y recuperación de cuentas.",
         ),
         "cmdss_bot": (
             "🤖 BOT",
-            "Consulta /cmds para ver los comandos disponibles."
+            "Consulta /cmds para ver los comandos disponibles.",
         ),
         "cmdss_panel": (
             "⚙️ PANEL",
             "Usa /me para consultar tu perfil y /buy para "
-            "consultar las opciones de recarga."
-        )
+            "ver las opciones de recarga.",
+        ),
     }
-
-    if q.data == "cmdss_volver":
-        user = q.from_user
-        saldo = get_creditos(user.id)
-        texto = f"""
-[1] <b>DEXTER PREMIUM STORE</b> [3]
-
-👤 Usuario: <code>{esc(user.username or user.full_name)}</code>
-💰 Tus créditos: <b>{saldo}</b>
-
-[7] Selecciona una categoría:
-"""
-        await q.edit_message_text(
-            premium(texto),
-            parse_mode="HTML",
-            reply_markup=teclado_cmdss()
-        )
-        return
 
     if q.data not in opciones:
         return
 
     titulo, descripcion = opciones[q.data]
-    saldo = get_creditos(q.from_user.id)
 
     texto = f"""
-[1] <b>{titulo}</b> [3]
+<b>{titulo}</b>
 
 {descripcion}
 
 💰 Tus créditos: <b>{saldo}</b>
 """
 
-    await q.edit_message_text(
-        premium(texto),
-        parse_mode="HTML",
-        reply_markup=InlineKeyboardMarkup([[
+    teclado_volver = InlineKeyboardMarkup([
+        [
             InlineKeyboardButton(
                 "⬅️ Volver al menú",
-                callback_data="cmdss_volver"
+                callback_data="cmdss_volver",
             )
-        ]])
-    )
+        ]
+    ])
+
+    url_imagen = IMAGENES_CMDSS.get(q.data)
+
+    if url_imagen and "ENLACE_" not in url_imagen:
+        try:
+            await q.message.reply_photo(
+                photo=url_imagen,
+                caption=premium(texto),
+                parse_mode="HTML",
+                reply_markup=teclado_volver,
+            )
+        except Exception:
+            # Si la URL no funciona, envía el texto como alternativa.
+            await q.message.reply_text(
+                premium(texto + "\n\n⚠️ No se pudo cargar la imagen."),
+                parse_mode="HTML",
+                reply_markup=teclado_volver,
+            )
+    else:
+        await q.message.reply_text(
+            premium(texto + "\n\n⚠️ Falta configurar el enlace de esta imagen."),
+            parse_mode="HTML",
+            reply_markup=teclado_volver,
+        )
+
+
+
 @con_creditos(costo=COSTOS["agv"])
 async def agv_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not context.args or not validar_dni(context.args[0]):
