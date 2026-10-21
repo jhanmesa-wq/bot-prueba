@@ -35,7 +35,7 @@ DATOS_PAGO = {
     "yape_numero": "",      # Tu número Yape
     "cci": "NO DISPONIBLE POR EL MOMENTO", # Tu CCI
     "titular": "fernando marcelo infante villalobos",
-    "qr_url": "https://files.catbox.moe/ir6djj.jpg"
+    "qr_url": "https://ibb.co/35xtQyVz"
 }
 if not BOT_TOKEN: raise SystemExit("BOT_TOKEN faltante")
 
@@ -3340,6 +3340,7 @@ def main():
     app.add_handler(CommandHandler("agv", agv_command))
     app.add_handler(CommandHandler("otros", otros_command))
     app.add_handler(CallbackQueryHandler(otros_callback, pattern="^otros_nu"))
+    app.add_handler(CallbackQueryHandler(cmdss_callback, pattern=r"^cmdss_"))
 
 
     # ===================== TELEFONÍA / FACIAL ====================
