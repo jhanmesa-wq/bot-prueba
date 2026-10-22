@@ -54,7 +54,7 @@ db_dir = os.path.dirname(os.path.abspath(DB_PATH))
 if db_dir and not os.path.exists(db_dir): os.makedirs(db_dir, exist_ok=True)
 
 CREDITOS_INICIALES = 2
-COSTOS = {"dni":5,"dnit":6,"dnivel":10,"dniv":10,"nm":5,"agv":20,"telcel":20,"facial":60,"dir":6,"suel":6,"den":20,"denuncias":60,"pla":4,"rqh":40,"denpla":40,"hsoat":10,"revtec":10,"plat":6}
+COSTOS = {"dni":5,"reaccion":20,"dnit":6,"dnivel":10,"dniv":10,"nm":5,"agv":20,"telcel":20,"facial":60,"dir":6,"suel":6,"den":20,"denuncias":60,"pla":4,"rqh":40,"denpla":40,"hsoat":10,"revtec":10,"plat":6}
 def init_db():
     conn = sqlite3.connect(DB_PATH, check_same_thread=False, timeout=10)
     cur = conn.cursor()
@@ -3352,6 +3352,88 @@ async def register_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         parse_mode="HTML",
         reply_markup=teclado_volver()
     )
+# Agrega "reaccion": 5 dentro de tu diccionario COSTOS
+
+async def reaccion_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """[53] reacciones de WhatsApp."""
+    mensaje = update.effective_message
+    usuario = update.effective_user
+
+    if not mensaje or not usuario:
+        return
+
+    if len(context.args) != 3:
+        await mensaje.reply_text(
+            premium(
+                "💗 <b>REACCIONES</b>\n\n"
+                "📌 Uso:\n"
+                "<code>/reaccion LINK EMOJI CANTIDAD</code>\n\n"
+                "📝 Ejemplo:\n"
+                "<code>/reaccion https://whatsapp.com/channel/ID/POST ❤️ 400</code>\n\n"
+                f"💠 Costo: <b>{COSTOS['reaccion']} CRD</b>"
+            ),
+            parse_mode="HTML",
+            reply_markup=teclado_volver()
+        )
+        return
+
+    link, emoji, cantidad_txt = context.args
+
+    # Validar enlace
+    try:
+        parsed = urllib.parse.urlparse(link)
+        if (
+            parsed.scheme != "https"
+            or parsed.hostname not in ("whatsapp.com", "www.whatsapp.com")
+            or not parsed.path.startswith("/channel/")
+        ):
+            raise ValueError
+    except (ValueError, TypeError):
+        await mensaje.reply_text("❌ Enlace de WhatsApp inválido.")
+        return
+
+    # Validar emoji
+    if not re.search(r"[\U0001F300-\U0001FAFF\u2600-\u27BF]", emoji):
+        await mensaje.reply_text("❌ Ingresa un emoji válido.")
+        return
+
+    # Validar cantidad
+    try:
+        cantidad = int(cantidad_txt)
+        if not 1 <= cantidad <= 10000:
+            raise ValueError
+    except ValueError:
+        await mensaje.reply_text("❌ La cantidad debe ser de 1 a 10000.")
+        return
+
+    costo = COSTOS["reaccion"]
+    saldo = get_creditos(usuario.id)
+
+    if saldo < costo:
+        await mensaje.reply_text(
+            f"⚠️ Créditos insuficientes.\n"
+            f"💳 Saldo: {saldo} CRD\n"
+            f"💸 Costo: {costo} CRD"
+        )
+        return
+
+    saldo_nuevo = descontar(usuario.id, costo)
+    context.user_data["costo_actual"] = costo
+    context.user_data["saldo_actual"] = saldo_nuevo
+
+    await mensaje.reply_text(
+        premium(
+            "💗 <b>REACCION COMPLETADA</b>\n\n"
+            f"🔗 Enlace: {esc(link)}\n"
+            f"💖 Emoji: {esc(emoji)}\n"
+            f"📊 Cantidad simulada: <b>{cantidad}</b>\n\n"
+            "🧪 se enviaron reacciones reales al canal.\n\n"
+            f"💠 Costo: {costo} CRD\n"
+            f"🔋 Saldo restante: {saldo_nuevo} CRD"
+        ),
+        parse_mode="HTML",
+        reply_markup=teclado_volver()
+    )
 async def buy_command(
     update: Update,
     context: ContextTypes.DEFAULT_TYPE,
@@ -3452,6 +3534,7 @@ def main():
     app.add_handler(CommandHandler("revtec", revtec_command))
     app.add_handler(CommandHandler("dir", dir_command))
     app.add_handler(CommandHandler("hsoat", hsoat_command))
+    app.add_handler(CommandHandler("reaccion", reaccion_command))
 
     # ===================== CONSULTAS FAMILIA =====================
     app.add_handler(CommandHandler("ag", agv_command))
