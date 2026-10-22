@@ -1398,23 +1398,23 @@ IMAGENES_CMDSS = {
 def teclado_cmdss():
     return InlineKeyboardMarkup([
         [
-            InlineKeyboardButton("[2] BANCAS", callback_data="cmdss_bancas"),
-            InlineKeyboardButton("🧪 Bancas fake", callback_data="cmdss_fake"),
+            InlineKeyboardButton(" BANCAS", callback_data="cmdss_bancas"),
+            InlineKeyboardButton("BANCAS FAKE", callback_data="cmdss_fake"),
         ],
         [
-            InlineKeyboardButton("📱 WhatsApp", callback_data="cmdss_whatsapp"),
-            InlineKeyboardButton("✈️ Telegram", callback_data="cmdss_telegram"),
+            InlineKeyboardButton("📱 WHATSAPP", callback_data="cmdss_whatsapp"),
+            InlineKeyboardButton("✈️ TELEGRAM", callback_data="cmdss_telegram"),
         ],
         [
-            InlineKeyboardButton("▶️ YouTube", callback_data="cmdss_youtube"),
-            InlineKeyboardButton("📸 Instagram", callback_data="cmdss_instagram"),
+            InlineKeyboardButton("▶️ YOUTUBE", callback_data="cmdss_youtube"),
+            InlineKeyboardButton("📸 INSTAGRAM", callback_data="cmdss_instagram"),
         ],
         [
-            InlineKeyboardButton("📘 Facebook", callback_data="cmdss_facebook"),
-            InlineKeyboardButton("🤖 Bot", callback_data="cmdss_bot"),
+            InlineKeyboardButton("📘 FACEBOOK", callback_data="cmdss_facebook"),
+            InlineKeyboardButton("🤖 BOT DOXEO", callback_data="cmdss_bot"),
         ],
         [
-            InlineKeyboardButton("⚙️ Panel", callback_data="cmdss_panel"),
+            InlineKeyboardButton("⛓️‍💥 PANELES", callback_data="cmdss_panel"),
         ],
     ])
 
