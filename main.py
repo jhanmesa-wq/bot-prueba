@@ -762,9 +762,9 @@ PREMIUM_STICKERS = {
     "54": "5098101896606909489", #verificado verde
     "55": "5044243363197355199", #triangulo alerta
     "56": "5465305077675737325", #sms
-    "57": "5039692531814630487", #50 soles
-    "58": "5042037214591060181", #10 soles
-    "59": "5039983009042794161", #20 soles
+    "57": "4985596486713607215", #calabera
+    "58": "5199591780537877323", #mikasa ojo azul 
+    "59": "5303496488356166971", #mikasa dinero 
     "60": "5334998226636390258", #WHATSAPP
 }
 
@@ -1530,8 +1530,20 @@ SMS WHATSAPP [56]
 costo 50 CRD""",
         ),
         "cmdss_telegram": (
-            "✈️ TELEGRAM",
-            "Ayuda sobre bots, privacidad y seguridad.",
+            """[48] TELEGRAM[48]
+
+[57] TUMBAR TELEGRAM
+/bantele @user o número 
+costo 40 CRD
+[58] USUARIOS EN GRUPO 
+/usuarios + cantidad+link
+costo 
+[59]1k 50 CRD 
+[59]2k 100 CRD
+[59]5k 500 CRD
+SMS TELEGRAM [56]
+/numtelegram 
+costo 40 CRD""",
         ),
         "cmdss_youtube": (
             "▶️ YOUTUBE",
