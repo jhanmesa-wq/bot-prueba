@@ -3743,7 +3743,7 @@ def main():
     # ======================= ADMINISTRACIÓN ======================
     app.add_handler(CommandHandler("addcreditos", addcreditos_command))
     app.add_handler(CommandHandler("ip", ip_command))
-    app.add_handler(CallbackQueryHandler(ip_callback,pattern=r"^ip_otra$",))
+    app.add_handler(CallbackQueryHandler(ip_callback,pattern=r"^ip_otra$"))
 
     # ====================== BOTONES INLINE =======================
     app.add_handler(CallbackQueryHandler(botones_callback))
