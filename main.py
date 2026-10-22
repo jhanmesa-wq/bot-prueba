@@ -55,7 +55,7 @@ db_dir = os.path.dirname(os.path.abspath(DB_PATH))
 if db_dir and not os.path.exists(db_dir): os.makedirs(db_dir, exist_ok=True)
 
 CREDITOS_INICIALES = 2
-COSTOS = {"dni":5,"reaccion":20,"dnit":6,"dnivel":10,"dniv":10,"nm":5,"agv":20,"telcel":20,"facial":60,"dir":6,"suel":6,"den":20,"denuncias":60,"pla":4,"rqh":40,"denpla":40,"hsoat":10,"revtec":10,"plat":6}
+COSTOS = {"dni":5,"COSTO_IP":10,"reaccion":20,"dnit":6,"dnivel":10,"dniv":10,"nm":5,"agv":20,"telcel":20,"facial":60,"dir":6,"suel":6,"den":20,"denuncias":60,"pla":4,"rqh":40,"denpla":40,"hsoat":10,"revtec":10,"plat":6}
 def init_db():
     conn = sqlite3.connect(DB_PATH, check_same_thread=False, timeout=10)
     cur = conn.cursor()
@@ -1679,6 +1679,165 @@ COSTO  80 CRD""",
 
 
 
+
+def teclado_ip(lat, lon):
+    return InlineKeyboardMarkup([
+        [
+            InlineKeyboardButton(
+                "🗺️ Ver mapa",
+                url=f"https://www.openstreetmap.org/?mlat={lat}&mlon={lon}#map=10/{lat}/{lon}",
+            ),
+            InlineKeyboardButton(
+                "📍 Google Maps",
+                url=f"https://www.google.com/maps?q={lat},{lon}",
+            ),
+        ],
+        [
+            InlineKeyboardButton(
+                "🔄 Consultar otra IP",
+                callback_data="ip_otra",
+            ),
+        ],
+    ])
+
+
+def consultar_ip_publica(ip):
+    respuesta = requests.get(
+        f"https://ipwho.is/{ip}",
+        timeout=12,
+    )
+    respuesta.raise_for_status()
+    datos = respuesta.json()
+
+    if not datos.get("success"):
+        raise ValueError("No se pudo consultar la IP")
+
+    return datos
+
+
+async def ip_command(
+    update: Update,
+    context: ContextTypes.DEFAULT_TYPE,
+):
+    user = update.effective_user
+    uid = user.id
+    mensaje = update.effective_message
+
+    if not context.args:
+        await mensaje.reply_text(
+            "🌐 Uso: /ip 8.8.8.8\n"
+            "💰 Costo: 1 crédito por consulta exitosa."
+        )
+        return
+
+    ip = context.args[0].strip()
+
+    try:
+        direccion = ipaddress.ip_address(ip)
+    except ValueError:
+        await mensaje.reply_text("❌ La dirección IP no es válida.")
+        return
+
+    if not direccion.is_global:
+        await mensaje.reply_text(
+            "⚠️ Introduce una dirección IP pública global."
+        )
+        return
+
+    # Comprobar saldo antes de consultar.
+    saldo = get_creditos(uid)
+
+    if saldo < COSTO_IP:
+        await mensaje.reply_text(
+            f"❌ No tienes créditos suficientes.\n"
+            f"💰 Tu saldo: {saldo}\n"
+            f"💳 Costo: {COSTO_IP} crédito."
+        )
+        return
+
+    estado = await mensaje.reply_text(
+        "🔎 Consultando información pública...\n"
+        "💰 Costo: 1 crédito."
+    )
+
+    # Consultar antes de cobrar.
+    try:
+        datos = consultar_ip_publica(ip)
+    except (requests.RequestException, ValueError):
+        await estado.edit_text(
+            "❌ Falló la consulta. No se descontaron créditos."
+        )
+        return
+
+    # Descontar solo después de recibir una respuesta válida.
+    saldo_actual = get_creditos(uid)
+
+    if saldo_actual < COSTO_IP:
+        await estado.edit_text(
+            "❌ Tu saldo cambió y ya no alcanza para esta consulta."
+        )
+        return
+
+    descontar(uid, COSTO_IP)
+    saldo_final = get_creditos(uid)
+
+    conexion = datos.get("connection") or {}
+    zona = datos.get("timezone") or {}
+    ubicacion = datos.get("city") or "No disponible"
+    region = datos.get("region") or "No disponible"
+    pais = datos.get("country") or "No disponible"
+    isp = conexion.get("isp") or "No disponible"
+    org = conexion.get("org") or "No disponible"
+    asn = conexion.get("asn") or "No disponible"
+    zona_nombre = zona.get("id") or "No disponible"
+    lat = datos.get("latitude")
+    lon = datos.get("longitude")
+
+    def seguro(valor):
+        return html.escape(str(valor))
+
+    texto = (
+        "🌐 <b>SPECTER DATA | IP LOOKUP</b>\n\n"
+        f"🖥️ IP: <code>{seguro(ip)}</code>\n"
+        f"🌍 País: {seguro(pais)}\n"
+        f"📍 Región: {seguro(region)}\n"
+        f"🏙️ Ciudad aproximada: {seguro(ubicacion)}\n"
+        f"🧭 Latitud: {seguro(lat if lat is not None else 'N/D')}\n"
+        f"🧭 Longitud: {seguro(lon if lon is not None else 'N/D')}\n"
+        f"🕒 Zona horaria: {seguro(zona_nombre)}\n\n"
+        f"📡 ISP: {seguro(isp)}\n"
+        f"🏢 Organización: {seguro(org)}\n"
+        f"🔗 ASN: {seguro(asn)}\n\n"
+        f"💳 Crédito descontado: {COSTO_IP}\n"
+        f"💰 Saldo restante: {saldo_final}\n\n"
+        "⚠️ <i>La geolocalización es aproximada; "
+        "no identifica una dirección física exacta.</i>"
+    )
+
+    botones = None
+    if lat is not None and lon is not None:
+        botones = teclado_ip(lat, lon)
+
+    await estado.edit_text(
+        texto,
+        parse_mode="HTML",
+        reply_markup=botones,
+        disable_web_page_preview=True,
+    )
+
+
+async def ip_callback(
+    update: Update,
+    context: ContextTypes.DEFAULT_TYPE,
+):
+    query = update.callback_query
+    await query.answer()
+
+    if query.data == "ip_otra":
+        await query.message.reply_text(
+            "🔎 Envía otra consulta:\n"
+            "/ip 1.1.1.1"
+        ) 
 
 @con_creditos(costo=COSTOS["agv"])
 async def agv_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -3503,6 +3662,8 @@ def main():
     )
     # ======================= ADMINISTRACIÓN ======================
     app.add_handler(CommandHandler("addcreditos", addcreditos_command))
+    app.add_handler(CommandHandler("ip", ip_command))
+    app.add_handler(CallbackQueryHandler(ip_callback,pattern=r"^ip_otra$",))
 
     # ====================== BOTONES INLINE =======================
     app.add_handler(CallbackQueryHandler(botones_callback))
