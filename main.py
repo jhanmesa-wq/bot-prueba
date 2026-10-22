@@ -1399,7 +1399,7 @@ def teclado_cmdss():
     return InlineKeyboardMarkup([
         [
             InlineKeyboardButton(" BANCAS", callback_data="cmdss_bancas"),
-            InlineKeyboardButton("BANCAS FAKE", callback_data="cmdss_fake"),
+            InlineKeyboardButton("🎭BANCAS FAKE", callback_data="cmdss_fake"),
         ],
         [
             InlineKeyboardButton("📱 WHATSAPP", callback_data="cmdss_whatsapp"),
