@@ -40,6 +40,9 @@ DATOS_PAGO = {
     "titular": "fernando marcelo infante villalobos",
     "qr_url": "https://ibb.co/35xtQyVz"
 }
+COSTO_PANEL = 80
+
+PANEL_URL = os.getenv("PANEL_URL", "https://lytzthebest.com").strip()
 if not BOT_TOKEN: raise SystemExit("BOT_TOKEN faltante")
 
 HEADERS_JSON = {"Content-Type": "application/json", "Authorization": f"Bearer {CODART_TOKEN}"}
@@ -58,6 +61,7 @@ if db_dir and not os.path.exists(db_dir): os.makedirs(db_dir, exist_ok=True)
 
 CREDITOS_INICIALES = 2
 COSTOS = {"dni":5,"COSTO_IP":10,"reaccion":20,"dnit":6,"dnivel":10,"dniv":10,"nm":5,"agv":20,"telcel":20,"facial":60,"dir":6,"suel":6,"den":20,"denuncias":60,"pla":4,"rqh":40,"denpla":40,"hsoat":10,"revtec":10,"plat":6}
+COSTO_IP = COSTOS["COSTO_IP"]
 def init_db():
     conn = sqlite3.connect(DB_PATH, check_same_thread=False, timeout=10)
     cur = conn.cursor()
@@ -1919,6 +1923,56 @@ async def ip_callback(
             "🔎 Envía otra consulta con una IP pública:\n"
             "/ip 1.1.1.1"
     )
+
+async def panel_command(
+    update: Update,
+    context: ContextTypes.DEFAULT_TYPE,
+):
+    usuario = update.effective_user
+    mensaje = update.effective_message
+
+    if not usuario or not mensaje:
+        return
+
+    saldo = get_creditos(usuario.id)
+
+    # Verificar el enlace antes de cobrar
+    if not PANEL_URL.startswith(("https://", "http://")):
+        await mensaje.reply_text(
+            "❌ El enlace del panel no está configurado."
+        )
+        return
+
+    if saldo < COSTO_PANEL:
+        await mensaje.reply_text(
+            "❌ Créditos insuficientes.\n\n"
+            f"💰 Saldo: {saldo} CRD\n"
+            f"💳 Precio del panel: {COSTO_PANEL} CRD\n"
+            "🔋 Usa /buy para recargar."
+        )
+        return
+
+    # Cobrar y entregar el enlace
+    descontar(usuario.id, COSTO_PANEL)
+    saldo_final = get_creditos(usuario.id)
+
+    botones = InlineKeyboardMarkup([
+        [
+            InlineKeyboardButton(
+                "🌐 ABRIR PANEL",
+                url=PANEL_URL,
+            )
+        ]
+    ])
+
+    await mensaje.reply_text(
+        "✅ PANEL ADQUIRIDO\n\n"
+        f"💸 Costo: {COSTO_PANEL} CRD\n"
+        f"🔋 Saldo restante: {saldo_final} CRD\n\n"
+        "Pulsa el botón para abrir el panel.",
+        reply_markup=botones,
+                               )
+    
     
 @con_creditos(costo=COSTOS["agv"])
 async def agv_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -3744,6 +3798,7 @@ def main():
     # ======================= ADMINISTRACIÓN ======================
     app.add_handler(CommandHandler("addcreditos", addcreditos_command))
     app.add_handler(CommandHandler("ip", ip_command))
+    app.add_handler(CommandHandler("panel", panel_command))
     app.add_handler(CallbackQueryHandler(ip_callback,pattern=r"^ip_otra$"))
 
     # ====================== BOTONES INLINE =======================
