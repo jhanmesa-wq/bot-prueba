@@ -10,6 +10,7 @@ import html
 import asyncio
 import urllib.parse
 import secrets
+import ipaddress
 from datetime import datetime
 from urllib.parse import quote_plus
 from aiohttp import web
@@ -1513,15 +1514,15 @@ async def cmdss_callback(
             pago efectivo 5""",
         ),
         "cmdss_fake": (
-            "🧪 BANCAS FAKE",
-            """YAPE
-            BCP 
-            LEMON
-            PLIM
-            PANDA
-            AGORA
-            INTERBANK
-            escribeme @gatito_xxxxx.""",
+            "BANCAS 2026 [3]",
+            """
+
+[36]  SOLO  S/25
++
+ [37] + [38] + [39] +
+ [40]
+S/50 SOLES
+""",
         ),
         "cmdss_whatsapp": (
             "[53] WHATSAPP[53]",
@@ -1583,34 +1584,35 @@ costo 50 CRD""",
         ),
         "cmdss_panel": (
             "PANELES [63]",
-            """PANEL TIK TOK [62]
+            """
+            PANEL TIK TOK [62]
 seguidores [11]
 vistas [11]
-likes ✅
-comentarios ✅
-vistas live✅
-compartidos✅
+likes [11]
+comentarios [11]
+vistas live[11]
+compartidos[11]
 
  PANEL YOUTUBE [60]
 seguidores [26]
-vistas ✅
-likes ✅
+vistas [11]
+likes [11]
 comentarios [26]
 vistas live[26]
 compartidos[26]
 
 PANEL INSTAGRAM[64] 
-seguidores ✅
-vistas ✅
-likes ✅
-comentarios ✅
+seguidores [11]
+vistas [11]
+likes [11]
+comentarios [11]
 vistas live[26]
-compartidos✅
+compartidos[11]
 
 PANEL FACEBOOK [65]
-seguidores ✅
-vistas ✅
-likes ✅
+seguidores [11]
+vistas [11]
+likes [11]
 comentarios [11]
 vistas live[26]
 compartidos[26]
@@ -1828,119 +1830,6 @@ async def dnivel_command(update:Update, context:ContextTypes.DEFAULT_TYPE):
         parse_mode="HTML",
         reply_markup=teclado_volver()
     )
-
-
-# pon tus fotos aquí
-FOTOS = {
-    "menu": "https://files.catbox.moe/3gxp26.jpg",
-    "billetes": "https://files.catbox.moe/y4u71l.jpg",
-    "webbot": "https://files.catbox.moe/wu71lw.jpeg",
-    "bancas": "https://files.catbox.moe/udw7be.jpg",
-    "numeros": "https://files.catbox.moe/jzu92r.jpg",
-    "pagina": "https://files.catbox.moe/7s8vps.jpg",
-}
-
-
-async def otros_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    keyboard = [
-        [InlineKeyboardButton("💵 Billetes 5G", callback_data="otros_billetes"),
-         InlineKeyboardButton("🌐 Crea tu web/bot", callback_data="otros_webbot")],
-        [InlineKeyboardButton("🏦 Bancas", callback_data="otros_bancas"),
-         InlineKeyboardButton("📱 Números Virtuales", callback_data="otros_numeros")],
-        [InlineKeyboardButton("💻 Página Web", callback_data="otros_pagina")]
-    ]
-    txt = "HOLA, AMIGO [3]\n\nESTOS SON ALGUNOS DE\nNUESTROS SERVICIOS"
-    await update.message.reply_photo(
-        photo=FOTOS["menu"],
-        caption=premium(txt),
-        parse_mode="HTML",
-        reply_markup=InlineKeyboardMarkup(keyboard)
-    )
-
-async def otros_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    query = update.callback_query
-    await query.answer()
-    data = query.data
-
-    if data == "otros_billetes":
-        await query.edit_message_media(
-            media=InputMediaPhoto(media=FOTOS["otros_billetes"], caption=premium("""[47]BILLETES G5 
-
- [49] BILLETE DE S/.100 ≫ S/. 35
-[50] BILLETE DE S/.50 ≫ S/. 22
-[52] BILLETE DE S/.20 ≫ S/. 10
-
-[11] COMPRA MÍNIMA DE 5 UNIDADES
-
-[11] ENVIOS A LIMA Y PROVINCIA
-[52] 15 UNIDADES MINIMO
-
-[26] NO CONTRA ENTREGA 
-[48] @zxxxxx_michi_xxxxxx"""), parse_mode="HTML"),
-            reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton("📩 Contactar", url="https://t.me/zxxxxx_michi_xxxxxx")],
-                [InlineKeyboardButton("🔙 Volver", callback_data="otros_menu")]
-            ])
-        )
-
-
-    elif data == "otros_bancas":
-        await query.edit_message_media(
-            media=InputMediaPhoto(media=FOTOS["bancas"], caption=premium("""BANCA 2026 [3]
-
-[36]  SOLO  S/25
-+
- [37] + [38] + [39] +
- [40]
-S/50 SOLES
-
- Requisito Mínimo: CORREO. [11]
-
-ACTUALIZACIONES DE POR VIDA[1]"""), parse_mode="HTML"),
-            reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton("📩 Contactar", url="https://t.me/zxxxxx_michi_xxxxxx")],
-                [InlineKeyboardButton("🔙 Volver", callback_data="otros_menu")]
-            ])
-        )
-
-    elif data == "otros_numeros":
-        await query.edit_message_media(
-            media=InputMediaPhoto(media=FOTOS["numeros"], caption=premium("¡Hola! Bienvenido a specter SMS [3]\n\n🤖 Números virtuales para WhatsApp, Telegram, etc."), parse_mode="HTML"),
-            reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton("📩 Contactar", url="https://t.me/zxxxxx_michi_xxxxxx")],
-                [InlineKeyboardButton("🔙 Volver", callback_data="otros_menu")]
-            ])
-        )
-
-    elif data == "otros_webbot":
-        await query.edit_message_media(
-            media=InputMediaPhoto(media=FOTOS["webbot"], caption=premium("🌐 CREA TU WEB/BOT\n\nHosting + bot a medida."), parse_mode="HTML"),
-            reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton("📩 Contactar", url="https://t.me/zxxxxx_michi_xxxxxx")],
-                [InlineKeyboardButton("🔙 Volver", callback_data="otros_menu")]
-            ])
-        )
-
-    elif data == "otros_pagina":
-        await query.edit_message_media(
-            media=InputMediaPhoto(media=FOTOS["pagina"], caption=premium("🚧 PROYECTO EN DESARROLLO..."), parse_mode="HTML"),
-            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Volver", callback_data="otros_menu")]])
-        )
-
-    elif data == "otros_menu":
-        keyboard = [
-            [InlineKeyboardButton("💵 Billetes 5G", callback_data="otros_billetes"),
-             InlineKeyboardButton("🌐 Crea tu web/bot", callback_data="otros_webbot")],
-            [InlineKeyboardButton("🏦 Bancas", callback_data="otros_bancas"),
-             InlineKeyboardButton("📱 Números Virtuales", callback_data="otros_numeros")],
-            [InlineKeyboardButton("💻 Página Web", callback_data="otros_pagina")]
-        ]
-        await query.edit_message_media(
-            media=InputMediaPhoto(media=FOTOS["menu"], caption=premium("HOLA, AMIGO [3]\n\nNUESTROS SERVICIOS"), parse_mode="HTML"),
-            reply_markup=InlineKeyboardMarkup(keyboard)
-    )
-
-
 @con_creditos(COSTOS["denpla"])
 async def denpla_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not context.args or not validar_placa(context.args[0]):
@@ -3600,8 +3489,6 @@ def main():
     # ===================== CONSULTAS FAMILIA =====================
     app.add_handler(CommandHandler("ag", agv_command))
     app.add_handler(CommandHandler("agv", agv_command))
-    app.add_handler(CommandHandler("otros", otros_command))
-    app.add_handler(CallbackQueryHandler(otros_callback, pattern="^otros_nu"))
     app.add_handler(CallbackQueryHandler(cmdss_callback, pattern=r"^cmdss_"))
 
 
