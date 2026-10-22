@@ -767,6 +767,11 @@ PREMIUM_STICKERS = {
     "59": "5303496488356166971", #mikasa dinero 
     "60": "5334681713316479679", #youtube
     "61": "6296577138615125756", #bolita rojo buena 
+    "62": "5327982530702359565", #tiktok
+    "63": "5305505489373668025", #open 
+    "64": "5319160079465857105", #instagram
+    "65": "5323261730283863478", #facebook
+    "66": "6296577138615125756", # 
     
     
 }
@@ -1577,9 +1582,41 @@ costo 50 CRD""",
             "Consulta /cmds para ver los comandos disponibles.",
         ),
         "cmdss_panel": (
-            "⚙️ PANEL",
-            "Usa /me para consultar tu perfil y /buy para "
-            "ver las opciones de recarga.",
+            "PANELES [63]",
+            """PANEL TIK TOK [62]
+seguidores ✅
+vistas ✅
+likes ✅
+comentarios ✅
+vistas live✅
+compartidos✅
+
+ PANEL YOUTUBE [60]
+seguidores 😭
+vistas ✅
+likes ✅
+comentarios 😭
+vistas live😭
+compartidos😭
+
+PANEL INSTAGRAM[64] 
+seguidores ✅
+vistas ✅
+likes ✅
+comentarios ✅
+vistas live😭
+compartidos✅
+
+PANEL FACEBOOK [65]
+seguidores ✅
+vistas ✅
+likes ✅
+comentarios [7]
+vistas live[26]
+compartidos😭
+
+/panel 
+COSTO  80 CRD""",
         ),
     }
 
