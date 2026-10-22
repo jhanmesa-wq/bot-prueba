@@ -1398,7 +1398,7 @@ IMAGENES_CMDSS = {
 def teclado_cmdss():
     return InlineKeyboardMarkup([
         [
-            InlineKeyboardButton("🏦 Bancas", callback_data="cmdss_bancas"),
+            InlineKeyboardButton("[2] BANCAS", callback_data="cmdss_bancas"),
             InlineKeyboardButton("🧪 Bancas fake", callback_data="cmdss_fake"),
         ],
         [
