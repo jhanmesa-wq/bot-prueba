@@ -1627,6 +1627,7 @@ COSTO  80 CRD""",
 
     texto = premium(f"""
 <b>{titulo}</b>
+{descripcion}
 """)
 
     url_imagen = IMAGENES_CMDSS.get(q.data)
