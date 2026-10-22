@@ -765,7 +765,10 @@ PREMIUM_STICKERS = {
     "57": "4985596486713607215", #calabera
     "58": "5199591780537877323", #mikasa ojo azul 
     "59": "5303496488356166971", #mikasa dinero 
-    "60": "5334998226636390258", #WHATSAPP
+    "60": "5334681713316479679", #youtube
+    "61": "6296577138615125756", #bolita rojo buena 
+    
+    
 }
 
 def premium(texto):
@@ -1398,7 +1401,7 @@ IMAGENES_CMDSS = {
 def teclado_cmdss():
     return InlineKeyboardMarkup([
         [
-            InlineKeyboardButton(" BANCAS", callback_data="cmdss_bancas"),
+            InlineKeyboardButton("🌐BANCAS", callback_data="cmdss_bancas"),
             InlineKeyboardButton("🎭BANCAS FAKE", callback_data="cmdss_fake"),
         ],
         [
@@ -1534,19 +1537,32 @@ costo 50 CRD""",
             """[57] TUMBAR TELEGRAM
 /bantele @user o número 
 costo 40 CRD
+
 [58] USUARIOS EN GRUPO 
 /usuarios + cantidad+link
 costo 
 [59]1k 50 CRD 
 [59]2k 100 CRD
 [59]5k 500 CRD
+
 SMS TELEGRAM [56]
 /numtelegram 
 costo 40 CRD""",
         ),
         "cmdss_youtube": (
-            "▶️ YOUTUBE",
-            "Información sobre canales y protección de cuentas.",
+            "[60] YOUTUBE",
+            """
+
+BAN DE CANAL [61]
+/banyou +link del canal 
+costo 50 CRD
+ 
+YOUTUBE PREMIUM [61]
+/YouTube 
+Costo 50 CRD 
+
+/YouTudomi
+costo 50 CRD""",
         ),
         "cmdss_instagram": (
             "📸 INSTAGRAM",
