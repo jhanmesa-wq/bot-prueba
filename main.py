@@ -27,6 +27,7 @@ logger = logging.getLogger(__name__)
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 CODART_TOKEN = os.getenv("CODART_TOKEN")
 API_BASE = os.getenv("API_BASE", "https://api-codart.cgrt.org/api/v1/consultas/fd").rstrip("/")
+IPAPI_TOKEN = os.getenv("IPAPI_TOKEN", "")
 PORT = int(os.getenv("PORT", 10000))
 ADMIN_ID = int(os.getenv("ADMIN_ID", "0"))
 link_foto = "https://ibb.co/35xtQyVz"
@@ -1679,14 +1680,15 @@ COSTO  80 CRD""",
 
 
 
-
-
 def teclado_ip(lat, lon):
     return InlineKeyboardMarkup([
         [
             InlineKeyboardButton(
                 "🗺️ Ver mapa",
-                url=f"https://www.openstreetmap.org/?mlat={lat}&mlon={lon}#map=10/{lat}/{lon}",
+                url=(
+                    "https://www.openstreetmap.org/"
+                    f"?mlat={lat}&mlon={lon}#map=10/{lat}/{lon}"
+                ),
             ),
             InlineKeyboardButton(
                 "📍 Google Maps",
@@ -1703,17 +1705,29 @@ def teclado_ip(lat, lon):
 
 
 def consultar_ip_publica(ip):
+    if not IPAPI_TOKEN:
+        raise ValueError("Falta configurar IPAPI_TOKEN.")
+
+    url = f"https://api.theipapi.com/v1/ip/{ip}"
+
     respuesta = requests.get(
-        f"https://ipwho.is/{ip}",
-        timeout=12,
+        url,
+        headers={
+            "Authorization": f"Bearer {IPAPI_TOKEN}",
+            "Accept": "application/json",
+        },
+        timeout=15,
     )
     respuesta.raise_for_status()
+
     datos = respuesta.json()
 
-    if not datos.get("success"):
-        raise ValueError("No se pudo consultar la IP")
+    if datos.get("status") != "OK" or not isinstance(
+        datos.get("body"), dict
+    ):
+        raise ValueError("La API no devolvió datos válidos.")
 
-    return datos
+    return datos["body"]
 
 
 async def ip_command(
@@ -1721,13 +1735,17 @@ async def ip_command(
     context: ContextTypes.DEFAULT_TYPE,
 ):
     user = update.effective_user
-    uid = user.id
     mensaje = update.effective_message
+
+    if not user or not mensaje:
+        return
+
+    uid = user.id
 
     if not context.args:
         await mensaje.reply_text(
             "🌐 Uso: /ip 8.8.8.8\n"
-            "💰 Costo: 1 crédito por consulta exitosa."
+            f"💰 Costo: {COSTO_IP} crédito por consulta exitosa."
         )
         return
 
@@ -1736,7 +1754,9 @@ async def ip_command(
     try:
         direccion = ipaddress.ip_address(ip)
     except ValueError:
-        await mensaje.reply_text("❌ La dirección IP no es válida.")
+        await mensaje.reply_text(
+            "❌ La dirección IP no es válida."
+        )
         return
 
     if not direccion.is_global:
@@ -1745,70 +1765,126 @@ async def ip_command(
         )
         return
 
-    # Comprobar saldo antes de consultar.
     saldo = get_creditos(uid)
 
     if saldo < COSTO_IP:
         await mensaje.reply_text(
-            f"❌ No tienes créditos suficientes.\n"
+            "❌ No tienes créditos suficientes.\n"
             f"💰 Tu saldo: {saldo}\n"
             f"💳 Costo: {COSTO_IP} crédito."
         )
         return
 
     estado = await mensaje.reply_text(
-        "🔎 Consultando información pública...\n"
-        "💰 Costo: 1 crédito."
+        "🔎 Consultando información pública de la IP...\n"
+        "⏳ Espera un momento."
     )
 
-    # Consultar antes de cobrar.
     try:
-        datos = consultar_ip_publica(ip)
-    except (requests.RequestException, ValueError):
+        # requests es síncrono; ejecutarlo en un hilo evita
+        # bloquear el bucle de eventos del bot.
+        datos = await __import__("asyncio").to_thread(
+            consultar_ip_publica, str(direccion)
+        )
+
+    except requests.HTTPError as exc:
+        codigo = (
+            exc.response.status_code
+            if exc.response is not None
+            else None
+        )
+
+        if codigo in (401, 403):
+            error = "Token inválido, vencido o sin permisos."
+        elif codigo == 429:
+            error = "Límite de consultas de la API alcanzado."
+        else:
+            error = f"Error HTTP de la API ({codigo})."
+
         await estado.edit_text(
-            "❌ Falló la consulta. No se descontaron créditos."
+            f"❌ {error}\n"
+            "💰 No se descontaron créditos."
         )
         return
 
-    # Descontar solo después de recibir una respuesta válida.
-    saldo_actual = get_creditos(uid)
-
-    if saldo_actual < COSTO_IP:
+    except (requests.RequestException, ValueError) as exc:
+        # No mostrar tokens ni detalles internos al usuario.
         await estado.edit_text(
-            "❌ Tu saldo cambió y ya no alcanza para esta consulta."
+            "❌ No se pudo consultar la API.\n"
+            "💰 No se descontaron créditos.\n"
+            "Inténtalo nuevamente más tarde."
         )
         return
 
-    descontar(uid, COSTO_IP)
-    saldo_final = get_creditos(uid)
+    # Extraer los datos de la estructura real de theipapi.
+    ubicacion = datos.get("location") or {}
+    asn_info = datos.get("asn") or {}
+    empresa = datos.get("company") or {}
 
-    conexion = datos.get("connection") or {}
-    zona = datos.get("timezone") or {}
-    ubicacion = datos.get("city") or "No disponible"
-    region = datos.get("region") or "No disponible"
-    pais = datos.get("country") or "No disponible"
-    isp = conexion.get("isp") or "No disponible"
-    org = conexion.get("org") or "No disponible"
-    asn = conexion.get("asn") or "No disponible"
-    zona_nombre = zona.get("id") or "No disponible"
-    lat = datos.get("latitude")
-    lon = datos.get("longitude")
+    ip_resultado = datos.get("ip") or str(direccion)
+    pais = ubicacion.get("country") or "No disponible"
+    codigo_pais = ubicacion.get("country_code") or "N/D"
+    region = ubicacion.get("region") or "No disponible"
+    ciudad = ubicacion.get("city") or "No disponible"
+    lat = ubicacion.get("latitude")
+    lon = ubicacion.get("longitude")
+    zona = ubicacion.get("timezone") or "No disponible"
+
+    isp = asn_info.get("org_name") or "No disponible"
+    asn = asn_info.get("asn") or "No disponible"
+    asn_descripcion = (
+        asn_info.get("asn_description") or "No disponible"
+    )
+    nombre_empresa = empresa.get("name") or "No disponible"
+    red = asn_info.get("network") or "No disponible"
+
+    es_vpn = datos.get("is_vpn")
+    es_datacenter = datos.get("is_datacenter")
+    es_bogon = datos.get("is_bogon")
 
     def seguro(valor):
         return html.escape(str(valor))
 
+    def estado_si_no(valor):
+        if valor is True:
+            return "Sí"
+        if valor is False:
+            return "No"
+        return "No disponible"
+
+    # Verificar saldo otra vez antes de cobrar.
+    saldo_actual = get_creditos(uid)
+
+    if saldo_actual < COSTO_IP:
+        await estado.edit_text(
+            "❌ Tu saldo cambió y ya no alcanza para esta consulta.\n"
+            "💰 No se descontaron créditos."
+        )
+        return
+
+    # Descontar únicamente después de una respuesta válida.
+    descontar(uid, COSTO_IP)
+    saldo_final = get_creditos(uid)
+
     texto = (
         "🌐 <b>SPECTER DATA | IP LOOKUP</b>\n\n"
-        f"🖥️ IP: <code>{seguro(ip)}</code>\n"
-        f"🌍 País: {seguro(pais)}\n"
+        f"🖥️ IP: <code>{seguro(ip_resultado)}</code>\n"
+        f"🌍 País: {seguro(pais)} ({seguro(codigo_pais)})\n"
         f"📍 Región: {seguro(region)}\n"
-        f"🏙️ Ciudad aproximada: {seguro(ubicacion)}\n"
+        f"🏙️ Ciudad aproximada: {seguro(ciudad)}\n"
         f"🧭 Latitud: {seguro(lat if lat is not None else 'N/D')}\n"
         f"🧭 Longitud: {seguro(lon if lon is not None else 'N/D')}\n"
-        f"🕒 Zona horaria: {seguro(zona_nombre)}\n\n"
-        f"📡 ISP: {seguro(isp)}\n"
-        f"🏢 Organización: {seguro(org)}\n"
-        f"🔗 ASN: {seguro(asn)}\n\n"
+        f"🕒 Zona horaria: {seguro(zona)}\n\n"
+        "📡 <b>RED Y ORGANIZACIÓN</b>\n"
+        f"🏢 ISP/Organización: {seguro(isp)}\n"
+        f"🔗 ASN: {seguro(asn)}\n"
+        f"📋 Descripción ASN: {seguro(asn_descripcion)}\n"
+        f"🏬 Empresa: {seguro(nombre_empresa)}\n"
+        f"🌐 Red: {seguro(red)}\n\n"
+        "🛡️ <b>INDICADORES</b>\n"
+        f"🔒 VPN detectada: {estado_si_no(es_vpn)}\n"
+        f"🖥️ Centro de datos: {estado_si_no(es_datacenter)}\n"
+        f"⚠️ IP bogon: {estado_si_no(es_bogon)}\n\n"
         f"💳 Crédito descontado: {COSTO_IP}\n"
         f"💰 Saldo restante: {saldo_final}\n\n"
         "⚠️ <i>La geolocalización es aproximada; "
@@ -1816,8 +1892,12 @@ async def ip_command(
     )
 
     botones = None
+
     if lat is not None and lon is not None:
-        botones = teclado_ip(lat, lon)
+        try:
+            botones = teclado_ip(float(lat), float(lon))
+        except (ValueError, TypeError):
+            botones = None
 
     await estado.edit_text(
         texto,
@@ -1836,10 +1916,10 @@ async def ip_callback(
 
     if query.data == "ip_otra":
         await query.message.reply_text(
-            "🔎 Envía otra consulta:\n"
+            "🔎 Envía otra consulta con una IP pública:\n"
             "/ip 1.1.1.1"
-        ) 
-
+    )
+    
 @con_creditos(costo=COSTOS["agv"])
 async def agv_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not context.args or not validar_dni(context.args[0]):
