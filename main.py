@@ -1584,36 +1584,36 @@ costo 50 CRD""",
         "cmdss_panel": (
             "PANELES [63]",
             """PANEL TIK TOK [62]
-seguidores ✅
-vistas ✅
+seguidores [11]
+vistas [11]
 likes ✅
 comentarios ✅
 vistas live✅
 compartidos✅
 
  PANEL YOUTUBE [60]
-seguidores 😭
+seguidores [26]
 vistas ✅
 likes ✅
-comentarios 😭
-vistas live😭
-compartidos😭
+comentarios [26]
+vistas live[26]
+compartidos[26]
 
 PANEL INSTAGRAM[64] 
 seguidores ✅
 vistas ✅
 likes ✅
 comentarios ✅
-vistas live😭
+vistas live[26]
 compartidos✅
 
 PANEL FACEBOOK [65]
 seguidores ✅
 vistas ✅
 likes ✅
-comentarios [7]
+comentarios [11]
 vistas live[26]
-compartidos😭
+compartidos[26]
 
 /panel 
 COSTO  80 CRD""",
@@ -1627,10 +1627,6 @@ COSTO  80 CRD""",
 
     texto = premium(f"""
 <b>{titulo}</b>
-
-{descripcion}
-
-💰 Tus créditos: <b>{saldo}</b>
 """)
 
     url_imagen = IMAGENES_CMDSS.get(q.data)
