@@ -985,60 +985,52 @@ Accede a información oficial y verificada [14] en tiempo real desde
     )
 
 
+
+            
 def teclado_menu_cmds():
     return InlineKeyboardMarkup([
         [
             InlineKeyboardButton(
-                "RENIEC",
-                callback_data="cat_reniec",
-                icon_custom_emoji_id="5179570356695860413"
+                "🪪 RENIEC",
+                callback_data="cat_reniec"
             ),
             InlineKeyboardButton(
-                "VEHÍCULOS",
-                callback_data="cat_placa",
-                icon_custom_emoji_id="5379754019297283005"
+                "🚘 VEHÍCULOS",
+                callback_data="cat_placa"
             )
         ],
         [
             InlineKeyboardButton(
-                "FAMILIARES",
-                callback_data="cat_familiares",
-                icon_custom_emoji_id="5413480005348838600"
+                "🌳 FAMILIARES",
+                callback_data="cat_familiares"
             ),
             InlineKeyboardButton(
-                "TELÉFONOS",
-                callback_data="cat_telcel",
-                icon_custom_emoji_id="5362373442541815800"
+                "📲 TELÉFONOS",
+                callback_data="cat_telcel"
             )
         ],
         [
             InlineKeyboardButton(
-                "FACIAL",
-                callback_data="cat_facial",
-                icon_custom_emoji_id="5386053082005237605"
+                "🧿 FACIAL",
+                callback_data="cat_facial"
             ),
             InlineKeyboardButton(
-                "RECARGAR",
-                callback_data="cat_comprar",
-                icon_custom_emoji_id="5398406198340340300"
+                "💳 RECARGAR",
+                callback_data="cat_comprar"
             )
         ],
         [
             InlineKeyboardButton(
-                "DENUNCIAS",
-                callback_data="cat_denuncias",
-                icon_custom_emoji_id="5364604735010231300"
+                "🚨 DENUNCIAS",
+                callback_data="cat_denuncias"
             ),
             InlineKeyboardButton(
-                "DIRECCIÓN",
-                callback_data="cat_localizar",
-                icon_custom_emoji_id="5371818010436943405"
+                "📍 DIRECCIÓN",
+                callback_data="cat_localizar"
             )
         ],
     ])
-                
-
-
+        
 async def cmds_command(
     update: Update,
     context: ContextTypes.DEFAULT_TYPE
