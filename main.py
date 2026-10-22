@@ -1530,9 +1530,8 @@ SMS WHATSAPP [56]
 costo 50 CRD""",
         ),
         "cmdss_telegram": (
-            """[48] TELEGRAM[48]
-
-[57] TUMBAR TELEGRAM
+            "[48] TELEGRAM[48]",
+            """[57] TUMBAR TELEGRAM
 /bantele @user o número 
 costo 40 CRD
 [58] USUARIOS EN GRUPO 
