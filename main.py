@@ -5059,7 +5059,6 @@ bot.register_message_handler(cmdss_command, commands=["cmdss"])
 bot.register_message_handler(me_command, commands=["me"])
 bot.register_message_handler(staff_command, commands=["staff"])
 bot.register_message_handler(buy_command, commands=["buy"])
-bot.register_message_handler(micelular_command, commands=["micelular"])
 bot.register_message_handler(pagar, commands=["pagar"])
 
 # ===================== CONSULTAS RENIEC ======================
