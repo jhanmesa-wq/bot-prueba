@@ -1310,7 +1310,7 @@ def teclado_menu_cmds():
         ],
     ])
     
-@bot.message_handler(commands=["cmdss"])
+@bot.message_handler(commands=["cmds"])
 def cmds_command(message):
     bot.send_message(
         chat_id=message.chat.id,
