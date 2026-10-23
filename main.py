@@ -1841,7 +1841,7 @@ bot.register_callback_query_handler(
     # ==========================================================
     # CATEGORÍAS CMDSS
     # ==========================================================
-    opciones = {
+opciones = {
         "cmdss_bancas": (
             "BANCAS",
             """Contamos con diferentes bancas 
