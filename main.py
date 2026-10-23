@@ -1262,45 +1262,54 @@ def teclado_menu_cmds():
     return InlineKeyboardMarkup([
         [
             InlineKeyboardButton(
-                "🪪 RENIEC",
-                callback_data="cat_reniec"
+                "RENIEC",
+                callback_data="cat_reniec",
+                icon_custom_emoji_id="4900459325689955284"
             ),
             InlineKeyboardButton(
-                "🚘 VEHÍCULOS",
-                callback_data="cat_placa"
+                "VEHÍCULOS",
+                callback_data="cat_placa",
+                icon_custom_emoji_id="5379754019297283005"
             )
         ],
         [
             InlineKeyboardButton(
-                "🌳 FAMILIARES",
-                callback_data="cat_familiares"
+                "FAMILIARES",
+                callback_data="cat_familiares",
+                icon_custom_emoji_id="5413480005348838600"
             ),
             InlineKeyboardButton(
-                "📲 TELÉFONOS",
-                callback_data="cat_telcel"
+                "TELÉFONOS",
+                callback_data="cat_telcel",
+                icon_custom_emoji_id="5362373442541815800"
             )
         ],
         [
             InlineKeyboardButton(
-                "🧿 FACIAL",
-                callback_data="cat_facial"
+                "FACIAL",
+                callback_data="cat_facial",
+                icon_custom_emoji_id="5386053082005237605"
             ),
             InlineKeyboardButton(
-                "💳 RECARGAR",
-                callback_data="cat_comprar"
+                "RECARGAR",
+                callback_data="cat_comprar",
+                icon_custom_emoji_id="5398406198340340300"
             )
         ],
         [
             InlineKeyboardButton(
-                "🚨 DENUNCIAS",
-                callback_data="cat_denuncias"
+                "DENUNCIAS",
+                callback_data="cat_denuncias",
+                icon_custom_emoji_id="5364604735010231300"
             ),
             InlineKeyboardButton(
-                "📍 DIRECCIÓN",
-                callback_data="cat_localizar"
+                "DIRECCIÓN",
+                callback_data="cat_localizar",
+                icon_custom_emoji_id="5371818010436943405"
             )
         ],
     ])
+    
 @bot.message_handler(commands=["cmdss"])
 def cmds_command(message):
     bot.send_message(
