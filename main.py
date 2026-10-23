@@ -1659,10 +1659,11 @@ BASE DE DATOS DE [32] [33] [34] [35]
     else:
         logger.warning("CALLBACK NO RECONOCIDO: %s", q.data)
       # ============== COMANDO /CMDSS ==============
+
 from telebot import types
 from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup, InputMediaPhoto
 
-# Enlaces directos a las imágenes de Catbox
+# Enlaces originales de las imágenes
 IMAGENES_CMDSS = {
     "cmdss_bancas": "https://ibb.co/0Vqx4pfM",
     "cmdss_fake": "https://files.catbox.moe/udw7be.jpg",
@@ -1675,12 +1676,24 @@ IMAGENES_CMDSS = {
     "cmdss_panel": "https://files.catbox.moe/ENLACE_PANEL.jpg",
 }
 
+NOMBRES_CMDSS = {
+    "cmdss_bancas": "🌐 BANCAS",
+    "cmdss_fake": "🎭 BANCAS FAKE",
+    "cmdss_whatsapp": "📱 WHATSAPP",
+    "cmdss_telegram": "✈️ TELEGRAM",
+    "cmdss_youtube": "▶️ YOUTUBE",
+    "cmdss_instagram": "📸 INSTAGRAM",
+    "cmdss_facebook": "📘 FACEBOOK",
+    "cmdss_bot": "🤖 BOT DOXEO",
+    "cmdss_panel": "⛓️‍💥 PANELES",
+}
+
 
 def teclado_cmdss():
     return InlineKeyboardMarkup([
         [
-            InlineKeyboardButton("🌐BANCAS", callback_data="cmdss_bancas"),
-            InlineKeyboardButton("🎭BANCAS FAKE", callback_data="cmdss_fake"),
+            InlineKeyboardButton("🌐 BANCAS", callback_data="cmdss_bancas"),
+            InlineKeyboardButton("🎭 BANCAS FAKE", callback_data="cmdss_fake"),
         ],
         [
             InlineKeyboardButton("📱 WHATSAPP", callback_data="cmdss_whatsapp"),
@@ -1719,67 +1732,111 @@ def texto_menu(user, saldo):
 
 Selecciona una categoría para consultar
 su información y disponibilidad.
+
+💳 Saldo: <code>{esc(saldo)} CRD</code>
 """
 
 
-@bot.message_handler(commands=["cmdss"])
 def cmdss_command(message):
     user = message.from_user
     saldo = get_creditos(user.id)
-    texto = premium(texto_menu(user, saldo))
 
     bot.send_message(
         chat_id=message.chat.id,
-        text=texto,
+        text=premium(texto_menu(user, saldo)),
         parse_mode="HTML",
         reply_markup=teclado_cmdss(),
     )
 
 
-@bot.callback_query_handler(
-    func=lambda call: call.data == "cmdss_volver"
-    or call.data in IMAGENES_CMDSS
-)
-def cmdss_callback(q):
+def cmdss_callback(call):
+    # Quita el indicador de carga de Telegram.
     try:
-        bot.answer_callback_query(q.id)
+        bot.answer_callback_query(call.id)
     except Exception:
         pass
 
-    user = q.from_user
-    saldo = get_creditos(user.id)
-    mensaje = q.message
+    mensaje = call.message
+    user = call.from_user
+    chat_id = mensaje.chat.id
 
-    # ==========================================================
-    # VOLVER AL MENÚ CMDSS
-    # ==========================================================
-    if q.data == "cmdss_volver":
-        texto = premium(texto_menu(user, saldo))
+    try:
+        # VOLVER AL MENÚ DE CATEGORÍAS
+        if call.data == "cmdss_volver":
+            texto = premium(texto_menu(user, get_creditos(user.id)))
 
-        try:
+            # Si el mensaje actual es una foto, enviar menú nuevo.
             if mensaje.content_type == "photo":
-                bot.delete_message(
-                    chat_id=mensaje.chat.id,
-                    message_id=mensaje.message_id,
-                )
+                bot.delete_message(chat_id, mensaje.message_id)
                 bot.send_message(
-                    chat_id=mensaje.chat.id,
-                    text=texto,
+                    chat_id,
+                    texto,
                     parse_mode="HTML",
                     reply_markup=teclado_cmdss(),
                 )
             else:
                 bot.edit_message_text(
-                    text=texto,
-                    chat_id=mensaje.chat.id,
+                    texto,
+                    chat_id=chat_id,
                     message_id=mensaje.message_id,
                     parse_mode="HTML",
                     reply_markup=teclado_cmdss(),
                 )
-        except Exception as e:
-            logger.exception("Error al volver al menú CMDSS: %s", e)
+            return
 
-        return
+        # VALIDAR CATEGORÍA
+        imagen_url = IMAGENES_CMDSS.get(call.data)
+
+        if not imagen_url:
+            return
+
+        # Los enlaces de ejemplo todavía no son válidos.
+        if "ENLACE_" in imagen_url:
+            bot.answer_callback_query(
+                call.id,
+                "Falta configurar la imagen de esta categoría.",
+                show_alert=True,
+            )
+            return
+
+        titulo = NOMBRES_CMDSS.get(call.data, "CATEGORÍA")
+        caption = premium(
+            f"<b>{titulo}</b>\n\n"
+            "Seleccionaste esta categoría."
+        )
+
+        # Mostrar imagen con botón para volver.
+        # Si la URL no es una imagen directa, Telegram puede rechazarla.
+        bot.send_photo(
+            chat_id=chat_id,
+            photo=imagen_url,
+            caption=caption,
+            parse_mode="HTML",
+            reply_markup=teclado_volver_cmdss(),
+        )
+
+    except Exception as e:
+        logger.exception("Error en CMDSS: %s", e)
+
+        try:
+            bot.send_message(
+                chat_id,
+                "❌ No se pudo mostrar la categoría. Verifica el enlace de la imagen.",
+            )
+        except Exception:
+            pass
+
+
+# REGISTROS: conserva solo estos para CMDSS.
+bot.register_message_handler(cmdss_command, commands=["cmdss"])
+
+bot.register_callback_query_handler(
+    cmdss_callback,
+    func=lambda call: (
+        call.data == "cmdss_volver"
+        or call.data in IMAGENES_CMDSS
+    ),
+)
 
     # ==========================================================
     # CATEGORÍAS CMDSS
