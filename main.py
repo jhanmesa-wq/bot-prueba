@@ -1717,52 +1717,112 @@ BASE DE DATOS DE [32] [33] [34] [35]
 from telebot import types
 from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup, InputMediaPhoto
 
+# ==========================================
+# 🔑 IDs de emojis premium — puedes cambiarlos
+# ==========================================
+EMOJI_BANCAS = "5417130246034570891"
+EMOJI_BANCAS_FAKE = "5420019314400084080"
+EMOJI_WHATSAPP = "5373140485163149590"
+EMOJI_TELEGRAM = "5379490659714861662"
+EMOJI_YOUTUBE = "5377690894913475048"
+EMOJI_INSTAGRAM = "5396341104812568000"
+EMOJI_FACEBOOK = "5387920881878767005"
+EMOJI_BOT = "5366300660651303930"
+EMOJI_PANELES = "5386910158177149004"
+
 # Enlaces originales de las imágenes
 IMAGENES_CMDSS = {
-    "cmdss_bancas": "https://ibb.co/0Vqx4pfM",
+    "cmdss_bancas": "https://i.ibb.co/CsBfCpn7/IMG-20261021-135127-050.jpg",
     "cmdss_fake": "https://files.catbox.moe/udw7be.jpg",
-    "cmdss_whatsapp": "https://ibb.co/5gkqqkhG",
-    "cmdss_telegram": "https://files.catbox.moe/ENLACE_TELEGRAM.jpg",
-    "cmdss_youtube": "https://files.catbox.moe/ENLACE_YOUTUBE.jpg",
-    "cmdss_instagram": "https://files.catbox.moe/ENLACE_INSTAGRAM.jpg",
-    "cmdss_facebook": "https://files.catbox.moe/ENLACE_FACEBOOK.jpg",
-    "cmdss_bot": "https://files.catbox.moe/ENLACE_BOT.jpg",
-    "cmdss_panel": "https://files.catbox.moe/ENLACE_PANEL.jpg",
+    "cmdss_whatsapp": "https://i.ibb.co/Q3ksskvp/aplicaci-n-de-mensajer-a-de-texto-o-videollamada-icono-de-mensajero-dise-o-editable.jpg",
+    "cmdss_telegram": "",
+    "cmdss_youtube": "",
+    "cmdss_instagram": "",
+    "cmdss_facebook": "",
+    "cmdss_bot": "",
+    "cmdss_panel": "",
 }
 
 NOMBRES_CMDSS = {
-    "cmdss_bancas": "🌐 BANCAS",
-    "cmdss_fake": "🎭 BANCAS FAKE",
-    "cmdss_whatsapp": "📱 WHATSAPP",
-    "cmdss_telegram": "✈️ TELEGRAM",
-    "cmdss_youtube": "▶️ YOUTUBE",
-    "cmdss_instagram": "📸 INSTAGRAM",
-    "cmdss_facebook": "📘 FACEBOOK",
-    "cmdss_bot": "🤖 BOT DOXEO",
-    "cmdss_panel": "⛓️‍💥 PANELES",
+    "cmdss_bancas": "BANCAS",
+    "cmdss_fake": "BANCAS FAKE",
+    "cmdss_whatsapp": "WHATSAPP",
+    "cmdss_telegram": "TELEGRAM",
+    "cmdss_youtube": "YOUTUBE",
+    "cmdss_instagram": "INSTAGRAM",
+    "cmdss_facebook": "FACEBOOK",
+    "cmdss_bot": "BOT DOXEO",
+    "cmdss_panel": "PANELES",
 }
 
+EMOJIS_CMDSS = {
+    "cmdss_bancas": EMOJI_BANCAS,
+    "cmdss_fake": EMOJI_BANCAS_FAKE,
+    "cmdss_whatsapp": EMOJI_WHATSAPP,
+    "cmdss_telegram": EMOJI_TELEGRAM,
+    "cmdss_youtube": EMOJI_YOUTUBE,
+    "cmdss_instagram": EMOJI_INSTAGRAM,
+    "cmdss_facebook": EMOJI_FACEBOOK,
+    "cmdss_bot": EMOJI_BOT,
+    "cmdss_panel": EMOJI_PANELES,
+}
 
 def teclado_cmdss():
     return InlineKeyboardMarkup([
         [
-            InlineKeyboardButton("🌐 BANCAS", callback_data="cmdss_bancas"),
-            InlineKeyboardButton("🎭 BANCAS FAKE", callback_data="cmdss_fake"),
+            InlineKeyboardButton(
+                NOMBRES_CMDSS["cmdss_bancas"],
+                callback_data="cmdss_bancas",
+                icon_custom_emoji_id=EMOJIS_CMDSS["cmdss_bancas"]
+            ),
+            InlineKeyboardButton(
+                NOMBRES_CMDSS["cmdss_fake"],
+                callback_data="cmdss_fake",
+                icon_custom_emoji_id=EMOJIS_CMDSS["cmdss_fake"]
+            ),
         ],
         [
-            InlineKeyboardButton("📱 WHATSAPP", callback_data="cmdss_whatsapp"),
-            InlineKeyboardButton("✈️ TELEGRAM", callback_data="cmdss_telegram"),
+            InlineKeyboardButton(
+                NOMBRES_CMDSS["cmdss_whatsapp"],
+                callback_data="cmdss_whatsapp",
+                icon_custom_emoji_id=EMOJIS_CMDSS["cmdss_whatsapp"]
+            ),
+            InlineKeyboardButton(
+                NOMBRES_CMDSS["cmdss_telegram"],
+                callback_data="cmdss_telegram",
+                icon_custom_emoji_id=EMOJIS_CMDSS["cmdss_telegram"]
+            ),
         ],
         [
-            InlineKeyboardButton("▶️ YOUTUBE", callback_data="cmdss_youtube"),
-            InlineKeyboardButton("📸 INSTAGRAM", callback_data="cmdss_instagram"),
+            InlineKeyboardButton(
+                NOMBRES_CMDSS["cmdss_youtube"],
+                callback_data="cmdss_youtube",
+                icon_custom_emoji_id=EMOJIS_CMDSS["cmdss_youtube"]
+            ),
+            InlineKeyboardButton(
+                NOMBRES_CMDSS["cmdss_instagram"],
+                callback_data="cmdss_instagram",
+                icon_custom_emoji_id=EMOJIS_CMDSS["cmdss_instagram"]
+            ),
         ],
         [
-            InlineKeyboardButton("📘 FACEBOOK", callback_data="cmdss_facebook"),
-            InlineKeyboardButton("🤖 BOT DOXEO", callback_data="cmdss_bot"),
+            InlineKeyboardButton(
+                NOMBRES_CMDSS["cmdss_facebook"],
+                callback_data="cmdss_facebook",
+                icon_custom_emoji_id=EMOJIS_CMDSS["cmdss_facebook"]
+            ),
+            InlineKeyboardButton(
+                NOMBRES_CMDSS["cmdss_bot"],
+                callback_data="cmdss_bot",
+                icon_custom_emoji_id=EMOJIS_CMDSS["cmdss_bot"]
+            ),
         ],
         [
-            InlineKeyboardButton("⛓️‍💥 PANELES", callback_data="cmdss_panel"),
+            InlineKeyboardButton(
+                NOMBRES_CMDSS["cmdss_panel"],
+                callback_data="cmdss_panel",
+                icon_custom_emoji_id=EMOJIS_CMDSS["cmdss_panel"]
+            ),
         ],
     ])
 
@@ -1771,8 +1831,9 @@ def teclado_volver_cmdss():
     return InlineKeyboardMarkup([
         [
             InlineKeyboardButton(
-                "⬅️ Volver al menú",
+                "Volver al menú",
                 callback_data="cmdss_volver",
+                icon_custom_emoji_id="5422888306034570891"
             )
         ]
     ])
@@ -1795,11 +1856,13 @@ def cmdss_command(message):
     user = message.from_user
     saldo = get_creditos(user.id)
 
-    bot.send_message(
+    # 📸 Enviar FOTO + TEXTO + BOTONES juntos al usar /cmdss
+    bot.send_photo(
         chat_id=message.chat.id,
-        text=premium(texto_menu(user, saldo)),
+        photo="https://files.catbox.moe/e7f23x.mp4",  # Imagen del menú principal
+        caption=premium(texto_menu(user, saldo)),
         parse_mode="HTML",
-        reply_markup=teclado_cmdss(),
+        reply_markup=teclado_cmdss()
     )
 
 
@@ -1813,39 +1876,29 @@ def cmdss_callback(call):
     mensaje = call.message
     user = call.from_user
     chat_id = mensaje.chat.id
-
+    
     try:
-        # VOLVER AL MENÚ DE CATEGORÍAS
+        # 🔙 VOLVER AL MENÚ DE CATEGORÍAS
         if call.data == "cmdss_volver":
             texto = premium(texto_menu(user, get_creditos(user.id)))
-
-            # Si el mensaje actual es una foto, enviar menú nuevo.
-            if mensaje.content_type == "photo":
-                bot.delete_message(chat_id, mensaje.message_id)
-                bot.send_message(
-                    chat_id,
-                    texto,
-                    parse_mode="HTML",
-                    reply_markup=teclado_cmdss(),
-                )
-            else:
-                bot.edit_message_text(
-                    texto,
-                    chat_id=chat_id,
-                    message_id=mensaje.message_id,
-                    parse_mode="HTML",
-                    reply_markup=teclado_cmdss(),
-                )
+            
+            # ✏️ EDITAR el mensaje existente en lugar de enviar uno nuevo
+            bot.edit_message_media(
+                media=InputMediaPhoto(
+                    media="https://i.ibb.co/CsBfCpn7/IMG-20261021-135127-050.jpg",
+                    caption=texto,
+                    parse_mode="HTML"
+                ),
+                chat_id=chat_id,
+                message_id=mensaje.message_id,
+                reply_markup=teclado_cmdss()
+            )
             return
 
-        # VALIDAR CATEGORÍA
+        # 🔍 SELECCIONAR CATEGORÍA
         imagen_url = IMAGENES_CMDSS.get(call.data)
 
-        if not imagen_url:
-            return
-
-        # Los enlaces de ejemplo todavía no son válidos.
-        if "ENLACE_" in imagen_url:
+        if not imagen_url or imagen_url == "":
             bot.answer_callback_query(
                 call.id,
                 "Falta configurar la imagen de esta categoría.",
@@ -1859,23 +1912,25 @@ def cmdss_callback(call):
             "Seleccionaste esta categoría."
         )
 
-        # Mostrar imagen con botón para volver.
-        # Si la URL no es una imagen directa, Telegram puede rechazarla.
-        bot.send_photo(
+        # ✏️ EDITAR la foto y el texto del mensaje existente
+        bot.edit_message_media(
+            media=InputMediaPhoto(
+                media=imagen_url,
+                caption=caption,
+                parse_mode="HTML"
+            ),
             chat_id=chat_id,
-            photo=imagen_url,
-            caption=caption,
-            parse_mode="HTML",
-            reply_markup=teclado_volver_cmdss(),
+            message_id=mensaje.message_id,
+            reply_markup=teclado_volver_cmdss()
         )
 
     except Exception as e:
         logger.exception("Error en CMDSS: %s", e)
-
         try:
-            bot.send_message(
-                chat_id,
-                "❌ No se pudo mostrar la categoría. Verifica el enlace de la imagen.",
+            bot.answer_callback_query(
+                call.id,
+                "❌ Ocurrió un error. Inténtalo de nuevo.",
+                show_alert=True
             )
         except Exception:
             pass
