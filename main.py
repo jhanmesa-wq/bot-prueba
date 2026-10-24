@@ -1744,15 +1744,8 @@ IMAGENES_CMDSS = {
 }
 
 NOMBRES_CMDSS = {
-    "cmdss_bancas": "g",
-    "cmdss_fake": """BANCA 2026 [3]
-
-[36]  SOLO  S/25
-+
- [37] + [38] + [39] +
- [40]
-S/50 SOLES
-""",
+    "cmdss_bancas": "BANCAS",
+    "cmdss_fake": "BANCAS FAKE",
     "cmdss_whatsapp": "WHATSAPP",
     "cmdss_telegram": "TELEGRAM",
     "cmdss_youtube": "YOUTUBE",
@@ -1872,7 +1865,6 @@ def cmdss_command(message):
 
 
 def cmdss_callback(call):
-    # Quita el indicador de carga de Telegram.
     try:
         bot.answer_callback_query(call.id)
     except Exception:
@@ -1880,65 +1872,203 @@ def cmdss_callback(call):
 
     mensaje = call.message
     user = call.from_user
-    chat_id = mensaje.chat.id
-    
-    try:
-        # 🔙 VOLVER AL MENÚ DE CATEGORÍAS
-        if call.data == "cmdss_volver":
-            texto = premium(texto_menu(user, get_creditos(user.id)))
-            
-            # ✏️ EDITAR el mensaje existente en lugar de enviar uno nuevo
-            bot.edit_message_media(
-                media=InputMediaPhoto(
-                    media="https://files.catbox.moe/e7f23x.mp4",
-                    caption=texto,
-                    parse_mode="HTML"
-                ),
-                chat_id=chat_id,
-                message_id=mensaje.message_id,
-                reply_markup=teclado_cmdss()
-            )
-            return
+    chat_id = mensaje.chat_id
+    saldo = get_creditos(user.id)
 
-        # 🔍 SELECCIONAR CATEGORÍA
-        imagen_url = IMAGENES_CMDSS.get(call.data)
-
-        if not imagen_url or imagen_url == "":
-            bot.answer_callback_query(
-                call.id,
-                "Falta configurar la imagen de esta categoría.",
-                show_alert=True,
-            )
-            return
-
-        titulo = NOMBRES_CMDSS.get(call.data, "CATEGORÍA")
-        caption = premium(
-            f"<b>{titulo}</b>\n\n"
-            "Seleccionaste esta categoría."
-        )
-
-        # ✏️ EDITAR la foto y el texto del mensaje existente
-        bot.edit_message_media(
-            media=InputMediaPhoto(
-                media=imagen_url,
-                caption=caption,
-                parse_mode="HTML"
-            ),
-            chat_id=chat_id,
-            message_id=mensaje.message_id,
-            reply_markup=teclado_volver_cmdss()
-        )
-
-    except Exception as e:
-        logger.exception("Error en CMDSS: %s", e)
+    if call.data == "cmdss_volver":
+        texto = premium(texto_menu(user, saldo))
         try:
-            bot.answer_callback_query(
-                call.id,
-                "❌ Ocurrió un error. Inténtalo de nuevo.",
-                show_alert=True
-            )
+            if mensaje.photo:
+                bot.delete_message(chat_id, mensaje.message_id)
+                bot.send_photo(
+                    chat_id=chat_id,
+                    photo="https://i.ibb.co/CsBfCpn7/IMG-20261021-135127-050.jpg",
+                    caption=texto,
+                    parse_mode="HTML",
+                    reply_markup=teclado_cmdss()
+                )
+            else:
+                bot.edit_message_text(
+                    text=texto,
+                    chat_id=chat_id,
+                    message_id=mensaje.message_id,
+                    parse_mode="HTML",
+                    reply_markup=teclado_cmdss()
+                )
         except Exception:
             pass
+        return
+
+    opciones = {
+        "cmdss_bancas": (
+            "BANCAS",
+            """Contamos con diferentes bancas 
+            Panda 2
+            lemon 4
+            moni 2
+            pago efectivo 5""",
+        ),
+        "cmdss_fake": (
+            "BANCAS 2026 [3]",
+            """
+
+[36]  SOLO  S/25
++
+ [37] + [38] + [39] +
+ [40]
+S/50 SOLES
+""",
+        ),
+        "cmdss_whatsapp": (
+            "[53] WHATSAPP[53]",
+            """REACCIONES PARA CANALES [54]
+/reaccion + link ❤️ &200
+costo 20: CRD
+ 
+TUMBAR NÚMERO [55]
+/banwhats +51999999999
+costo 20 CRD
+ 
+SMS WHATSAPP [56]
+/numWhatsApp 
+costo 50 CRD""",
+        ),
+        "cmdss_telegram": (
+            "[48] TELEGRAM[48]",
+            """[57] TUMBAR TELEGRAM
+/bantele @user o número 
+costo 40 CRD
+
+[58] USUARIOS EN GRUPO 
+/usuarios + cantidad+link
+costo 
+[59]1k 50 CRD 
+[59]2k 100 CRD
+[59]5k 500 CRD
+
+SMS TELEGRAM [56]
+/numtelegram 
+costo 40 CRD""",
+        ),
+        "cmdss_youtube": (
+            "[60] YOUTUBE",
+            """
+
+BAN DE CANAL [61]
+/banyou +link del canal 
+costo 50 CRD
+ 
+YOUTUBE PREMIUM [61]
+/YouTube 
+Costo 50 CRD 
+
+/YouTudomi
+costo 50 CRD""",
+        ),
+        "cmdss_instagram": (
+            "📸 INSTAGRAM",
+            "Ayuda sobre privacidad y seguridad.",
+        ),
+        "cmdss_facebook": (
+            "📘 FACEBOOK",
+            "Ayuda sobre seguridad y recuperación de cuentas.",
+        ),
+        "cmdss_bot": (
+            "🤖 BOT",
+            "Consulta /cmds para ver los comandos disponibles.",
+        ),
+        "cmdss_panel": (
+            "PANELES [63]",
+            """
+            PANEL TIK TOK [62]
+seguidores [11]
+vistas [11]
+likes [11]
+comentarios [11]
+vistas live[11]
+compartidos[11]
+
+ PANEL YOUTUBE [60]
+seguidores [26]
+vistas [11]
+likes [11]
+comentarios [26]
+vistas live[26]
+compartidos[26]
+
+PANEL INSTAGRAM[64] 
+seguidores [11]
+vistas [11]
+likes [11]
+comentarios [11]
+vistas live[26]
+compartidos[11]
+
+PANEL FACEBOOK [65]
+seguidores [11]
+vistas [11]
+likes [11]
+comentarios [11]
+vistas live[26]
+compartidos[26]
+
+/panel 
+COSTO  80 CRD""",
+        ),
+    }
+
+    if call.data not in opciones:
+        return
+
+    titulo, descripcion = opciones[call.data]
+    texto = premium(f"""
+<b>{titulo}</b>
+{descripcion}
+""")
+    url_imagen = IMAGENES_CMDSS.get(call.data)
+
+    try:
+        if mensaje.photo:
+            if url_imagen and url_imagen != "" and "ENLACE_" not in url_imagen:
+                bot.edit_message_media(
+                    media=InputMediaPhoto(
+                        media=url_imagen,
+                        caption=texto,
+                        parse_mode="HTML"
+                    ),
+                    chat_id=chat_id,
+                    message_id=mensaje.message_id,
+                    reply_markup=teclado_volver_cmdss()
+                )
+            else:
+                bot.edit_message_caption(
+                    caption=texto + "\n\n⚠️ Falta configurar la imagen.",
+                    chat_id=chat_id,
+                    message_id=mensaje.message_id,
+                    parse_mode="HTML",
+                    reply_markup=teclado_volver_cmdss()
+                )
+        else:
+            if url_imagen and url_imagen != "" and "ENLACE_" not in url_imagen:
+                bot.delete_message(chat_id, mensaje.message_id)
+                bot.send_photo(
+                    chat_id=chat_id,
+                    photo=url_imagen,
+                    caption=texto,
+                    parse_mode="HTML",
+                    reply_markup=teclado_volver_cmdss()
+                )
+            else:
+                bot.edit_message_text(
+                    text=texto + "\n\n⚠️ Falta configurar el enlace de esta imagen.",
+                    chat_id=chat_id,
+                    message_id=mensaje.message_id,
+                    parse_mode="HTML",
+                    reply_markup=teclado_volver_cmdss()
+                )
+    except Exception as e:
+        print(f"Error al actualizar el menú: {e}")
+    
 
 
 # ============== CONSULTA DE IP ==============
