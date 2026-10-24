@@ -1716,10 +1716,10 @@ BASE DE DATOS DE [32] [33] [34] [35]
 
 from telebot import types
 from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup, InputMediaPhoto
+# ============================================================
+# CONFIGURACIÓN DE EMOJIS PERSONALIZADOS
+# ============================================================
 
-# ==========================================
-# 🔑 IDs de emojis premium — puedes cambiarlos
-# ==========================================
 EMOJI_BANCAS = "5271766244930921939"
 EMOJI_BANCAS_FAKE = "5199937327836705414"
 EMOJI_WHATSAPP = "5334998226636390258"
@@ -1730,18 +1730,11 @@ EMOJI_FACEBOOK = "5323261730283863478"
 EMOJI_BOT = "5269595766028022191"
 EMOJI_PANELES = "5465319680564542617"
 
-# Enlaces originales de las imágenes
-IMAGENES_CMDSS = {
-    "cmdss_bancas": "https://i.ibb.co/CsBfCpn7/IMG-20261021-135127-050.jpg",
-    "cmdss_fake": "https://files.catbox.moe/udw7be.jpg",
-    "cmdss_whatsapp": "https://i.ibb.co/Q3ksskvp/aplicaci-n-de-mensajer-a-de-texto-o-videollamada-icono-de-mensajero-dise-o-editable.jpg",
-    "cmdss_telegram": "https://files.catbox.moe/2d46ic.jpg",
-    "cmdss_youtube": "https://files.catbox.moe/ewwpvn.png",
-    "cmdss_instagram": "https://files.catbox.moe/oaj4qu.jpg",
-    "cmdss_facebook": "https://files.catbox.moe/y17lbf.jpg",
-    "cmdss_bot": "https://files.catbox.moe/2d46ic.jpg",
-    "cmdss_panel": "",
-}
+
+# ============================================================
+# TEXTOS EDITABLES DE CADA BOTÓN
+# Modifica estos valores para cambiar el texto de los botones.
+# ============================================================
 
 NOMBRES_CMDSS = {
     "cmdss_bancas": "BANCAS",
@@ -1755,6 +1748,31 @@ NOMBRES_CMDSS = {
     "cmdss_panel": "PANELES",
 }
 
+# Texto editable del botón para volver
+TEXTO_VOLVER_CMDSS = "VOLVER AL MENÚ"
+
+
+# ============================================================
+# IMÁGENES EDITABLES DE CADA SECCIÓN
+# ============================================================
+
+IMAGENES_CMDSS = {
+    "cmdss_bancas": "https://i.ibb.co/CsBfCpn7/IMG-20261021-135127-050.jpg",
+    "cmdss_fake": "https://files.catbox.moe/udw7be.jpg",
+    "cmdss_whatsapp": "https://i.ibb.co/Q3ksskvp/aplicaci-n-de-mensajer-a-de-texto-o-videollamada-icono-de-mensajero-dise-o-editable.jpg",
+    "cmdss_telegram": "https://files.catbox.moe/2d46ic.jpg",
+    "cmdss_youtube": "https://files.catbox.moe/ewwpvn.png",
+    "cmdss_instagram": "https://files.catbox.moe/oaj4qu.jpg",
+    "cmdss_facebook": "https://files.catbox.moe/y17lbf.jpg",
+    "cmdss_bot": "https://files.catbox.moe/2d46ic.jpg",
+    "cmdss_panel": "",
+}
+
+
+# ============================================================
+# EMOJIS ASIGNADOS A CADA BOTÓN
+# ============================================================
+
 EMOJIS_CMDSS = {
     "cmdss_bancas": EMOJI_BANCAS,
     "cmdss_fake": EMOJI_BANCAS_FAKE,
@@ -1767,59 +1785,64 @@ EMOJIS_CMDSS = {
     "cmdss_panel": EMOJI_PANELES,
 }
 
+
+# ============================================================
+# TECLADO PRINCIPAL
+# ============================================================
+
 def teclado_cmdss():
     return InlineKeyboardMarkup([
         [
             InlineKeyboardButton(
-                NOMBRES_CMDSS["cmdss_bancas"],
+                text=NOMBRES_CMDSS["cmdss_bancas"],
                 callback_data="cmdss_bancas",
                 icon_custom_emoji_id=EMOJIS_CMDSS["cmdss_bancas"]
             ),
             InlineKeyboardButton(
-                NOMBRES_CMDSS["cmdss_fake"],
+                text=NOMBRES_CMDSS["cmdss_fake"],
                 callback_data="cmdss_fake",
                 icon_custom_emoji_id=EMOJIS_CMDSS["cmdss_fake"]
             ),
         ],
         [
             InlineKeyboardButton(
-                NOMBRES_CMDSS["cmdss_whatsapp"],
+                text=NOMBRES_CMDSS["cmdss_whatsapp"],
                 callback_data="cmdss_whatsapp",
                 icon_custom_emoji_id=EMOJIS_CMDSS["cmdss_whatsapp"]
             ),
             InlineKeyboardButton(
-                NOMBRES_CMDSS["cmdss_telegram"],
+                text=NOMBRES_CMDSS["cmdss_telegram"],
                 callback_data="cmdss_telegram",
                 icon_custom_emoji_id=EMOJIS_CMDSS["cmdss_telegram"]
             ),
         ],
         [
             InlineKeyboardButton(
-                NOMBRES_CMDSS["cmdss_youtube"],
+                text=NOMBRES_CMDSS["cmdss_youtube"],
                 callback_data="cmdss_youtube",
                 icon_custom_emoji_id=EMOJIS_CMDSS["cmdss_youtube"]
             ),
             InlineKeyboardButton(
-                NOMBRES_CMDSS["cmdss_instagram"],
+                text=NOMBRES_CMDSS["cmdss_instagram"],
                 callback_data="cmdss_instagram",
                 icon_custom_emoji_id=EMOJIS_CMDSS["cmdss_instagram"]
             ),
         ],
         [
             InlineKeyboardButton(
-                NOMBRES_CMDSS["cmdss_facebook"],
+                text=NOMBRES_CMDSS["cmdss_facebook"],
                 callback_data="cmdss_facebook",
                 icon_custom_emoji_id=EMOJIS_CMDSS["cmdss_facebook"]
             ),
             InlineKeyboardButton(
-                NOMBRES_CMDSS["cmdss_bot"],
+                text=NOMBRES_CMDSS["cmdss_bot"],
                 callback_data="cmdss_bot",
                 icon_custom_emoji_id=EMOJIS_CMDSS["cmdss_bot"]
             ),
         ],
         [
             InlineKeyboardButton(
-                NOMBRES_CMDSS["cmdss_panel"],
+                text=NOMBRES_CMDSS["cmdss_panel"],
                 callback_data="cmdss_panel",
                 icon_custom_emoji_id=EMOJIS_CMDSS["cmdss_panel"]
             ),
@@ -1827,11 +1850,15 @@ def teclado_cmdss():
     ])
 
 
+# ============================================================
+# BOTÓN VOLVER
+# ============================================================
+
 def teclado_volver_cmdss():
     return InlineKeyboardMarkup([
         [
             InlineKeyboardButton(
-                "Volver al menú",
+                text=TEXTO_VOLVER_CMDSS,
                 callback_data="cmdss_volver",
                 icon_custom_emoji_id="5422888306034570891"
             )
@@ -1839,8 +1866,12 @@ def teclado_volver_cmdss():
     ])
 
 
+# ============================================================
+# TEXTO DEL MENÚ PRINCIPAL
+# ============================================================
+
 def texto_menu(user, saldo):
-    return f"""
+    return """
 <b>SPECTER DATA</b> [3]
 
 [7] Bienvenido al menú de servicios.
@@ -1850,19 +1881,158 @@ su información y disponibilidad.
 """
 
 
+# ============================================================
+# COMANDO /cmdss
+# ============================================================
+
 def cmdss_command(message):
     user = message.from_user
     saldo = get_creditos(user.id)
 
-    # 📸 Enviar FOTO + TEXTO + BOTONES juntos al usar /cmdss
     bot.send_photo(
         chat_id=message.chat.id,
-        photo="https://files.catbox.moe/e7f23x.mp4",  # Imagen del menú principal
+        photo="https://files.catbox.moe/e7f23x.mp4",
         caption=premium(texto_menu(user, saldo)),
         parse_mode="HTML",
         reply_markup=teclado_cmdss()
     )
 
+
+# ============================================================
+# CONTENIDO EDITABLE DE CADA SECCIÓN
+# El título y la descripción son independientes del botón.
+# ============================================================
+
+OPCIONES_CMDSS = {
+    "cmdss_bancas": (
+        "BANCAS",
+        """Contamos con diferentes bancas
+
+Panda 2
+lemon 4
+moni 2
+pago efectivo 5"""
+    ),
+
+    "cmdss_fake": (
+        "BANCAS 2026 [3]",
+        """
+[36] SOLO S/25
++
+[37] + [38] + [39] +
+[40]
+S/50 SOLES
+"""
+    ),
+
+    "cmdss_whatsapp": (
+        "[53] WHATSAPP [53]",
+        """REACCIONES PARA CANALES [54]
+/reaccion + link ❤️ &200
+costo 20: CRD
+
+TUMBAR NÚMERO [55]
+/banwhats +51999999999
+costo 20 CRD
+
+SMS WHATSAPP [56]
+/numWhatsApp
+costo 50 CRD"""
+    ),
+
+    "cmdss_telegram": (
+        "[48] TELEGRAM [48]",
+        """[57] TUMBAR TELEGRAM
+/bantele @user o número
+costo 40 CRD
+
+[58] USUARIOS EN GRUPO
+/usuarios + cantidad+link
+costo
+
+[59] 1k 50 CRD
+[59] 2k 100 CRD
+[59] 5k 500 CRD
+
+SMS TELEGRAM [56]
+/numtelegram
+costo 40 CRD"""
+    ),
+
+    "cmdss_youtube": (
+        "[60] YOUTUBE",
+        """
+BAN DE CANAL [61]
+/banyou +link del canal
+costo 50 CRD
+
+YOUTUBE PREMIUM [61]
+/YouTube
+Costo 50 CRD
+
+/YouTudomi
+costo 50 CRD"""
+    ),
+
+    "cmdss_instagram": (
+        "📸 INSTAGRAM",
+        "Ayuda sobre privacidad y seguridad."
+    ),
+
+    "cmdss_facebook": (
+        "📘 FACEBOOK",
+        "Ayuda sobre seguridad y recuperación de cuentas."
+    ),
+
+    "cmdss_bot": (
+        "🤖 BOT",
+        "Consulta /cmds para ver los comandos disponibles."
+    ),
+
+    "cmdss_panel": (
+        "PANELES [63]",
+        """
+PANEL TIK TOK [62]
+seguidores [11]
+vistas [11]
+likes [11]
+comentarios [11]
+vistas live [11]
+compartidos [11]
+
+PANEL YOUTUBE [60]
+seguidores [26]
+vistas [11]
+likes [11]
+comentarios [26]
+vistas live [26]
+compartidos [26]
+
+PANEL INSTAGRAM [64]
+seguidores [11]
+vistas [11]
+likes [11]
+comentarios [11]
+vistas live [26]
+compartidos [11]
+
+PANEL FACEBOOK [65]
+seguidores [11]
+vistas [11]
+likes [11]
+comentarios [11]
+vistas live [26]
+compartidos [26]
+
+/panel
+COSTO 80 CRD"""
+    ),
+}
+
+
+# ============================================================
+# CALLBACK DEL MENÚ
+# ============================================================
 
 def cmdss_callback(call):
     try:
@@ -1872,185 +2042,87 @@ def cmdss_callback(call):
 
     mensaje = call.message
     user = call.from_user
-    chat_id = mensaje.chat_id
+    chat_id = mensaje.chat.id
     saldo = get_creditos(user.id)
+
+    # --------------------------------------------------------
+    # VOLVER AL MENÚ PRINCIPAL
+    # --------------------------------------------------------
 
     if call.data == "cmdss_volver":
         texto = premium(texto_menu(user, saldo))
+
         try:
             if mensaje.photo:
-                bot.delete_message(chat_id, mensaje.message_id)
-                bot.send_photo(
+                bot.edit_message_caption(
                     chat_id=chat_id,
-                    photo="https://i.ibb.co/CsBfCpn7/IMG-20261021-135127-050.jpg",
+                    message_id=mensaje.message_id,
+                    caption=texto,
+                    parse_mode="HTML",
+                    reply_markup=teclado_cmdss()
+                )
+            elif mensaje.video:
+                bot.edit_message_caption(
+                    chat_id=chat_id,
+                    message_id=mensaje.message_id,
                     caption=texto,
                     parse_mode="HTML",
                     reply_markup=teclado_cmdss()
                 )
             else:
                 bot.edit_message_text(
-                    text=texto,
                     chat_id=chat_id,
                     message_id=mensaje.message_id,
+                    text=texto,
                     parse_mode="HTML",
                     reply_markup=teclado_cmdss()
                 )
-        except Exception:
-            pass
+
+        except Exception as e:
+            print(f"Error al volver al menú: {e}")
+
         return
 
-    opciones = {
-        "cmdss_bancas": (
-            "BANCAS",
-            """Contamos con diferentes bancas 
-            Panda 2
-            lemon 4
-            moni 2
-            pago efectivo 5""",
-        ),
-        "cmdss_fake": (
-            "BANCAS 2026 [3]",
-            """
+    # --------------------------------------------------------
+    # VALIDAR LA OPCIÓN SELECCIONADA
+    # --------------------------------------------------------
 
-[36]  SOLO  S/25
-+
- [37] + [38] + [39] +
- [40]
-S/50 SOLES
-""",
-        ),
-        "cmdss_whatsapp": (
-            "[53] WHATSAPP[53]",
-            """REACCIONES PARA CANALES [54]
-/reaccion + link ❤️ &200
-costo 20: CRD
- 
-TUMBAR NÚMERO [55]
-/banwhats +51999999999
-costo 20 CRD
- 
-SMS WHATSAPP [56]
-/numWhatsApp 
-costo 50 CRD""",
-        ),
-        "cmdss_telegram": (
-            "[48] TELEGRAM[48]",
-            """[57] TUMBAR TELEGRAM
-/bantele @user o número 
-costo 40 CRD
-
-[58] USUARIOS EN GRUPO 
-/usuarios + cantidad+link
-costo 
-[59]1k 50 CRD 
-[59]2k 100 CRD
-[59]5k 500 CRD
-
-SMS TELEGRAM [56]
-/numtelegram 
-costo 40 CRD""",
-        ),
-        "cmdss_youtube": (
-            "[60] YOUTUBE",
-            """
-
-BAN DE CANAL [61]
-/banyou +link del canal 
-costo 50 CRD
- 
-YOUTUBE PREMIUM [61]
-/YouTube 
-Costo 50 CRD 
-
-/YouTudomi
-costo 50 CRD""",
-        ),
-        "cmdss_instagram": (
-            "📸 INSTAGRAM",
-            "Ayuda sobre privacidad y seguridad.",
-        ),
-        "cmdss_facebook": (
-            "📘 FACEBOOK",
-            "Ayuda sobre seguridad y recuperación de cuentas.",
-        ),
-        "cmdss_bot": (
-            "🤖 BOT",
-            "Consulta /cmds para ver los comandos disponibles.",
-        ),
-        "cmdss_panel": (
-            "PANELES [63]",
-            """
-            PANEL TIK TOK [62]
-seguidores [11]
-vistas [11]
-likes [11]
-comentarios [11]
-vistas live[11]
-compartidos[11]
-
- PANEL YOUTUBE [60]
-seguidores [26]
-vistas [11]
-likes [11]
-comentarios [26]
-vistas live[26]
-compartidos[26]
-
-PANEL INSTAGRAM[64] 
-seguidores [11]
-vistas [11]
-likes [11]
-comentarios [11]
-vistas live[26]
-compartidos[11]
-
-PANEL FACEBOOK [65]
-seguidores [11]
-vistas [11]
-likes [11]
-comentarios [11]
-vistas live[26]
-compartidos[26]
-
-/panel 
-COSTO  80 CRD""",
-        ),
-    }
-
-    if call.data not in opciones:
+    if call.data not in OPCIONES_CMDSS:
         return
 
-    titulo, descripcion = opciones[call.data]
-    texto = premium(f"""
-<b>{titulo}</b>
-{descripcion}
-""")
-    url_imagen = IMAGENES_CMDSS.get(call.data)
+    titulo, descripcion = OPCIONES_CMDSS[call.data]
+
+    texto = premium(
+        f"<b>{titulo}</b>\n{descripcion}"
+    )
+
+    url_imagen = IMAGENES_CMDSS.get(call.data, "")
+
+    # --------------------------------------------------------
+    # ACTUALIZAR IMAGEN, TEXTO Y BOTÓN VOLVER
+    # --------------------------------------------------------
 
     try:
-        if mensaje.photo:
-            if url_imagen and url_imagen != "" and "ENLACE_" not in url_imagen:
+        if url_imagen and "ENLACE_" not in url_imagen:
+
+            if mensaje.photo:
                 bot.edit_message_media(
+                    chat_id=chat_id,
+                    message_id=mensaje.message_id,
                     media=InputMediaPhoto(
                         media=url_imagen,
                         caption=texto,
                         parse_mode="HTML"
                     ),
-                    chat_id=chat_id,
-                    message_id=mensaje.message_id,
                     reply_markup=teclado_volver_cmdss()
                 )
-            else:
-                bot.edit_message_caption(
-                    caption=texto + "\n\n⚠️ Falta configurar la imagen.",
+
+            elif mensaje.video:
+                bot.delete_message(
                     chat_id=chat_id,
-                    message_id=mensaje.message_id,
-                    parse_mode="HTML",
-                    reply_markup=teclado_volver_cmdss()
+                    message_id=mensaje.message_id
                 )
-        else:
-            if url_imagen and url_imagen != "" and "ENLACE_" not in url_imagen:
-                bot.delete_message(chat_id, mensaje.message_id)
+
                 bot.send_photo(
                     chat_id=chat_id,
                     photo=url_imagen,
@@ -2058,19 +2130,40 @@ COSTO  80 CRD""",
                     parse_mode="HTML",
                     reply_markup=teclado_volver_cmdss()
                 )
+
             else:
-                bot.edit_message_text(
-                    text=texto + "\n\n⚠️ Falta configurar el enlace de esta imagen.",
+                bot.send_photo(
                     chat_id=chat_id,
-                    message_id=mensaje.message_id,
+                    photo=url_imagen,
+                    caption=texto,
                     parse_mode="HTML",
                     reply_markup=teclado_volver_cmdss()
                 )
+
+        else:
+            texto_sin_imagen = (
+                texto + "\n\n⚠️ Falta configurar la imagen de esta sección."
+            )
+
+            if mensaje.photo or mensaje.video:
+                bot.edit_message_caption(
+                    chat_id=chat_id,
+                    message_id=mensaje.message_id,
+                    caption=texto_sin_imagen,
+                    parse_mode="HTML",
+                    reply_markup=teclado_volver_cmdss()
+                )
+            else:
+                bot.edit_message_text(
+                    chat_id=chat_id,
+                    message_id=mensaje.message_id,
+                    text=texto_sin_imagen,
+                    parse_mode="HTML",
+                    reply_markup=teclado_volver_cmdss()
+                )
+
     except Exception as e:
-        print(f"Error al actualizar el menú: {e}")
-    
-
-
+        print(f"Error al actualizar el menú CMDSS: {e}")
 # ============== CONSULTA DE IP ==============
 
 def teclado_ip(lat, lon):
