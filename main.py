@@ -1720,15 +1720,15 @@ from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup, InputMedia
 # ==========================================
 # 🔑 IDs de emojis premium — puedes cambiarlos
 # ==========================================
-EMOJI_BANCAS = ""
-EMOJI_BANCAS_FAKE = ""
+EMOJI_BANCAS = "5271766244930921939"
+EMOJI_BANCAS_FAKE = "5199937327836705414"
 EMOJI_WHATSAPP = "5334998226636390258"
 EMOJI_TELEGRAM = "5330237710655306682"
 EMOJI_YOUTUBE = "5334681713316479679"
 EMOJI_INSTAGRAM = "5319160079465857105"
 EMOJI_FACEBOOK = "5323261730283863478"
 EMOJI_BOT = "5269595766028022191"
-EMOJI_PANELES = ""
+EMOJI_PANELES = "5465319680564542617"
 
 # Enlaces originales de las imágenes
 IMAGENES_CMDSS = {
@@ -1739,13 +1739,20 @@ IMAGENES_CMDSS = {
     "cmdss_youtube": "https://files.catbox.moe/ewwpvn.png",
     "cmdss_instagram": "https://files.catbox.moe/oaj4qu.jpg",
     "cmdss_facebook": "https://files.catbox.moe/y17lbf.jpg",
-    "cmdss_bot": "",
+    "cmdss_bot": "https://files.catbox.moe/2d46ic.jpg",
     "cmdss_panel": "",
 }
 
 NOMBRES_CMDSS = {
-    "cmdss_bancas": "BANCAS",
-    "cmdss_fake": "BANCAS FAKE",
+    "cmdss_bancas": "g",
+    "cmdss_fake": """BANCA 2026 [3]
+
+[36]  SOLO  S/25
++
+ [37] + [38] + [39] +
+ [40]
+S/50 SOLES
+""",
     "cmdss_whatsapp": "WHATSAPP",
     "cmdss_telegram": "TELEGRAM",
     "cmdss_youtube": "YOUTUBE",
@@ -1847,8 +1854,6 @@ def texto_menu(user, saldo):
 
 Selecciona una categoría para consultar
 su información y disponibilidad.
-
-💳 Saldo: <code>{esc(saldo)} CRD</code>
 """
 
 
