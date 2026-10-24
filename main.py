@@ -1764,8 +1764,8 @@ IMAGENES_CMDSS = {
     "cmdss_youtube": "https://files.catbox.moe/ewwpvn.png",
     "cmdss_instagram": "https://files.catbox.moe/oaj4qu.jpg",
     "cmdss_facebook": "https://files.catbox.moe/y17lbf.jpg",
-    "cmdss_bot": "https://files.catbox.moe/2d46ic.jpg",
-    "cmdss_panel": "",
+    "cmdss_bot": "https://files.catbox.moe/22s2tv.jpg",
+    "cmdss_panel": "https://files.catbox.moe/yyhqnw.jpg",
 }
 
 
@@ -1860,7 +1860,7 @@ def teclado_volver_cmdss():
             InlineKeyboardButton(
                 text=TEXTO_VOLVER_CMDSS,
                 callback_data="cmdss_volver",
-                icon_custom_emoji_id="5422888306034570891"
+                icon_custom_emoji_id="5465433973939256212"
             )
         ]
     ])
@@ -1891,7 +1891,7 @@ def cmdss_command(message):
 
     bot.send_photo(
         chat_id=message.chat.id,
-        photo="https://files.catbox.moe/e7f23x.mp4",
+        photo="https://files.catbox.moe/90xnue.jpg",
         caption=premium(texto_menu(user, saldo)),
         parse_mode="HTML",
         reply_markup=teclado_cmdss()
