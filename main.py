@@ -11,6 +11,8 @@ import asyncio
 import urllib.parse
 import secrets
 import ipaddress
+import time
+import threading
 from datetime import datetime
 from urllib.parse import quote_plus
 from aiohttp import web
@@ -2508,7 +2510,192 @@ import base64
 import os
 import tempfile
 from io import BytesIO
+# =====================================================
+# CONFIGURACIÓN EDITABLE
+# =====================================================
 
+EMOJI_BAN_TELE = "5330237710655306682"
+EMOJI_OK = "5422888306034570891"
+
+TEXTO_BAN_TELE = {
+    "titulo": "SPECTER DATA | TELEGRAM SIMULATOR",
+    "inicio": "🚀 Iniciando ataque...",
+    "analisis": "🔎 Analizando datos de demostración...",
+    "progreso": "⚙️ Ejecutando escenario real...",
+    "final": "✅ COMPLETADA",
+    "aviso": "🎭 Modo de extracción.",
+}
+
+# Evita que dos simulaciones del mismo usuario se ejecuten a la vez.
+simulaciones_activas = set()
+simulaciones_lock = threading.Lock()
+
+
+# =====================================================
+# BARRA DE PROGRESO VISUAL
+# =====================================================
+
+def barra_progreso(porcentaje):
+    bloques = porcentaje // 10
+    return "🟩" * bloques + "⬜" * (10 - bloques)
+
+
+# =====================================================
+# TECLADO FINAL
+# =====================================================
+
+def teclado_bantele():
+    teclado = InlineKeyboardMarkup()
+    teclado.add(
+        InlineKeyboardButton(
+            "🔄 Repetir simulación",
+            callback_data="bantele_repetir"
+        )
+    )
+    return teclado
+
+
+# =====================================================
+# COMANDO /bantele
+# Uso: /bantele @usuario
+# =====================================================
+
+@bot.message_handler(commands=["bantele"])
+def bantele_command(message):
+    partes = message.text.split(maxsplit=1)
+
+    if len(partes) < 2 or not partes[1].strip():
+        bot.reply_to(
+            message,
+            "🎭 <b>TELEGRAM SIMULATOR</b>\n\n"
+            "Uso:\n"
+            "<code>/bantele @usuario</code>\n\n"
+            "También puedes escribir un nombre ficticio para "
+            "la demostración.\n\n"
+            "⚠️ Simulación visual; no ejecuta acciones sobre cuentas.",
+            parse_mode="HTML"
+        )
+        return
+
+    objetivo = partes[1].strip()
+
+    if len(objetivo) > 100:
+        bot.reply_to(message, "❌ El nombre es demasiado largo.")
+        return
+
+    user_id = message.from_user.id
+
+    with simulaciones_lock:
+        if user_id in simulaciones_activas:
+            bot.reply_to(
+                message,
+                "⏳ Ya tienes una simulación en curso."
+            )
+            return
+        simulaciones_activas.add(user_id)
+
+    try:
+        bot.reply_to(
+            message,
+            f"<b>🎭 {TEXTO_BAN_TELE['titulo']}</b>\n\n"
+            f"🎯 Objetivo de demostración: "
+            f"<code>{html.escape(objetivo)}</code>\n\n"
+            f"{TEXTO_BAN_TELE['inicio']}\n\n"
+            f"{barra_progreso(0)} 0%\n"
+            f"━━━━━━━━━━━━━━━━━━\n"
+            f"Preparando entorno visual...",
+            parse_mode="HTML"
+        )
+
+        mensaje = bot.reply_to(
+            message,
+            "⏳ Preparando simulación..."
+        )
+
+        def ejecutar_simulacion():
+            try:
+                etapas = [
+                    (20, "🔎 Analizando..."),
+                    (40, "🛡️ Verificando entorno de demostración..."),
+                    (60, "⚙️ Procesando datos..."),
+                    (80, "📊 Generando informe visual..."),
+                    (100, "✅ Simulación completada."),
+                ]
+
+                for porcentaje, estado in etapas:
+                    time.sleep(1.5)
+
+                    texto = (
+                        f"<b>🎭 {TEXTO_BAN_TELE['titulo']}</b>\n\n"
+                        f"🎯 Objetivo: "
+                        f"<code>{html.escape(objetivo)}</code>\n\n"
+                        f"{estado}\n\n"
+                        f"{barra_progreso(porcentaje)} "
+                        f"<b>{porcentaje}%</b>\n"
+                        f"━━━━━━━━━━━━━━━━━━\n"
+                        f"🧪 Entorno: DEMOSTRACIÓN\n"
+                        f"🔐 Acciones reales: NINGUNA"
+                    )
+
+                    if porcentaje == 100:
+                        texto += (
+                            "\n\n"
+                            f"<b>{TEXTO_BAN_TELE['final']}</b>\n\n"
+                            f"{TEXTO_BAN_TELE['aviso']}"
+                        )
+
+                    try:
+                        bot.edit_message_text(
+                            text=texto,
+                            chat_id=mensaje.chat.id,
+                            message_id=mensaje.message_id,
+                            parse_mode="HTML",
+                            reply_markup=(
+                                teclado_bantele()
+                                if porcentaje == 100
+                                else None
+                            )
+                        )
+                    except Exception as error:
+                        print(
+                            f"Error actualizando simulación: {error}"
+                        )
+
+            finally:
+                with simulaciones_lock:
+                    simulaciones_activas.discard(user_id)
+
+        hilo = threading.Thread(
+            target=ejecutar_simulacion,
+            daemon=True
+        )
+        hilo.start()
+
+    except Exception:
+        with simulaciones_lock:
+            simulaciones_activas.discard(user_id)
+        raise
+
+
+# =====================================================
+# BOTÓN PARA REPETIR
+# Añade este bloque junto a tus otros callbacks.
+# =====================================================
+
+@bot.callback_query_handler(
+    func=lambda call: call.data == "bantele_repetir"
+)
+def bantele_repetir_callback(call):
+    bot.answer_callback_query(
+        call.id,
+        "🎭 Inicia otra demostración con /bantele @usuario"
+    )
+    bot.send_message(
+        call.message.chat.id,
+        "Usa <code>/bantele @usuario</code> para iniciar "
+        "otra simulación visual.",
+        parse_mode="HTML"
+    )
 
 # =========================
 # /AGV
