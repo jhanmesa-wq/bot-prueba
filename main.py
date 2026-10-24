@@ -1720,15 +1720,15 @@ from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup, InputMedia
 # ==========================================
 # 🔑 IDs de emojis premium — puedes cambiarlos
 # ==========================================
-EMOJI_BANCAS = "5417130246034570891"
-EMOJI_BANCAS_FAKE = "5420019314400084080"
-EMOJI_WHATSAPP = "5373140485163149590"
-EMOJI_TELEGRAM = "5379490659714861662"
-EMOJI_YOUTUBE = "5377690894913475048"
-EMOJI_INSTAGRAM = "5396341104812568000"
-EMOJI_FACEBOOK = "5387920881878767005"
-EMOJI_BOT = "5366300660651303930"
-EMOJI_PANELES = "5386910158177149004"
+EMOJI_BANCAS = ""
+EMOJI_BANCAS_FAKE = ""
+EMOJI_WHATSAPP = "5334998226636390258"
+EMOJI_TELEGRAM = "5330237710655306682"
+EMOJI_YOUTUBE = "5334681713316479679"
+EMOJI_INSTAGRAM = "5319160079465857105"
+EMOJI_FACEBOOK = "5323261730283863478"
+EMOJI_BOT = "5269595766028022191"
+EMOJI_PANELES = ""
 
 # Enlaces originales de las imágenes
 IMAGENES_CMDSS = {
@@ -1885,7 +1885,7 @@ def cmdss_callback(call):
             # ✏️ EDITAR el mensaje existente en lugar de enviar uno nuevo
             bot.edit_message_media(
                 media=InputMediaPhoto(
-                    media="https://i.ibb.co/CsBfCpn7/IMG-20261021-135127-050.jpg",
+                    media="https://files.catbox.moe/e7f23x.mp4",
                     caption=texto,
                     parse_mode="HTML"
                 ),
