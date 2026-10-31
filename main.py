@@ -1316,48 +1316,48 @@ def teclado_menu_cmds():
             InlineKeyboardButton(
                 "RENIEC",
                 callback_data="cat_reniec",
-                icon_custom_emoji_id="4900459325689955284"
+                icon_custom_emoji_id="5179570356695860413"
             ),
             InlineKeyboardButton(
                 "VEHÍCULOS",
                 callback_data="cat_placa",
-                icon_custom_emoji_id="5379754019297283005"
+                icon_custom_emoji_id="4900384661978481721"
             )
         ],
         [
             InlineKeyboardButton(
                 "FAMILIARES",
                 callback_data="cat_familiares",
-                icon_custom_emoji_id="5413480005348838600"
+                icon_custom_emoji_id="5098111813686395869"
             ),
             InlineKeyboardButton(
                 "TELÉFONOS",
                 callback_data="cat_telcel",
-                icon_custom_emoji_id="5362373442541815800"
+                icon_custom_emoji_id="5271477528639351659"
             )
         ],
         [
             InlineKeyboardButton(
                 "FACIAL",
                 callback_data="cat_facial",
-                icon_custom_emoji_id="5386053082005237605"
+                icon_custom_emoji_id="5271698002195558429"
             ),
             InlineKeyboardButton(
                 "RECARGAR",
                 callback_data="cat_comprar",
-                icon_custom_emoji_id="5398406198340340300"
+                icon_custom_emoji_id="5271766244930921939"
             )
         ],
         [
             InlineKeyboardButton(
                 "DENUNCIAS",
                 callback_data="cat_denuncias",
-                icon_custom_emoji_id="5364604735010231300"
+                icon_custom_emoji_id="4900307150703690607"
             ),
             InlineKeyboardButton(
                 "DIRECCIÓN",
                 callback_data="cat_localizar",
-                icon_custom_emoji_id="5371818010436943405"
+                icon_custom_emoji_id="5269492399050108494"
             )
         ],
     ])
@@ -2167,6 +2167,12 @@ def cmdss_callback(call):
     except Exception as e:
         print(f"Error al actualizar el menú CMDSS: {e}")
 # ============== CONSULTA DE IP ==============
+COSTO_IP = 10
+
+
+# ==========================================================
+# TECLADO DE UBICACIÓN
+# ==========================================================
 
 def teclado_ip(lat, lon):
     return InlineKeyboardMarkup([
@@ -2192,101 +2198,142 @@ def teclado_ip(lat, lon):
     ])
 
 
-def consultar_ip_publica(ip):
-    if not IPAPI_TOKEN:
-        raise ValueError("Falta configurar IPAPI_TOKEN.")
+# ==========================================================
+# CONSULTAR IP-API
+# ==========================================================
 
-    url = f"https://api.theipapi.com/v1/ip/{ip}"
+def consultar_ip_publica(ip):
+
+    url = f"http://ip-api.com/json/{ip}"
+
+    params = {
+        "fields": (
+            "status,message,continent,continentCode,country,countryCode,"
+            "region,regionName,city,district,zip,lat,lon,timezone,offset,"
+            "currency,isp,org,as,asname,reverse,mobile,proxy,hosting,query"
+        )
+    }
 
     respuesta = requests.get(
         url,
-        headers={
-            "Authorization": f"Bearer {IPAPI_TOKEN}",
-            "Accept": "application/json",
-        },
-        timeout=15,
+        params=params,
+        timeout=20
     )
+
     respuesta.raise_for_status()
 
     datos = respuesta.json()
 
-    if (
-        not isinstance(datos, dict)
-        or datos.get("status") != "OK"
-        or not isinstance(datos.get("body"), dict)
-    ):
-        raise ValueError("La API no devolvió datos válidos.")
+    if not isinstance(datos, dict):
+        raise ValueError("Respuesta inválida de la API.")
 
-    return datos["body"]
+    if datos.get("status") != "success":
+        raise ValueError(
+            datos.get("message", "No se pudo consultar la IP.")
+        )
 
+    return datos
+
+
+# ==========================================================
+# COMANDO /IP
+# ==========================================================
 
 @bot.message_handler(commands=["ip"])
 def ip_command(message):
+
     user = message.from_user
 
-    if not user or not message:
+    if not user:
         return
 
     uid = user.id
+
     partes = (message.text or "").split(maxsplit=1)
 
+    # VERIFICAR ARGUMENTO
     if len(partes) < 2 or not partes[1].strip():
+
         bot.reply_to(
             message,
-            "🌐 Uso: /ip 8.8.8.8\n"
-            f"💰 Costo: {COSTO_IP} crédito por consulta exitosa."
+            "🌐 <b>SPECTER DATA | IP LOOKUP</b>\n\n"
+            "📌 Uso: <code>/ip 8.8.8.8</code>\n"
+            f"💰 Costo: {COSTO_IP} créditos por consulta exitosa.",
+            parse_mode="HTML"
         )
         return
 
     ip = partes[1].strip()
 
+    # VALIDAR DIRECCIÓN IP
     try:
         direccion = ipaddress.ip_address(ip)
+
     except ValueError:
+
         bot.reply_to(
             message,
             "❌ La dirección IP no es válida."
         )
         return
 
+    # SOLO IP PÚBLICAS
     if not direccion.is_global:
+
         bot.reply_to(
             message,
             "⚠️ Introduce una dirección IP pública global."
         )
         return
 
-    saldo = get_creditos(uid)
+    # VERIFICAR CRÉDITOS
+    try:
+        saldo = get_creditos(uid)
 
-    if saldo < COSTO_IP:
+    except Exception:
+
+        logger.exception("Error consultando créditos del usuario.")
+
         bot.reply_to(
             message,
-            "❌ No tienes créditos suficientes.\n"
-            f"💰 Tu saldo: {saldo}\n"
-            f"💳 Costo: {COSTO_IP} crédito."
+            "❌ No se pudo comprobar tu saldo."
         )
         return
 
+    if saldo < COSTO_IP:
+
+        bot.reply_to(
+            message,
+            "❌ No tienes créditos suficientes.\n\n"
+            f"💰 Tu saldo: {saldo}\n"
+            f"💳 Costo: {COSTO_IP} créditos."
+        )
+        return
+
+    # MENSAJE DE ESPERA
     estado = bot.reply_to(
         message,
-        "🔎 Consultando información pública de la IP...\n"
-        "⏳ Espera un momento."
+        "🌐 <b>SPECTER DATA | IP LOOKUP</b>\n\n"
+        "🔎 Consultando información pública...\n"
+        "⏳ Espera un momento.",
+        parse_mode="HTML"
     )
 
+    # CONSULTAR API
     try:
+
         datos = consultar_ip_publica(str(direccion))
 
     except requests.HTTPError as exc:
+
         codigo = (
             exc.response.status_code
             if exc.response is not None
             else None
         )
 
-        if codigo in (401, 403):
-            error = "Token inválido, vencido o sin permisos."
-        elif codigo == 429:
-            error = "Límite de consultas de la API alcanzado."
+        if codigo == 429:
+            error = "Límite de consultas alcanzado."
         else:
             error = f"Error HTTP de la API ({codigo})."
 
@@ -2294,118 +2341,175 @@ def ip_command(message):
             f"❌ {error}\n"
             "💰 No se descontaron créditos.",
             chat_id=estado.chat.id,
-            message_id=estado.message_id,
+            message_id=estado.message_id
         )
         return
 
-    except (requests.RequestException, ValueError):
+    except requests.RequestException:
+
         bot.edit_message_text(
-            "❌ No se pudo consultar la API.\n"
-            "💰 No se descontaron créditos.\n"
-            "Inténtalo nuevamente más tarde.",
+            "❌ No se pudo conectar con ip-api.com.\n\n"
+            "💰 No se descontaron créditos.",
             chat_id=estado.chat.id,
-            message_id=estado.message_id,
+            message_id=estado.message_id
+        )
+        return
+
+    except ValueError as exc:
+
+        bot.edit_message_text(
+            "❌ Error en la consulta:\n"
+            f"{html.escape(str(exc))}\n\n"
+            "💰 No se descontaron créditos.",
+            chat_id=estado.chat.id,
+            message_id=estado.message_id
         )
         return
 
     except Exception:
-        logger.exception("Error inesperado al consultar la IP.")
+
+        logger.exception("Error inesperado en /ip")
+
         bot.edit_message_text(
             "❌ Ocurrió un error inesperado.\n"
             "💰 No se descontaron créditos.",
             chat_id=estado.chat.id,
-            message_id=estado.message_id,
+            message_id=estado.message_id
         )
         return
 
-    # ==========================================================
+    # ======================================================
     # EXTRAER DATOS
-    # ==========================================================
-    ubicacion = datos.get("location") or {}
-    asn_info = datos.get("asn") or {}
-    empresa = datos.get("company") or {}
+    # ======================================================
 
-    ip_resultado = datos.get("ip") or str(direccion)
-    pais = ubicacion.get("country") or "No disponible"
-    codigo_pais = ubicacion.get("country_code") or "N/D"
-    region = ubicacion.get("region") or "No disponible"
-    ciudad = ubicacion.get("city") or "No disponible"
-    lat = ubicacion.get("latitude")
-    lon = ubicacion.get("longitude")
-    zona = ubicacion.get("timezone") or "No disponible"
+    ip_resultado = datos.get("query") or str(direccion)
 
-    isp = asn_info.get("org_name") or "No disponible"
-    asn = asn_info.get("asn") or "No disponible"
-    asn_descripcion = (
-        asn_info.get("asn_description") or "No disponible"
-    )
-    nombre_empresa = empresa.get("name") or "No disponible"
-    red = asn_info.get("network") or "No disponible"
+    pais = datos.get("country") or "No disponible"
+    codigo_pais = datos.get("countryCode") or "N/D"
+    continente = datos.get("continent") or "No disponible"
 
-    es_vpn = datos.get("is_vpn")
-    es_datacenter = datos.get("is_datacenter")
-    es_bogon = datos.get("is_bogon")
+    region = datos.get("regionName") or "No disponible"
+    ciudad = datos.get("city") or "No disponible"
+    distrito = datos.get("district") or "No disponible"
+    codigo_postal = datos.get("zip") or "No disponible"
+
+    lat = datos.get("lat")
+    lon = datos.get("lon")
+
+    zona = datos.get("timezone") or "No disponible"
+    moneda = datos.get("currency") or "No disponible"
+
+    isp = datos.get("isp") or "No disponible"
+    organizacion = datos.get("org") or "No disponible"
+
+    asn = datos.get("as") or "No disponible"
+    asn_nombre = datos.get("asname") or "No disponible"
+
+    reverse = datos.get("reverse") or "No disponible"
+
+    movil = datos.get("mobile")
+    proxy = datos.get("proxy")
+    hosting = datos.get("hosting")
+
+    # ======================================================
+    # FUNCIONES DE FORMATO
+    # ======================================================
 
     def seguro(valor):
         return html.escape(str(valor))
 
     def estado_si_no(valor):
+
         if valor is True:
             return "Sí"
+
         if valor is False:
             return "No"
+
         return "No disponible"
 
-    # ==========================================================
-    # VERIFICAR SALDO Y DESCONTAR
-    # ==========================================================
-    saldo_actual = get_creditos(uid)
+    # ======================================================
+    # DESCONTAR CRÉDITOS
+    # ======================================================
 
-    if saldo_actual < COSTO_IP:
+    try:
+
+        saldo_actual = get_creditos(uid)
+
+        if saldo_actual < COSTO_IP:
+
+            bot.edit_message_text(
+                "❌ Tu saldo ya no es suficiente.\n"
+                "💰 No se descontaron créditos.",
+                chat_id=estado.chat.id,
+                message_id=estado.message_id
+            )
+            return
+
+        descontar(uid, COSTO_IP)
+
+        saldo_final = get_creditos(uid)
+
+    except Exception:
+
+        logger.exception("Error descontando créditos en /ip")
+
         bot.edit_message_text(
-            "❌ Tu saldo cambió y ya no alcanza para esta consulta.\n"
-            "💰 No se descontaron créditos.",
+            "❌ No se pudo procesar el descuento.\n"
+            "Contacta con el administrador.",
             chat_id=estado.chat.id,
-            message_id=estado.message_id,
+            message_id=estado.message_id
         )
         return
 
-    # Descontar únicamente después de una respuesta válida.
-    descontar(uid, COSTO_IP)
-    saldo_final = get_creditos(uid)
+    # ======================================================
+    # RESULTADO
+    # ======================================================
 
-    # ==========================================================
-    # FORMATEAR RESULTADO
-    # ==========================================================
     texto = (
         "🌐 <b>SPECTER DATA | IP LOOKUP</b>\n\n"
+
         f"🖥️ IP: <code>{seguro(ip_resultado)}</code>\n"
         f"🌍 País: {seguro(pais)} ({seguro(codigo_pais)})\n"
+        f"🌎 Continente: {seguro(continente)}\n"
         f"📍 Región: {seguro(region)}\n"
-        f"🏙️ Ciudad aproximada: {seguro(ciudad)}\n"
+        f"🏙️ Ciudad: {seguro(ciudad)}\n"
+        f"📌 Distrito: {seguro(distrito)}\n"
+        f"📮 Código postal: {seguro(codigo_postal)}\n"
         f"🧭 Latitud: {seguro(lat if lat is not None else 'N/D')}\n"
         f"🧭 Longitud: {seguro(lon if lon is not None else 'N/D')}\n"
-        f"🕒 Zona horaria: {seguro(zona)}\n\n"
+        f"🕒 Zona horaria: {seguro(zona)}\n"
+        f"💱 Moneda: {seguro(moneda)}\n\n"
+
         "📡 <b>RED Y ORGANIZACIÓN</b>\n"
-        f"🏢 ISP/Organización: {seguro(isp)}\n"
+        f"🏢 ISP: {seguro(isp)}\n"
+        f"🏬 Organización: {seguro(organizacion)}\n"
         f"🔗 ASN: {seguro(asn)}\n"
-        f"📋 Descripción ASN: {seguro(asn_descripcion)}\n"
-        f"🏬 Empresa: {seguro(nombre_empresa)}\n"
-        f"🌐 Red: {seguro(red)}\n\n"
+        f"📋 Nombre ASN: {seguro(asn_nombre)}\n"
+        f"🔍 Reverse DNS: {seguro(reverse)}\n\n"
+
         "🛡️ <b>INDICADORES</b>\n"
-        f"🔒 VPN detectada: {estado_si_no(es_vpn)}\n"
-        f"🖥️ Centro de datos: {estado_si_no(es_datacenter)}\n"
-        f"⚠️ IP bogon: {estado_si_no(es_bogon)}\n\n"
+        f"📱 Red móvil: {estado_si_no(movil)}\n"
+        f"🔒 Proxy/VPN: {estado_si_no(proxy)}\n"
+        f"🖥️ Hosting: {estado_si_no(hosting)}\n\n"
+
         f"💳 Crédito descontado: {COSTO_IP}\n"
         f"💰 Saldo restante: {saldo_final}\n\n"
+
         "⚠️ <i>La geolocalización es aproximada; "
         "no identifica una dirección física exacta.</i>"
     )
 
+    # ======================================================
+    # BOTONES DEL MAPA
+    # ======================================================
+
     botones = None
 
     if lat is not None and lon is not None:
+
         try:
+
             lat_num = float(lat)
             lon_num = float(lon)
 
@@ -2413,10 +2517,19 @@ def ip_command(message):
                 -90 <= lat_num <= 90
                 and -180 <= lon_num <= 180
             ):
-                botones = teclado_ip(lat_num, lon_num)
+
+                botones = teclado_ip(
+                    lat_num,
+                    lon_num
+                )
 
         except (ValueError, TypeError):
+
             botones = None
+
+    # ======================================================
+    # ENVIAR RESULTADO
+    # ======================================================
 
     bot.edit_message_text(
         texto,
@@ -2424,38 +2537,42 @@ def ip_command(message):
         message_id=estado.message_id,
         parse_mode="HTML",
         reply_markup=botones,
-        disable_web_page_preview=True,
+        disable_web_page_preview=True
     )
 
 
 # ==========================================================
-# BOTÓN: CONSULTAR OTRA IP
+# BOTÓN CONSULTAR OTRA IP
+# REGISTRAR SOLAMENTE UNA VEZ
 # ==========================================================
-@bot.callback_query_handler(func=lambda call: call.data == "ip_otra")
+
+@bot.callback_query_handler(
+    func=lambda call: call.data == "ip_otra"
+)
 def ip_otra_callback(call):
+
     try:
         bot.answer_callback_query(call.id)
+
     except Exception:
         pass
 
     try:
+
         bot.send_message(
             call.message.chat.id,
-            "🌐 Envía la IP pública que deseas consultar.\n"
-            f"Ejemplo: <code>/ip 8.8.8.8</code>\n"
-            f"💰 Costo: {COSTO_IP} crédito por consulta exitosa.",
-            parse_mode="HTML",
+            "🌐 <b>SPECTER DATA | IP LOOKUP</b>\n\n"
+            "Envía la IP pública que deseas consultar.\n\n"
+            "📌 Ejemplo: <code>/ip 8.8.8.8</code>\n"
+            f"💰 Costo: {COSTO_IP} créditos.",
+            parse_mode="HTML"
         )
-    except Exception as e:
-        logger.exception("Error al solicitar otra IP: %s", e)
-# ============== CALLBACK CONSULTAR OTRA IP ==============
 
-# Ya está registrado en la parte anterior:
-# @bot.callback_query_handler(func=lambda call: call.data == "ip_otra")
-# def ip_otra_callback(call):
-#     ...
+    except Exception:
 
-
+        logger.exception(
+            "Error al solicitar otra IP."
+        )
 # ============== COMANDO /PANEL ==============
 
 @bot.message_handler(commands=["panel"])
@@ -2518,7 +2635,7 @@ EMOJI_BAN_TELE = "5330237710655306682"
 EMOJI_OK = "5422888306034570891"
 
 TEXTO_BAN_TELE = {
-    "titulo": "SPECTER DATA | TELEGRAM SIMULATOR",
+    "titulo": "SPECTER DATA | TELEGRAM BAN",
     "inicio": "🚀 Iniciando ataque...",
     "analisis": "🔎 Analizando datos de demostración...",
     "progreso": "⚙️ Ejecutando escenario real...",
@@ -2548,7 +2665,7 @@ def teclado_bantele():
     teclado = InlineKeyboardMarkup()
     teclado.add(
         InlineKeyboardButton(
-            "🔄 Repetir simulación",
+            "🔄 Repetir",
             callback_data="bantele_repetir"
         )
     )
@@ -2567,12 +2684,12 @@ def bantele_command(message):
     if len(partes) < 2 or not partes[1].strip():
         bot.reply_to(
             message,
-            "🎭 <b>TELEGRAM SIMULATOR</b>\n\n"
+            "🎭 <b>TELEGRAM</b>\n\n"
             "Uso:\n"
             "<code>/bantele @usuario</code>\n\n"
-            "También puedes escribir un nombre ficticio para "
-            "la demostración.\n\n"
-            "⚠️ Simulación visual; no ejecuta acciones sobre cuentas.",
+            "ESCRIBE EL NOMBRE DE USUARIO"
+            "PARA Q FUNCIONE EN EL ATAQUE.\n\n"
+            "⚠️ ATAQUE DE FUERZA BRUTA",
             parse_mode="HTML"
         )
         return
@@ -2589,7 +2706,7 @@ def bantele_command(message):
         if user_id in simulaciones_activas:
             bot.reply_to(
                 message,
-                "⏳ Ya tienes una simulación en curso."
+                "⏳ Ya tienes una SOLICITUD en curso."
             )
             return
         simulaciones_activas.add(user_id)
@@ -2609,17 +2726,17 @@ def bantele_command(message):
 
         mensaje = bot.reply_to(
             message,
-            "⏳ Preparando simulación..."
+            "⏳ Preparando extracción...."
         )
 
         def ejecutar_simulacion():
             try:
                 etapas = [
                     (20, "🔎 Analizando..."),
-                    (40, "🛡️ Verificando entorno de demostración..."),
+                    (40, "🛡️ Verificando entorno.."),
                     (60, "⚙️ Procesando datos..."),
                     (80, "📊 Generando informe visual..."),
-                    (100, "✅ Simulación completada."),
+                    (100, "✅ ataque completada."),
                 ]
 
                 for porcentaje, estado in etapas:
@@ -2633,8 +2750,8 @@ def bantele_command(message):
                         f"{barra_progreso(porcentaje)} "
                         f"<b>{porcentaje}%</b>\n"
                         f"━━━━━━━━━━━━━━━━━━\n"
-                        f"🧪 Entorno: DEMOSTRACIÓN\n"
-                        f"🔐 Acciones reales: NINGUNA"
+                        f"🧪 Entorno: comtrolado\n"
+                        f"🔐 Acciones reales: 1"
                     )
 
                     if porcentaje == 100:
@@ -2688,7 +2805,7 @@ def bantele_command(message):
 def bantele_repetir_callback(call):
     bot.answer_callback_query(
         call.id,
-        "🎭 Inicia otra demostración con /bantele @usuario"
+        "🎭 Inicia otracon /bantele @usuario"
     )
     bot.send_message(
         call.message.chat.id,
