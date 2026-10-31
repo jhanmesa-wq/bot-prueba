@@ -1360,6 +1360,18 @@ def teclado_menu_cmds():
                 icon_custom_emoji_id="5269492399050108494"
             )
         ],
+                [
+            InlineKeyboardButton(
+                "CERTIFICADOS",
+                callback_data="cat_certificados",
+                icon_custom_emoji_id="4906743979535500183"
+            ),
+            InlineKeyboardButton(
+                "MIGRACIÓN",
+                callback_data="cat_migracion",
+                icon_custom_emoji_id="4981156512731759750"
+            )
+        ],
     ])
     
 @bot.message_handler(commands=["cmds"])
@@ -1431,6 +1443,10 @@ def botones_callback(q):
 [01] /dir
      ↳ consulta dirección × dni
      ↳ COSTO: 6 CRD
+[1]/ip 
+     ↳ consulta dirección × ip
+     ↳ COSTO: 10 CRD
+no sabes cual es el ip? usa /localizar 
 
 ————————
  Base  2026 [29]
@@ -1438,6 +1454,69 @@ def botones_callback(q):
 
         bot.edit_message_text(
             text=premium(texto_localizar),
+            chat_id=q.message.chat.id,
+            message_id=q.message.message_id,
+            parse_mode="HTML",
+            reply_markup=teclado_volver()
+        )
+        # ==========================================================
+    # migración 
+    # ==========================================================
+    elif q.data == "cat_migracion":
+        texto_migracion = """╔═════════╗
+ [30] MIGRACIÓN 
+╚═════════╝
+
+ Consulta información migratoria del ciudadano [3]
+————————————————
+
+[01] /migra
+     ↳ consulta vuelos × dni en PDF
+     ↳ COSTO: 60 CRD
+[1]/migrace
+     ↳ consulta migraciónes × carnet PDF
+     ↳ COSTO: 60 CRD 
+
+————————
+ Base  2026 [29]
+"""
+
+        bot.edit_message_text(
+            text=premium(texto_migracion),
+            chat_id=q.message.chat.id,
+            message_id=q.message.message_id,
+            parse_mode="HTML",
+            reply_markup=teclado_volver()
+        )
+    
+   # ==========================================================
+    # ACTAS
+    # ==========================================================
+    elif q.data == "cat_certificados":
+        texto_certificados = """╔═════════╗
+ [30] CERTIFICADOS
+╚═════════╝
+
+ ACTA POR DNI [3]
+————————————————
+
+[01] /actnac
+     ↳ acta de nacimiento 
+     ↳ COSTO: 60 CRD
+[01]/actmat
+     ↳ acta de matrimonio 
+     ↳ COSTO: 60 CRD
+[01] /actdef
+     ↳ acta de defunción 
+     ↳ COSTO: 60 CRD
+
+
+————————
+ Base  2026 [29]
+"""
+
+        bot.edit_message_text(
+            text=premium(texto_certificados),
             chat_id=q.message.chat.id,
             message_id=q.message.message_id,
             parse_mode="HTML",
