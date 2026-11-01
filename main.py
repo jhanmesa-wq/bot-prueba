@@ -687,7 +687,7 @@ video,img{{width:100%;border-radius:12px;margin-top:12px;background:#0a1020}}
 </div>
 
 <script>
-const token = {token};
+const token = "{html.escape(token)}";
 const agree = document.getElementById("agree");
 const section = document.getElementById("cameraSection");
 const statusBox = document.getElementById("status");
