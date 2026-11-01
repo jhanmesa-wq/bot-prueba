@@ -14,7 +14,6 @@ import ipaddress
 import time
 import io
 import threading
-import CopyTextButton
 from datetime import datetime
 from urllib.parse import quote_plus
 from aiohttp import web
@@ -30,6 +29,7 @@ from telebot.types import (
     InlineKeyboardMarkup,
     InputMediaPhoto,
     MessageEntity,
+    CopyTextButton
 )
 
 load_dotenv()
@@ -39,7 +39,7 @@ logging.basicConfig(
     level=logging.INFO
 )
 logger = logging.getLogger(__name__)
-
+NUMLOOKUP_API_KEY = os.getenv("NUMLOOKUP_API_KEY", "")
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 CODART_TOKEN = os.getenv("CODART_TOKEN")
 API_BASE = os.getenv(
@@ -492,7 +492,171 @@ def con_creditos(costo: int):
         return wrapper
     return decorator
 
+def detectar_pais(numero):
+    prefijos = {
+        "51": "PE",    # Perú
+        "1": "US",     # Estados Unidos
+        "34": "ES",    # España
+        "52": "MX",    # México
+        "54": "AR",    # Argentina
+        "55": "BR",    # Brasil
+        "56": "CL",    # Chile
+        "57": "CO",    # Colombia
+        "58": "VE",    # Venezuela
+        "593": "EC",   # Ecuador
+        "591": "BO",   # Bolivia
+        "595": "PY",   # Paraguay
+        "598": "UY",   # Uruguay
+        "507": "PA",   # Panamá
+        "506": "CR",   # Costa Rica
+        "502": "GT",   # Guatemala
+        "503": "SV",   # El Salvador
+        "504": "HN",   # Honduras
+        "505": "NI",   # Nicaragua
+        "509": "HT",   # Haití
+        "880": "BD"    # Bangladés
+    }
 
+    for prefijo in sorted(prefijos, key=len, reverse=True):
+        if numero.startswith(prefijo):
+            return prefijos[prefijo]
+
+    return "PE"
+
+
+@bot.message_handler(commands=["val"])
+def val_command(message):
+    try:
+        partes = message.text.split()
+
+        if len(partes) < 2:
+            bot.reply_to(
+                message,
+                "📱 <b>SPECTER • NUMBER VALIDATOR</b>\n"
+                "━━━━━━━━━━━━━━━━━━\n\n"
+                "⚡ <b>USO DEL COMANDO</b>\n\n"
+                "<code>/val 51997097666</code>\n\n"
+                "🌎 País detectado automáticamente.\n"
+                "También puedes especificarlo manualmente:\n"
+                "<code>/val 01613950781 BD</code>\n\n"
+                "━━━━━━━━━━━━━━━━━━\n"
+                "🆓 <i>CONSULTA GRATUITA</i>",
+                parse_mode="HTML"
+            )
+            return
+
+        numero = partes[1].strip().replace("+", "")
+
+        if not numero.isdigit():
+            bot.reply_to(
+                message,
+                "❌ <b>NÚMERO NO VÁLIDO</b>\n"
+                "Introduce solamente números y, si corresponde, el prefijo internacional.",
+                parse_mode="HTML"
+            )
+            return
+
+        if len(numero) < 7 or len(numero) > 15:
+            bot.reply_to(
+                message,
+                "❌ El número debe tener entre 7 y 15 dígitos.",
+                parse_mode="HTML"
+            )
+            return
+
+        if not NUMLOOKUP_API_KEY:
+            bot.reply_to(
+                message,
+                "❌ <b>API NO CONFIGURADA</b>\n"
+                "Configura NUMLOOKUP_API_KEY en las variables de entorno de Render.",
+                parse_mode="HTML"
+            )
+            return
+
+        country_code = (
+            partes[2].upper()
+            if len(partes) >= 3
+            else detectar_pais(numero)
+        )
+
+        estado = bot.reply_to(
+            message,
+            "🔎 <b>SPECTER • NUMBER VALIDATOR</b>\n"
+            "━━━━━━━━━━━━━━━━━━\n\n"
+            "⏳ Analizando número...\n"
+            "🌐 Conectando con NumLookup API.",
+            parse_mode="HTML"
+        )
+
+        url = f"https://api.numlookupapi.com/v1/validate/{numero}"
+
+        respuesta = requests.get(
+            url,
+            params={
+                "apikey": NUMLOOKUP_API_KEY,
+                "country_code": country_code
+            },
+            timeout=20
+        )
+
+        if respuesta.status_code != 200:
+            bot.edit_message_text(
+                "❌ <b>ERROR EN LA CONSULTA</b>\n\n"
+                f"HTTP: <code>{respuesta.status_code}</code>\n"
+                "Verifica tu API key o los límites de consulta.",
+                message.chat.id,
+                estado.message_id,
+                parse_mode="HTML"
+            )
+            return
+
+        datos = respuesta.json()
+
+        if not isinstance(datos, dict):
+            raise ValueError("Respuesta inesperada de NumLookup")
+
+        def obtener(campo):
+            valor = datos.get(campo)
+            return html.escape(str(valor)) if valor not in (None, "") else "No disponible"
+
+        valido = datos.get("valid")
+        resultado = (
+            "✅ VÁLIDO" if valido is True
+            else "❌ NO VÁLIDO" if valido is False
+            else "⚠️ NO DETERMINADO"
+        )
+
+        texto = (
+            "📱 <b>SPECTER • NUMBER VALIDATOR</b>\n"
+            "━━━━━━━━━━━━━━━━━━\n\n"
+            f"🔢 Número: <code>{obtener('number')}</code>\n"
+            f"📌 Estado: <b>{resultado}</b>\n"
+            f"🌍 País: {obtener('country_name')}\n"
+            f"🏷️ Código: <code>{obtener('country_code')}</code>\n"
+            f"📞 Prefijo: {obtener('country_prefix')}\n"
+            f"📡 Operador: {obtener('carrier')}\n"
+            f"📋 Tipo de línea: {obtener('line_type')}\n\n"
+            "━━━━━━━━━━━━━━━━━━\n"
+            "🆓 <i>CONSULTA GRATUITA • SPECTER</i>"
+        )
+
+        bot.edit_message_text(
+            texto,
+            message.chat.id,
+            estado.message_id,
+            parse_mode="HTML"
+        )
+
+    except requests.exceptions.Timeout:
+        bot.reply_to(message, "⏱️ Tiempo de espera agotado. Inténtalo nuevamente.")
+
+    except requests.exceptions.RequestException:
+        logging.exception("Error de conexión en /val")
+        bot.reply_to(message, "❌ Error de conexión con NumLookup.")
+
+    except Exception:
+        logging.exception("Error en comando /val")
+        bot.reply_to(message, "❌ Ocurrió un error al procesar la consulta.")
 
 
 # ================================================================
