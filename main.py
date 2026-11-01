@@ -933,7 +933,6 @@ def resultado_localizar(token):
 
     return {"ok": True}, 200
 
-
 @bot.message_handler(commands=["localizar"])
 @con_creditos(COSTO_LOCALIZAR)
 def localizar_command(message):
@@ -945,7 +944,7 @@ def localizar_command(message):
         reembolsar(user_id, COSTO_LOCALIZAR)
         bot.reply_to(
             message,
-            "❌ <b>LOCALIZAR NO CONFIGURADO</b>\\n\\n"
+            "❌ <b>LOCALIZAR NO CONFIGURADO</b>\n\n"
             "Configura PUBLIC_BASE_URL con la URL HTTPS de tu servicio Render. "
             "Se devolvieron tus créditos.",
             parse_mode="HTML"
@@ -958,15 +957,16 @@ def localizar_command(message):
 
         teclado = InlineKeyboardMarkup(row_width=1)
 
-teclado.add(
-    InlineKeyboardButton(
-        text="📋 COPIAR ENLACE",
-        copy_text=CopyTextButton(text=enlace)
-            )
-        )
         teclado.add(
             InlineKeyboardButton(
-                "⬅️ VOLVER AL MENÚ",
+                text="📋 COPIAR ENLACE",
+                copy_text=CopyTextButton(text=enlace)
+            )
+        )
+
+        teclado.add(
+            InlineKeyboardButton(
+                text="⬅️ VOLVER AL MENÚ",
                 callback_data="teclado_volver"
             )
         )
