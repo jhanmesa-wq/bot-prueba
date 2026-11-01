@@ -768,7 +768,31 @@ def c4_command(message):
 
     if data_uri.startswith("data:application/pdf;base64,"):
         try:
-            contenido_base64 = data_uri.split(",",
+            contenido_base64 = data_uri.split(",",1)[1]
+            pdf_bytes = base64.b64decode(contenido_base64, validate=True)
+
+            if not pdf_bytes.startswith(b"%PDF"):
+                raise ValueError("El contenido recibido no es un PDF válido.")
+            if len(pdf_bytes) > 10 * 1024 * 1024:
+                raise ValueError("El PDF supera el límite de 10 MB.")
+
+            nombre = os.path.basename(str(documento.get("nombre", "C4.pdf")))
+            nombre = re.sub(r"[^a-zA-Z0-9_.-]", "_", nombre)
+
+            bot.send_document(
+                message.chat.id,
+                document=io.BytesIO(pdf_bytes),
+                visible_file_name=nombre,
+                caption=premium("📄 <b>DOCUMENTO C4</b>\n⚜️ SPECTER DATA"),
+                parse_mode="HTML"
+            )
+        except Exception as e:
+            logger.exception("Error procesando PDF C4")
+            bot.send_message(
+                message.chat.id,
+                premium(f"⚠️ Consulta completada, pero no se pudo procesar el PDF.\n<code>{esc(str(e)[:300])}</code>"),
+                parse_mode="HTML"
+            )
 
 # ================================================================
 # LOCALIZAR - ENLACE TEMPORAL + CONSENTIMIENTO EXPLÍCITO
