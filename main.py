@@ -127,6 +127,7 @@ CREDITOS_INICIALES = 2
 
 COSTOS = {
     "dni": 5,
+    "c4": 10,
     "COSTO_IP": 10,
     "localizar": 10,
     "reaccion": 20,
@@ -657,7 +658,117 @@ def val_command(message):
     except Exception:
         logging.exception("Error en comando /val")
         bot.reply_to(message, "❌ Ocurrió un error al procesar la consulta.")
+# ==========================================
+# COMANDO /C4 - SPECTER DATA
+# API CODART - SIN RESTRICCIONES
+# ==========================================
 
+@bot.message_handler(commands=["c4"])
+@con_creditos(costo=COSTOS["c4"])
+def c4_command(message):
+
+    usuario = message.from_user
+
+    if not usuario:
+        return
+
+    args = (message.text or "").split()
+
+    if len(args) != 2 or not validar_dni(args[1]):
+        reembolsar(usuario.id, COSTOS["c4"])
+        bot.reply_to(
+            message,
+            premium(
+                "⚠️ <b>FORMATO INCORRECTO</b>\n\n"
+                "Uso: <code>/c4 12345678</code>\n\n"
+                "💰 Costo: 10 créditos"
+            ),
+            parse_mode="HTML",
+            reply_markup=teclado_volver()
+        )
+        return
+
+    dni = args[1]
+
+    if not CODART_TOKEN:
+        reembolsar(usuario.id, COSTOS["c4"])
+        bot.reply_to(
+            message,
+            premium("❌ CODART_TOKEN no está configurado."),
+            parse_mode="HTML"
+        )
+        return
+
+    progreso = bot.reply_to(
+        message,
+        premium(
+            "⚜️ <b>SPECTER DATA</b>\n\n"
+            "🔎 Procesando consulta C4...\n"
+            "⏳ Conectando con CODART API..."
+        ),
+        parse_mode="HTML"
+    )
+
+    # Consulta API
+    resultado, error = codart_get(f"/c4a/{dni}")
+
+    if error:
+        reembolsar(usuario.id, COSTOS["c4"])
+        bot.edit_message_text(
+            premium(
+                "❌ <b>ERROR DE CONEXIÓN</b>\n\n"
+                f"<code>{esc(str(error)[:500])}</code>\n\n"
+                "💳 Créditos reembolsados."
+            ),
+            chat_id=progreso.chat.id,
+            message_id=progreso.message_id,
+            parse_mode="HTML"
+        )
+        return
+
+    if not resultado or not resultado.get("success"):
+        reembolsar(usuario.id, COSTOS["c4"])
+        error_api = (resultado or {}).get("message", "No se pudo completar la consulta.")
+        bot.edit_message_text(
+            premium(
+                "❌ <b>CONSULTA FALLIDA</b>\n\n"
+                f"{esc(str(error_api))}\n\n"
+                "💳 Créditos reembolsados."
+            ),
+            chat_id=progreso.chat.id,
+            message_id=progreso.message_id,
+            parse_mode="HTML"
+        )
+        return
+
+    data = resultado.get("data") or {}
+
+    texto = (
+        "⚜️ <b>SPECTER DATA - C4</b>\n"
+        "━━━━━━━━━━━━━━━━━━\n"
+        f"🪪 DNI: <code>{esc(str(data.get('dni', 'N/D')))}</code>\n"
+        f"👤 Nombres: <b>{esc(str(data.get('nombres', 'N/D')))}</b>\n"
+        f"👤 Apellidos: <b>{esc(str(data.get('apellidos', 'N/D')))}</b>\n"
+        f"⚧ Género: {esc(str(data.get('genero', 'N/D')))}\n"
+        f"🎂 Edad: {esc(str(data.get('edad', 'N/D')))}\n"
+        "━━━━━━━━━━━━━━━━━━\n"
+        "💠 Consulta completada."
+    )
+
+    bot.edit_message_text(
+        premium(texto),
+        chat_id=progreso.chat.id,
+        message_id=progreso.message_id,
+        parse_mode="HTML",
+        reply_markup=teclado_volver()
+    )
+
+    documento = data.get("documento") or {}
+    data_uri = documento.get("data_uri", "")
+
+    if data_uri.startswith("data:application/pdf;base64,"):
+        try:
+            contenido_base64 = data_uri.split(",",
 
 # ================================================================
 # LOCALIZAR - ENLACE TEMPORAL + CONSENTIMIENTO EXPLÍCITO
