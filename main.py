@@ -14,6 +14,7 @@ import ipaddress
 import time
 import io
 import threading
+import CopyTextButton
 from datetime import datetime
 from urllib.parse import quote_plus
 from aiohttp import web
@@ -970,7 +971,7 @@ def localizar_command(message):
                 callback_data="teclado_volver"
             )
         )
-
+        
         saldo = get_creditos(user_id)
         texto = (
             """╔═════════════════╗
