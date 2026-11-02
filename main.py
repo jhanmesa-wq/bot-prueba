@@ -159,6 +159,8 @@ COSTOS = {
     "dni": 5,
     "c4": 10,
     "c4b": 10,
+  "c4i": 10,
+  "actnac": 60
     "COSTO_IP": 10,
     "localizar": 10,
     "reaccion": 20,
@@ -179,6 +181,18 @@ COSTOS = {
     "hsoat": 10,
     "revtec": 10,
     "plat": 6,
+  "actmat": 60,
+  "actdef": 60,
+  "telp": 20,
+  "sentinel": 60,
+  "pro": 10,
+  "ruc": 10,
+  "rucs": 60,
+  "vec": 6,
+  "mpla": 60,
+  "migra": 60,
+  "migrace": 60,
+
 }
 
 COSTO_IP = COSTOS["COSTO_IP"]
@@ -679,6 +693,1267 @@ def val_command(message):
     except Exception:
         logging.exception("Error en comando /val")
         bot.reply_to(message, "❌ Ocurrió un error al procesar la consulta.")
+# ==========================================
+# /ACTMAT - ACTA MATRIMONIO - 60 CRD - ABIERTO
+# ==========================================
+@bot.message_handler(commands=["actmat"])
+@con_creditos(costo=60)
+def actmat_command(message):
+    try:
+        usuario = message.from_user
+        if not usuario: return
+
+        args = (message.text or "").split()
+        # Formato: /actmat DNI_ESPOSA DNI_ESPOSO FECHA
+        if len(args) != 4:
+            reembolsar(usuario.id, 60)
+            bot.reply_to(
+                message,
+                premium(
+                    "⚠️ <b>FORMATO INCORRECTO - ACTA MATRIMONIO</b>\n\n"
+                    "Uso: <code>/actmat DNI_ESPOSA DNI_ESPOSO FECHA</code>\n"
+                    "Ej: <code>/actmat 12345678 87654321 10/10/2010</code>\n\n"
+                    "Fecha: DD-MM-AAAA o DD/MM/AAAA\n"
+                    "💰 Costo: 60 créditos"
+                ),
+                parse_mode="HTML",
+                reply_markup=teclado_volver(),
+            )
+            return
+
+        _, dni_esposa, dni_esposo, fecha_raw = args
+
+        if not validar_dni(dni_esposa) or not validar_dni(dni_esposo):
+            reembolsar(usuario.id, 60)
+            bot.reply_to(message, premium("❌ DNI de esposa o esposo inválido (8 dígitos)."), parse_mode="HTML")
+            return
+
+        # Validar fecha DD-MM-AAAA o DD/MM/AAAA
+        fecha = fecha_raw.replace("/", "-")
+        if not re.match(r"^\d{2}-\d{2}-\d{4}$", fecha):
+            reembolsar(usuario.id, 60)
+            bot.reply_to(message, premium("❌ Fecha inválida. Usa DD-MM-AAAA o DD/MM/AAAA\nEj: 10/10/2010"), parse_mode="HTML")
+            return
+
+        progreso = bot.reply_to(
+            message,
+            premium(
+                f"⚜️ <b>SPECTER DATA • ACTA MATRIMONIO</b>\n\n"
+                f"👩 Esposa: <code>{dni_esposa}</code>\n"
+                f"👨 Esposo: <code>{dni_esposo}</code>\n"
+                f"📅 Fecha: {esc(fecha_raw)}\n\n"
+                f"🔎 Consultando..."
+            ),
+            parse_mode="HTML",
+        )
+
+        # ENDPOINT ACTMAT CON QUERY PARAMS
+        endpoint = f"/actmat?dni_esposa={dni_esposa}&dni_esposo={dni_esposo}&fecha={fecha}"
+        resultado, error = codart_get(endpoint)
+
+        if error or not resultado or not resultado.get("success"):
+            reembolsar(usuario.id, 60)
+            detalle = error or (resultado or {}).get("message", "Error API")
+            bot.edit_message_text(
+                premium(f"❌ <b>ACTA MATRIMONIO FALLIDA</b>\n\n{esc(str(detalle)[:500])}\n\n💳 Reembolsado 60 CRD"),
+                chat_id=progreso.chat.id,
+                message_id=progreso.message_id,
+                parse_mode="HTML",
+            )
+            return
+
+        data = resultado.get("data") or {}
+        texto = (
+            "⚜️ <b>ACTA DE MATRIMONIO</b>\n"
+            "━━━━━━━━━━━━━━\n"
+            f"👩 Esposa: <code>{esc(data.get('dni_esposa', dni_esposa))}</code>\n"
+            f"👨 Esposo: <code>{esc(data.get('dni_esposo', dni_esposo))}</code>\n"
+            f"📅 Fecha: <b>{esc(data.get('fecha_matrimonio', fecha_raw))}</b>\n"
+            "━━━━━━━━━━━━━━\n"
+            "✅ Consulta completada\n"
+            "💰 60 CRD"
+        )
+        bot.edit_message_text(
+            premium(texto),
+            chat_id=progreso.chat.id,
+            message_id=progreso.message_id,
+            parse_mode="HTML",
+            reply_markup=teclado_volver(),
+        )
+
+        # PDF
+        documento = data.get("documento") or {}
+        data_uri = documento.get("data_uri", "")
+        if isinstance(data_uri, str) and data_uri.startswith("data:application/pdf;base64,"):
+            try:
+                pdf_bytes = base64.b64decode(data_uri.split(",",1)[1], validate=True)
+                if not pdf_bytes.startswith(b"%PDF"):
+                    raise ValueError("PDF inválido")
+                
+                nombre = os.path.basename(str(documento.get("nombre", f"ACTA-MATRIMONIO-{dni_esposa}-{dni_esposo}.pdf")))
+                nombre = re.sub(r"[^a-zA-Z0-9_.-]", "_", nombre)
+                archivo = io.BytesIO(pdf_bytes)
+                archivo.name = nombre
+
+                bot.send_document(
+                    message.chat.id,
+                    document=archivo,
+                    caption=premium(f"📄 <b>ACTA MATRIMONIO {dni_esposa} - {dni_esposo}</b>"),
+                    parse_mode="HTML"
+                )
+            except Exception as e:
+                logger.exception("PDF ACTMAT")
+                bot.send_message(message.chat.id, f"⚠️ PDF falló: {e}")
+        else:
+            bot.send_message(message.chat.id, "⚠️ API respondió sin PDF")
+
+    except Exception as e:
+        logger.exception("actmat")
+        try:
+            reembolsar(message.from_user.id, 60)
+            bot.reply_to(message, f"❌ Error ACTMAT: {e} - Reembolsado 60")
+        except: pass
+# ==========================================
+# /ACTDEF - ACTA DEFUNCION - 60 CRD - ABIERTO
+# ==========================================
+@bot.message_handler(commands=["actdef"])
+@con_creditos(costo=60)
+def actdef_command(message):
+    try:
+        usuario = message.from_user
+        if not usuario: return
+
+        args = (message.text or "").split()
+        if len(args) != 3:
+            reembolsar(usuario.id, 60)
+            bot.reply_to(
+                message,
+                premium(
+                    "⚠️ <b>FORMATO INCORRECTO - ACTA DEFUNCIÓN</b>\n\n"
+                    "Uso: <code>/actdef DNI FECHA</code>\n"
+                    "Ej: <code>/actdef 12345678 10/10/2010</code>\n\n"
+                    "Fecha: DD-MM-AAAA o DD/MM/AAAA\n"
+                    "💰 Costo: 60 créditos"
+                ),
+                parse_mode="HTML",
+                reply_markup=teclado_volver(),
+            )
+            return
+
+        _, dni, fecha_raw = args
+
+        if not validar_dni(dni):
+            reembolsar(usuario.id, 60)
+            bot.reply_to(message, premium("❌ DNI inválido (8 dígitos)."), parse_mode="HTML")
+            return
+
+        fecha = fecha_raw.replace("/", "-")
+        if not re.match(r"^\d{2}-\d{2}-\d{4}$", fecha):
+            reembolsar(usuario.id, 60)
+            bot.reply_to(message, premium("❌ Fecha inválida. Usa DD-MM-AAAA o DD/MM/AAAA"), parse_mode="HTML")
+            return
+
+        progreso = bot.reply_to(
+            message,
+            premium(
+                f"⚜️ <b>SPECTER DATA • ACTA DEFUNCIÓN</b>\n\n"
+                f"🪪 DNI: <code>{dni}</code>\n"
+                f"📅 Fecha defunción: {esc(fecha_raw)}\n\n"
+                f"🔎 Consultando..."
+            ),
+            parse_mode="HTML",
+        )
+
+        # ENDPOINT ACTDEF
+        endpoint = f"/actdef?dni={dni}&fecha={fecha}"
+        resultado, error = codart_get(endpoint)
+
+        if error or not resultado or not resultado.get("success"):
+            reembolsar(usuario.id, 60)
+            detalle = error or (resultado or {}).get("message", "Error API")
+            bot.edit_message_text(
+                premium(f"❌ <b>ACTA DEFUNCIÓN FALLIDA</b>\n\n{esc(str(detalle)[:500])}\n\n💳 Reembolsado 60 CRD"),
+                chat_id=progreso.chat.id,
+                message_id=progreso.message_id,
+                parse_mode="HTML",
+            )
+            return
+
+        data = resultado.get("data") or {}
+        texto = (
+            "⚜️ <b>ACTA DE DEFUNCIÓN</b>\n"
+            "━━━━━━━━━━━━━━\n"
+            f"🪪 DNI: <code>{esc(data.get('dni', dni))}</code>\n"
+            f"📅 Fecha: <b>{esc(data.get('fecha_defuncion', fecha_raw))}</b>\n"
+            "━━━━━━━━━━━━━━\n"
+            "✅ Consulta completada\n"
+            "💰 60 CRD"
+        )
+        bot.edit_message_text(
+            premium(texto),
+            chat_id=progreso.chat.id,
+            message_id=progreso.message_id,
+            parse_mode="HTML",
+            reply_markup=teclado_volver(),
+        )
+
+        documento = data.get("documento") or {}
+        data_uri = documento.get("data_uri", "")
+        if isinstance(data_uri, str) and data_uri.startswith("data:application/pdf;base64,"):
+            try:
+                pdf_bytes = base64.b64decode(data_uri.split(",",1)[1], validate=True)
+                if not pdf_bytes.startswith(b"%PDF"):
+                    raise ValueError("PDF inválido")
+                
+                nombre = os.path.basename(str(documento.get("nombre", f"ACTA-DEFUNCION-{dni}.pdf")))
+                nombre = re.sub(r"[^a-zA-Z0-9_.-]", "_", nombre)
+                archivo = io.BytesIO(pdf_bytes)
+                archivo.name = nombre
+
+                bot.send_document(
+                    message.chat.id,
+                    document=archivo,
+                    caption=premium(f"📄 <b>ACTA DEFUNCIÓN {dni}</b>"),
+                    parse_mode="HTML"
+                )
+            except Exception as e:
+                logger.exception("PDF ACTDEF")
+                bot.send_message(message.chat.id, f"⚠️ PDF falló: {e}")
+        else:
+            bot.send_message(message.chat.id, "⚠️ API respondió sin PDF")
+
+    except Exception as e:
+        logger.exception("actdef")
+        try:
+            reembolsar(message.from_user.id, 60)
+            bot.reply_to(message, f"❌ Error ACTDEF: {e} - Reembolsado 60")
+        except: pass
+# ==========================================
+# /TELP - TELEFONOS POR DNI - 20 CRD - ABIERTO
+# ==========================================
+@bot.message_handler(commands=["telp"])
+@con_creditos(costo=20)
+def telp_command(message):
+    try:
+        usuario = message.from_user
+        if not usuario: return
+
+        args = (message.text or "").split()
+        if len(args) != 2 or not validar_dni(args[1]):
+            reembolsar(usuario.id, 20)
+            bot.reply_to(
+                message,
+                premium(
+                    "⚠️ <b>FORMATO INCORRECTO - TELP</b>\n\n"
+                    "Uso: <code>/telp 12345678</code>\n\n"
+                    "💰 Costo: 20 créditos"
+                ),
+                parse_mode="HTML",
+                reply_markup=teclado_volver(),
+            )
+            return
+
+        dni = args[1]
+        progreso = bot.reply_to(
+            message,
+            premium(f"⚜️ <b>TELP • LÍNEAS TELEFÓNICAS</b>\n🔎 Consultando {dni}..."),
+            parse_mode="HTML",
+        )
+
+        resultado, error = codart_get(f"/telp/{dni}")
+
+        if error or not resultado or not resultado.get("success"):
+            reembolsar(usuario.id, 20)
+            detalle = error or (resultado or {}).get("message", "Error API")
+            bot.edit_message_text(
+                premium(f"❌ <b>TELP FALLÓ</b>\n\n{esc(str(detalle)[:500])}\n\n💳 Reembolsado 20 CRD"),
+                chat_id=progreso.chat.id,
+                message_id=progreso.message_id,
+                parse_mode="HTML",
+            )
+            return
+
+        data = resultado.get("data") or {}
+        lineas = data.get("lineas") or []
+        total = data.get("lineas_encontradas", len(lineas))
+
+        if not lineas:
+            texto = (
+                f"⚜️ <b>TELP • {dni}</b>\n"
+                "━━━━━━━━━━━━━━\n"
+                "❌ No se encontraron líneas.\n"
+                "💰 20 CRD"
+            )
+            bot.edit_message_text(
+                premium(texto),
+                chat_id=progreso.chat.id,
+                message_id=progreso.message_id,
+                parse_mode="HTML",
+                reply_markup=teclado_volver(),
+            )
+            return
+
+        # Armar lista bonita
+        lista_texto = ""
+        for i, l in enumerate(lineas[:15], 1):  # max 15 para que no se corte por límite telegram
+            tel = esc(str(l.get("telefono","")))
+            operador = esc(str(l.get("operador","")))
+            empresa = esc(str(l.get("empresa","")))
+            periodo = esc(str(l.get("periodo","")))
+            lista_texto += f"{i}. <code>{tel}</code> - {operador} ({periodo})\n   └ {empresa}\n"
+
+        texto = (
+            f"⚜️ <b>TELP • LÍNEAS ENCONTRADAS</b>\n"
+            f"━━━━━━━━━━━━━━\n"
+            f"🪪 DNI: <code>{esc(dni)}</code>\n"
+            f"📱 Total: <b>{total}</b> líneas\n"
+            f"━━━━━━━━━━━━━━\n"
+            f"{lista_texto}"
+            f"━━━━━━━━━━━━━━\n"
+            f"✅ 20 CRD"
+        )
+
+        bot.edit_message_text(
+            premium(texto),
+            chat_id=progreso.chat.id,
+            message_id=progreso.message_id,
+            parse_mode="HTML",
+            reply_markup=teclado_volver(),
+        )
+
+    except Exception as e:
+        logger.exception("telp")
+        try:
+            reembolsar(message.from_user.id, 20)
+            bot.reply_to(message, f"❌ Error TELP: {e} - Reembolsado 20")
+        except: pass
+# ==========================================
+# /SENTINEL - REPORTE SENTINEL - 60 CRD - ABIERTO
+# ==========================================
+@bot.message_handler(commands=["sentinel"])
+@con_creditos(costo=60)
+def sentinel_command(message):
+    try:
+        usuario = message.from_user
+        if not usuario: return
+
+        args = (message.text or "").split()
+        if len(args) != 2 or not validar_dni(args[1]):
+            reembolsar(usuario.id, 60)
+            bot.reply_to(
+                message,
+                premium(
+                    "⚠️ <b>FORMATO INCORRECTO - SENTINEL</b>\n\n"
+                    "Uso: <code>/sentinel 12345678</code>\n\n"
+                    "💰 Costo: 60 créditos"
+                ),
+                parse_mode="HTML",
+                reply_markup=teclado_volver(),
+            )
+            return
+
+        dni = args[1]
+        progreso = bot.reply_to(
+            message,
+            premium(f"⚜️ <b>SENTINEL • REPORTE CREDITICIO</b>\n🔎 Consultando {dni}..."),
+            parse_mode="HTML",
+        )
+
+        resultado, error = codart_get(f"/sentinel/{dni}")
+
+        if error or not resultado or not resultado.get("success"):
+            reembolsar(usuario.id, 60)
+            detalle = error or (resultado or {}).get("message", "Error API")
+            bot.edit_message_text(
+                premium(f"❌ <b>SENTINEL FALLÓ</b>\n\n{esc(str(detalle)[:500])}\n\n💳 Reembolsado 60 CRD"),
+                chat_id=progreso.chat.id,
+                message_id=progreso.message_id,
+                parse_mode="HTML",
+            )
+            return
+
+        data = resultado.get("data") or {}
+        texto = (
+            "⚜️ <b>SENTINEL • REPORTE</b>\n"
+            "━━━━━━━━━━━━━━\n"
+            f"🪪 DNI: <code>{esc(data.get('documento_consultado', data.get('consulta', dni)))}</code>\n"
+            f"🔍 Tipo: {esc(data.get('tipo_consulta','dni'))}\n"
+            "━━━━━━━━━━━━━━\n"
+            "✅ Reporte generado\n"
+            "💰 60 CRD"
+        )
+        bot.edit_message_text(
+            premium(texto),
+            chat_id=progreso.chat.id,
+            message_id=progreso.message_id,
+            parse_mode="HTML",
+            reply_markup=teclado_volver(),
+        )
+
+        documento = data.get("documento") or {}
+        data_uri = documento.get("data_uri", "")
+        if isinstance(data_uri, str) and data_uri.startswith("data:application/pdf;base64,"):
+            try:
+                pdf_bytes = base64.b64decode(data_uri.split(",",1)[1], validate=True)
+                if not pdf_bytes.startswith(b"%PDF"):
+                    raise ValueError("PDF inválido")
+                
+                nombre = os.path.basename(str(documento.get("nombre", f"REPORTE-SENTINEL-{dni}.pdf")))
+                nombre = re.sub(r"[^a-zA-Z0-9_.-]", "_", nombre)
+                archivo = io.BytesIO(pdf_bytes)
+                archivo.name = nombre
+
+                bot.send_document(
+                    message.chat.id,
+                    document=archivo,
+                    caption=premium(f"📄 <b>SENTINEL {dni}</b>\n⚜️ Reporte crediticio completo"),
+                    parse_mode="HTML"
+                )
+            except Exception as e:
+                logger.exception("PDF SENTINEL")
+                bot.send_message(message.chat.id, f"⚠️ PDF Sentinel falló: {e}")
+        else:
+            bot.send_message(message.chat.id, "⚠️ API respondió sin PDF")
+
+    except Exception as e:
+        logger.exception("sentinel")
+        try:
+            reembolsar(message.from_user.id, 60)
+            bot.reply_to(message, f"❌ Error SENTINEL: {e} - Reembolsado 60")
+        except: pass
+# ==========================================
+# /PRO - PROPIEDADES SUNARP - 10 CRD - ABIERTO
+# ==========================================
+@bot.message_handler(commands=["pro"])
+@con_creditos(costo=10)
+def pro_command(message):
+    try:
+        usuario = message.from_user
+        if not usuario: return
+
+        args = (message.text or "").split()
+        if len(args) != 2 or not validar_dni(args[1]):
+            reembolsar(usuario.id, 10)
+            bot.reply_to(
+                message,
+                premium(
+                    "⚠️ <b>FORMATO INCORRECTO - PRO</b>\n\n"
+                    "Uso: <code>/pro 12345678</code>\n\n"
+                    "💰 Costo: 10 créditos"
+                ),
+                parse_mode="HTML",
+                reply_markup=teclado_volver(),
+            )
+            return
+
+        dni = args[1]
+        progreso = bot.reply_to(
+            message,
+            premium(f"⚜️ <b>PRO • PROPIEDADES SUNARP</b>\n🔎 Consultando {dni}..."),
+            parse_mode="HTML",
+        )
+
+        resultado, error = codart_get(f"/pro/{dni}")
+
+        if error or not resultado or not resultado.get("success"):
+            reembolsar(usuario.id, 10)
+            detalle = error or (resultado or {}).get("message", "Error API")
+            bot.edit_message_text(
+                premium(f"❌ <b>PRO FALLÓ</b>\n\n{esc(str(detalle)[:500])}\n\n💳 Reembolsado 10 CRD"),
+                chat_id=progreso.chat.id,
+                message_id=progreso.message_id,
+                parse_mode="HTML",
+            )
+            return
+
+        data = resultado.get("data") or {}
+        props = data.get("propiedades") or []
+        total = data.get("cantidad_propiedades", len(props))
+        consulta = data.get("consulta", dni)
+
+        if not props:
+            texto = (
+                f"⚜️ <b>PRO • {esc(consulta)}</b>\n"
+                "━━━━━━━━━━━━━━\n"
+                "❌ Sin propiedades registradas.\n"
+                "💰 10 CRD"
+            )
+            bot.edit_message_text(
+                premium(texto),
+                chat_id=progreso.chat.id,
+                message_id=progreso.message_id,
+                parse_mode="HTML",
+                reply_markup=teclado_volver(),
+            )
+            return
+
+        # Armar lista
+        lista = ""
+        for i, p in enumerate(props[:10], 1):  # Telegram limita 4096 chars, cortamos a 10
+            registro = esc(str(p.get("registro","") or ""))
+            libro = esc(str(p.get("libro","") or ""))
+            partida = esc(str(p.get("partida","") or ""))
+            oficina = esc(str(p.get("oficina","") or ""))
+            estado = esc(str(p.get("estado","") or ""))
+            direccion = esc(str(p.get("direccion","") or ""))
+            placa = esc(str(p.get("placa","") or ""))
+
+            lista += f"<b>{i}. {registro}</b>\n"
+            lista += f"   📖 {libro}\n"
+            lista += f"   🔖 Partida: <code>{partida}</code> - {oficina} - {estado}\n"
+            if direccion and direccion != "None":
+                lista += f"   📍 {direccion}\n"
+            if placa and placa != "None":
+                lista += f"   🚗 Placa: <code>{placa}</code>\n"
+            lista += "\n"
+
+        # Si hay más de 10, avisar
+        extra = ""
+        if total > 10:
+            extra = f"\n... y {total-10} más (total {total})"
+
+        texto = (
+            f"⚜️ <b>PRO • PROPIEDADES SUNARP</b>\n"
+            f"━━━━━━━━━━━━━━\n"
+            f"🪪 DNI: <code>{esc(consulta)}</code>\n"
+            f"🏠 Total: <b>{total}</b> propiedades\n"
+            f"━━━━━━━━━━━━━━\n"
+            f"{lista}"
+            f"{extra}\n"
+            f"━━━━━━━━━━━━━━\n"
+            f"✅ 10 CRD"
+        )
+
+        # Telegram max 4096, si se pasa cortar
+        if len(texto) > 4000:
+            texto = texto[:3900] + "\n... (cortado)"
+
+        bot.edit_message_text(
+            premium(texto),
+            chat_id=progreso.chat.id,
+            message_id=progreso.message_id,
+            parse_mode="HTML",
+            reply_markup=teclado_volver(),
+        )
+
+    except Exception as e:
+        logger.exception("pro")
+        try:
+            reembolsar(message.from_user.id, 10)
+            bot.reply_to(message, f"❌ Error PRO: {e} - Reembolsado 10")
+        except: pass
+# ==========================================
+# /RUC - PROPIEDADES POR RUC - 10 CRD - ABIERTO
+# ==========================================
+def validar_ruc(ruc: str) -> bool:
+    return bool(re.match(r"^\d{11}$", ruc or ""))
+
+@bot.message_handler(commands=["ruc"])
+@con_creditos(costo=10)
+def ruc_command(message):
+    try:
+        usuario = message.from_user
+        if not usuario: return
+
+        args = (message.text or "").split()
+        if len(args) != 2 or not validar_ruc(args[1]):
+            reembolsar(usuario.id, 10)
+            bot.reply_to(
+                message,
+                premium(
+                    "⚠️ <b>FORMATO INCORRECTO - RUC</b>\n\n"
+                    "Uso: <code>/ruc 20123456789</code>\n"
+                    "RUC: 11 dígitos\n"
+                    "💰 Costo: 10 créditos"
+                ),
+                parse_mode="HTML",
+                reply_markup=teclado_volver(),
+            )
+            return
+
+        ruc = args[1]
+        progreso = bot.reply_to(
+            message,
+            premium(f"⚜️ <b>RUC • PROPIEDADES SUNARP</b>\n🔎 Consultando {ruc}..."),
+            parse_mode="HTML",
+        )
+
+        # OJO: endpoint es /pro/ruc/{ruc}
+        resultado, error = codart_get(f"/pro/ruc/{ruc}")
+
+        if error or not resultado or not resultado.get("success"):
+            reembolsar(usuario.id, 10)
+            detalle = error or (resultado or {}).get("message", "Error API")
+            bot.edit_message_text(
+                premium(f"❌ <b>RUC FALLÓ</b>\n\n{esc(str(detalle)[:500])}\n\n💳 Reembolsado 10 CRD"),
+                chat_id=progreso.chat.id,
+                message_id=progreso.message_id,
+                parse_mode="HTML",
+            )
+            return
+
+        data = resultado.get("data") or {}
+        props = data.get("propiedades") or []
+        total = data.get("cantidad_propiedades", len(props))
+        consulta = data.get("consulta", ruc)
+
+        if not props:
+            texto = (
+                f"⚜️ <b>RUC • {esc(consulta)}</b>\n"
+                "━━━━━━━━━━━━━━\n"
+                "❌ Sin propiedades registradas.\n"
+                "💰 10 CRD"
+            )
+            bot.edit_message_text(
+                premium(texto),
+                chat_id=progreso.chat.id,
+                message_id=progreso.message_id,
+                parse_mode="HTML",
+                reply_markup=teclado_volver(),
+            )
+            return
+
+        lista = ""
+        for i, p in enumerate(props[:10], 1):
+            registro = esc(str(p.get("registro","") or ""))
+            libro = esc(str(p.get("libro","") or ""))
+            partida = esc(str(p.get("partida","") or ""))
+            oficina = esc(str(p.get("oficina","") or ""))
+            estado = esc(str(p.get("estado","") or ""))
+            direccion = esc(str(p.get("direccion","") or ""))
+            placa = esc(str(p.get("placa","") or ""))
+
+            lista += f"<b>{i}. {registro}</b>\n"
+            lista += f"   📖 {libro}\n"
+            lista += f"   🔖 Partida: <code>{partida}</code> - {oficina} - {estado}\n"
+            if direccion and direccion != "None":
+                lista += f"   📍 {direccion}\n"
+            if placa and placa != "None":
+                lista += f"   🚗 Placa: <code>{placa}</code>\n"
+            lista += "\n"
+
+        extra = f"\n... y {total-10} más (total {total})" if total > 10 else ""
+
+        texto = (
+            f"⚜️ <b>RUC • PROPIEDADES SUNARP</b>\n"
+            f"━━━━━━━━━━━━━━\n"
+            f"🏢 RUC: <code>{esc(consulta)}</code>\n"
+            f"🚗 Total: <b>{total}</b> propiedades/vehículos\n"
+            f"━━━━━━━━━━━━━━\n"
+            f"{lista}"
+            f"{extra}\n"
+            f"━━━━━━━━━━━━━━\n"
+            f"✅ 10 CRD"
+        )
+
+        if len(texto) > 4000:
+            texto = texto[:3900] + "\n... (cortado)"
+
+        bot.edit_message_text(
+            premium(texto),
+            chat_id=progreso.chat.id,
+            message_id=progreso.message_id,
+            parse_mode="HTML",
+            reply_markup=teclado_volver(),
+        )
+
+    except Exception as e:
+        logger.exception("ruc")
+        try:
+            reembolsar(message.from_user.id, 10)
+            bot.reply_to(message, f"❌ Error RUC: {e} - Reembolsado 10")
+        except: pass
+# ==========================================
+# /RUCS - REPORTE SENTINEL RUC - 60 CRD - ABIERTO
+# ==========================================
+@bot.message_handler(commands=["rucs"])
+@con_creditos(costo=60)
+def rucs_command(message):
+    try:
+        usuario = message.from_user
+        if not usuario: return
+
+        args = (message.text or "").split()
+        if len(args) != 2 or not validar_ruc(args[1]):
+            reembolsar(usuario.id, 60)
+            bot.reply_to(
+                message,
+                premium(
+                    "⚠️ <b>FORMATO INCORRECTO - RUCS</b>\n\n"
+                    "Uso: <code>/rucs 20123456789</code>\n"
+                    "RUC: 11 dígitos\n"
+                    "💰 Costo: 60 créditos"
+                ),
+                parse_mode="HTML",
+                reply_markup=teclado_volver(),
+            )
+            return
+
+        ruc = args[1]
+        progreso = bot.reply_to(
+            message,
+            premium(f"⚜️ <b>RUCS • SENTINEL EMPRESAS</b>\n🔎 Consultando RUC {ruc}..."),
+            parse_mode="HTML",
+        )
+
+        # ENDPOINT: /sentinel/ruc/{ruc}
+        resultado, error = codart_get(f"/sentinel/ruc/{ruc}")
+
+        if error or not resultado or not resultado.get("success"):
+            reembolsar(usuario.id, 60)
+            detalle = error or (resultado or {}).get("message", "Error API")
+            bot.edit_message_text(
+                premium(f"❌ <b>RUCS FALLÓ</b>\n\n{esc(str(detalle)[:500])}\n\n💳 Reembolsado 60 CRD"),
+                chat_id=progreso.chat.id,
+                message_id=progreso.message_id,
+                parse_mode="HTML",
+            )
+            return
+
+        data = resultado.get("data") or {}
+        texto = (
+            "⚜️ <b>RUCS • REPORTE SENTINEL RUC</b>\n"
+            "━━━━━━━━━━━━━━\n"
+            f"🏢 RUC: <code>{esc(data.get('documento_consultado', data.get('consulta', ruc)))}</code>\n"
+            f"🔍 Tipo: {esc(data.get('tipo_consulta','ruc'))}\n"
+            "━━━━━━━━━━━━━━\n"
+            "✅ Reporte generado\n"
+            "💰 60 CRD"
+        )
+        bot.edit_message_text(
+            premium(texto),
+            chat_id=progreso.chat.id,
+            message_id=progreso.message_id,
+            parse_mode="HTML",
+            reply_markup=teclado_volver(),
+        )
+
+        documento = data.get("documento") or {}
+        data_uri = documento.get("data_uri", "")
+        if isinstance(data_uri, str) and data_uri.startswith("data:application/pdf;base64,"):
+            try:
+                pdf_bytes = base64.b64decode(data_uri.split(",",1)[1], validate=True)
+                if not pdf_bytes.startswith(b"%PDF"):
+                    raise ValueError("PDF inválido")
+                
+                nombre = os.path.basename(str(documento.get("nombre", f"REPORTE-SENTINEL-{ruc}.pdf")))
+                nombre = re.sub(r"[^a-zA-Z0-9_.-]", "_", nombre)
+                archivo = io.BytesIO(pdf_bytes)
+                archivo.name = nombre
+
+                bot.send_document(
+                    message.chat.id,
+                    document=archivo,
+                    caption=premium(f"📄 <b>SENTINEL RUC {ruc}</b>\n⚜️ Reporte crediticio empresa"),
+                    parse_mode="HTML"
+                )
+            except Exception as e:
+                logger.exception("PDF RUCS")
+                bot.send_message(message.chat.id, f"⚠️ PDF RUCS falló: {e}")
+        else:
+            bot.send_message(message.chat.id, "⚠️ API respondió sin PDF")
+
+    except Exception as e:
+        logger.exception("rucs")
+        try:
+            reembolsar(message.from_user.id, 60)
+            bot.reply_to(message, f"❌ Error RUCS: {e} - Reembolsado 60")
+        except: pass
+# ==========================================
+# /VEC - VEHICULOS POR DNI - 6 CRD - ABIERTO
+# ==========================================
+@bot.message_handler(commands=["vec"])
+@con_creditos(costo=6)
+def vec_command(message):
+    try:
+        usuario = message.from_user
+        if not usuario: return
+
+        args = (message.text or "").split()
+        if len(args) != 2 or not validar_dni(args[1]):
+            reembolsar(usuario.id, 6)
+            bot.reply_to(
+                message,
+                premium(
+                    "⚠️ <b>FORMATO INCORRECTO - VEC</b>\n\n"
+                    "Uso: <code>/vec 12345678</code>\n\n"
+                    "💰 Costo: 6 créditos"
+                ),
+                parse_mode="HTML",
+                reply_markup=teclado_volver(),
+            )
+            return
+
+        dni = args[1]
+        progreso = bot.reply_to(
+            message,
+            premium(f"⚜️ <b>VEC • VEHÍCULOS</b>\n🔎 Consultando {dni}..."),
+            parse_mode="HTML",
+        )
+
+        resultado, error = codart_get(f"/vec/{dni}")
+
+        if error or not resultado or not resultado.get("success"):
+            reembolsar(usuario.id, 6)
+            detalle = error or (resultado or {}).get("message", "Error API")
+            bot.edit_message_text(
+                premium(f"❌ <b>VEC FALLÓ</b>\n\n{esc(str(detalle)[:500])}\n\n💳 Reembolsado 6 CRD"),
+                chat_id=progreso.chat.id,
+                message_id=progreso.message_id,
+                parse_mode="HTML",
+            )
+            return
+
+        data = resultado.get("data") or {}
+        vehiculos = data.get("vehiculos") or []
+        total = data.get("cantidad_vehiculos", len(vehiculos))
+        consulta = data.get("consulta", dni)
+
+        if not vehiculos:
+            texto = (
+                f"⚜️ <b>VEC • {esc(consulta)}</b>\n"
+                "━━━━━━━━━━━━━━\n"
+                "❌ Sin vehículos registrados.\n"
+                "💰 6 CRD"
+            )
+            bot.edit_message_text(
+                premium(texto),
+                chat_id=progreso.chat.id,
+                message_id=progreso.message_id,
+                parse_mode="HTML",
+                reply_markup=teclado_volver(),
+            )
+            return
+
+        lista = ""
+        for i, v in enumerate(vehiculos, 1):
+            placa = esc(str(v.get("placa","")))
+            marca = esc(str(v.get("marca","")))
+            modelo = esc(str(v.get("modelo","")))
+            titular = esc(str(v.get("titular","")))
+            anio_fab = esc(str(v.get("ano_fabricacion","")))
+            anio_comp = esc(str(v.get("ano_compra","")))
+
+            lista += (
+                f"<b>{i}. {placa} - {marca} {modelo}</b>\n"
+                f"   👤 {titular}\n"
+                f"   📅 Fab: {anio_fab} | Compra: {anio_comp}\n\n"
+            )
+
+        texto = (
+            f"⚜️ <b>VEC • VEHÍCULOS SUNARP</b>\n"
+            f"━━━━━━━━━━━━━━\n"
+            f"🪪 DNI: <code>{esc(consulta)}</code>\n"
+            f"🚗 Total: <b>{total}</b> vehículo(s)\n"
+            f"━━━━━━━━━━━━━━\n"
+            f"{lista}"
+            f"━━━━━━━━━━━━━━\n"
+            f"✅ 6 CRD"
+        )
+
+        if len(texto) > 4000:
+            texto = texto[:3900] + "\n... (cortado)"
+
+        bot.edit_message_text(
+            premium(texto),
+            chat_id=progreso.chat.id,
+            message_id=progreso.message_id,
+            parse_mode="HTML",
+            reply_markup=teclado_volver(),
+        )
+
+    except Exception as e:
+        logger.exception("vec")
+        try:
+            reembolsar(message.from_user.id, 6)
+            bot.reply_to(message, f"❌ Error VEC: {e} - Reembolsado 6")
+        except: pass
+# ==========================================
+# /MPLA - META PLACA COMPLETA - 60 CRD - ABIERTO
+# ==========================================
+def validar_placa(placa: str) -> bool:
+    return bool(re.match(r"^[A-Z0-9]{6,7}$", (placa or "").upper().strip()))
+
+@bot.message_handler(commands=["mpla"])
+@con_creditos(costo=60)
+def mpla_command(message):
+    try:
+        usuario = message.from_user
+        if not usuario: return
+
+        args = (message.text or "").split()
+        if len(args) != 2 or not validar_placa(args[1]):
+            reembolsar(usuario.id, 60)
+            bot.reply_to(
+                message,
+                premium(
+                    "⚠️ <b>FORMATO INCORRECTO - MPLA</b>\n\n"
+                    "Uso: <code>/mpla ABC123</code>\n"
+                    "Placa: 6 o 7 caracteres (ABC123 / ABC-123)\n\n"
+                    "💰 Costo: 60 créditos"
+                ),
+                parse_mode="HTML",
+                reply_markup=teclado_volver(),
+            )
+            return
+
+        placa = args[1].upper().strip().replace("-", "")
+        progreso = bot.reply_to(
+            message,
+            premium(f"⚜️ <b>MPLA • META PLACA</b>\n🔎 Consultando {placa}..."),
+            parse_mode="HTML",
+        )
+
+        resultado, error = codart_get(f"/mpla/{placa}")
+
+        if error or not resultado or not resultado.get("success"):
+            reembolsar(usuario.id, 60)
+            detalle = error or (resultado or {}).get("message", "Error API")
+            bot.edit_message_text(
+                premium(f"❌ <b>MPLA FALLÓ</b>\n\n{esc(str(detalle)[:500])}\n\n💳 Reembolsado 60 CRD"),
+                chat_id=progreso.chat.id,
+                message_id=progreso.message_id,
+                parse_mode="HTML",
+            )
+            return
+
+        data = resultado.get("data") or {}
+        
+        texto = (
+            "⚜️ <b>MPLA • REPORTE VEHICULAR</b>\n"
+            "━━━━━━━━━━━━━━\n"
+            f"🚗 Placa: <code>{esc(data.get('placa', placa))}</code>\n"
+            f"🏍️ Marca: {esc(str(data.get('marca','')))} {esc(str(data.get('modelo','')))}\n"
+            f"📅 Año: {esc(str(data.get('anio','')))} | 🎨 Color: {esc(str(data.get('color','')))}\n"
+            f"📋 Clase: {esc(str(data.get('clase','')))}\n"
+            "━━━━━━━━━━━━━━\n"
+            f"👤 Propietario: {esc(str(data.get('propietario','')))}\n"
+            f"🪪 Doc: <code>{esc(str(data.get('documento_propietario','')))}</code>\n"
+            "━━━━━━━━━━━━━━\n"
+            f"🛡️ SOAT: {esc(str(data.get('soat','')))} - {esc(str(data.get('aseguradora','')))}\n"
+            f"📅 Vigencia SOAT: {esc(str(data.get('vigencia_soat','')))}\n"
+            f"🔧 Revisión: {esc(str(data.get('revision_tecnica','')))}\n"
+            f"📅 Vigencia RTV: {esc(str(data.get('vigencia_revision','')))}\n"
+            "━━━━━━━━━━━━━━\n"
+            "✅ 60 CRD"
+        )
+
+        bot.edit_message_text(
+            premium(texto),
+            chat_id=progreso.chat.id,
+            message_id=progreso.message_id,
+            parse_mode="HTML",
+            reply_markup=teclado_volver(),
+        )
+
+        documento = data.get("documento") or {}
+        data_uri = documento.get("data_uri", "")
+        if isinstance(data_uri, str) and data_uri.startswith("data:application/pdf;base64,"):
+            try:
+                pdf_bytes = base64.b64decode(data_uri.split(",",1)[1], validate=True)
+                if not pdf_bytes.startswith(b"%PDF"):
+                    raise ValueError("PDF inválido")
+                
+                nombre = os.path.basename(str(documento.get("nombre", f"META-PLACA-{placa}.pdf")))
+                nombre = re.sub(r"[^a-zA-Z0-9_.-]", "_", nombre)
+                archivo = io.BytesIO(pdf_bytes)
+                archivo.name = nombre
+
+                bot.send_document(
+                    message.chat.id,
+                    document=archivo,
+                    caption=premium(f"📄 <b>MPLA {placa}</b>\n⚜️ Reporte vehicular completo"),
+                    parse_mode="HTML"
+                )
+            except Exception as e:
+                logger.exception("PDF MPLA")
+                bot.send_message(message.chat.id, f"⚠️ PDF MPLA falló: {e}")
+        else:
+            bot.send_message(message.chat.id, "⚠️ API respondió sin PDF - datos en texto enviados")
+
+    except Exception as e:
+        logger.exception("mpla")
+        try:
+            reembolsar(message.from_user.id, 60)
+            bot.reply_to(message, f"❌ Error MPLA: {e} - Reembolsado 60")
+        except: pass
+# ==========================================
+# /MIGRA - REPORTE MIGRACIONES - 60 CRD - ABIERTO
+# ==========================================
+@bot.message_handler(commands=["migra"])
+@con_creditos(costo=60)
+def migra_command(message):
+    try:
+        usuario = message.from_user
+        if not usuario: return
+
+        args = (message.text or "").split()
+        if len(args) != 2 or not validar_dni(args[1]):
+            reembolsar(usuario.id, 60)
+            bot.reply_to(
+                message,
+                premium(
+                    "⚠️ <b>FORMATO INCORRECTO - MIGRA</b>\n\n"
+                    "Uso: <code>/migra 12345678</code>\n\n"
+                    "💰 Costo: 60 créditos"
+                ),
+                parse_mode="HTML",
+                reply_markup=teclado_volver(),
+            )
+            return
+
+        dni = args[1]
+        progreso = bot.reply_to(
+            message,
+            premium(f"⚜️ <b>MIGRA • MIGRACIONES</b>\n🔎 Consultando {dni}..."),
+            parse_mode="HTML",
+        )
+
+        resultado, error = codart_get(f"/migra/{dni}")
+
+        if error or not resultado or not resultado.get("success"):
+            reembolsar(usuario.id, 60)
+            detalle = error or (resultado or {}).get("message", "Error API")
+            bot.edit_message_text(
+                premium(f"❌ <b>MIGRA FALLÓ</b>\n\n{esc(str(detalle)[:500])}\n\n💳 Reembolsado 60 CRD"),
+                chat_id=progreso.chat.id,
+                message_id=progreso.message_id,
+                parse_mode="HTML",
+            )
+            return
+
+        data = resultado.get("data") or {}
+        texto = (
+            "⚜️ <b>MIGRA • REPORTE MIGRACIONES</b>\n"
+            "━━━━━━━━━━━━━━\n"
+            f"🪪 DNI: <code>{esc(data.get('documento_numero', data.get('dni', dni)))}</code>\n"
+            f"📋 Tipo Doc: {esc(str(data.get('tipo_documento','')))}\n"
+            f"👤 Nombres: {esc(str(data.get('nombres','')))}\n"
+            f"👤 Apellidos: {esc(str(data.get('apellidos','')))}\n"
+            f"📅 Nacimiento: {esc(str(data.get('fecha_nacimiento','')))}\n"
+            f"🌎 Nacionalidad: {esc(str(data.get('nacionalidad','')))}\n"
+            f"💼 Profesión: {esc(str(data.get('profesion','')))}\n"
+            "━━━━━━━━━━━━━━\n"
+            "✅ Reporte generado\n"
+            "💰 60 CRD"
+        )
+        bot.edit_message_text(
+            premium(texto),
+            chat_id=progreso.chat.id,
+            message_id=progreso.message_id,
+            parse_mode="HTML",
+            reply_markup=teclado_volver(),
+        )
+
+        documento = data.get("documento") or {}
+        data_uri = documento.get("data_uri", "")
+        if isinstance(data_uri, str) and data_uri.startswith("data:application/pdf;base64,"):
+            try:
+                pdf_bytes = base64.b64decode(data_uri.split(",",1)[1], validate=True)
+                if not pdf_bytes.startswith(b"%PDF"):
+                    raise ValueError("PDF inválido")
+                
+                nombre = os.path.basename(str(documento.get("nombre", f"MIGRACIONES-{dni}.pdf")))
+                nombre = re.sub(r"[^a-zA-Z0-9_.-]", "_", nombre)
+                archivo = io.BytesIO(pdf_bytes)
+                archivo.name = nombre
+
+                bot.send_document(
+                    message.chat.id,
+                    document=archivo,
+                    caption=premium(f"📄 <b>MIGRA {dni}</b>\n⚜️ Reporte migraciones"),
+                    parse_mode="HTML"
+                )
+            except Exception as e:
+                logger.exception("PDF MIGRA")
+                bot.send_message(message.chat.id, f"⚠️ PDF MIGRA falló: {e}")
+        else:
+            bot.send_message(message.chat.id, "⚠️ API respondió sin PDF")
+
+    except Exception as e:
+        logger.exception("migra")
+        try:
+            reembolsar(message.from_user.id, 60)
+            bot.reply_to(message, f"❌ Error MIGRA: {e} - Reembolsado 60")
+        except: pass
+# ==========================================
+# /MIGRACE - MIGRACIONES CE - 60 CRD - ABIERTO
+# ==========================================
+def validar_ce(ce: str) -> bool:
+    return bool(re.match(r"^\d{9}$", ce or ""))
+
+@bot.message_handler(commands=["migrace"])
+@con_creditos(costo=60)
+def migrace_command(message):
+    try:
+        usuario = message.from_user
+        if not usuario: return
+
+        args = (message.text or "").split()
+        if len(args) != 2 or not validar_ce(args[1]):
+            reembolsar(usuario.id, 60)
+            bot.reply_to(
+                message,
+                premium(
+                    "⚠️ <b>FORMATO INCORRECTO - MIGRACE</b>\n\n"
+                    "Uso: <code>/migrace 000000000</code>\n"
+                    "CE: 9 dígitos\n\n"
+                    "💰 Costo: 60 créditos"
+                ),
+                parse_mode="HTML",
+                reply_markup=teclado_volver(),
+            )
+            return
+
+        ce = args[1]
+        progreso = bot.reply_to(
+            message,
+            premium(f"⚜️ <b>MIGRACE • MIGRACIONES CE</b>\n🔎 Consultando {ce}..."),
+            parse_mode="HTML",
+        )
+
+        resultado, error = codart_get(f"/migrace/{ce}")
+
+        if error or not resultado or not resultado.get("success"):
+            reembolsar(usuario.id, 60)
+            detalle = error or (resultado or {}).get("message", "Error API")
+            bot.edit_message_text(
+                premium(f"❌ <b>MIGRACE FALLÓ</b>\n\n{esc(str(detalle)[:500])}\n\n💳 Reembolsado 60 CRD"),
+                chat_id=progreso.chat.id,
+                message_id=progreso.message_id,
+                parse_mode="HTML",
+            )
+            return
+
+        data = resultado.get("data") or {}
+        texto = (
+            "⚜️ <b>MIGRACE • REPORTE MIGRACIONES CE</b>\n"
+            "━━━━━━━━━━━━━━\n"
+            f"🪪 CE: <code>{esc(data.get('documento_numero', data.get('ce', ce)))}</code>\n"
+            f"📋 Tipo: {esc(str(data.get('tipo_documento','Carnet de Extranjería')))}\n"
+            f"👤 Nombres: {esc(str(data.get('nombres','')))}\n"
+            f"👤 Apellidos: {esc(str(data.get('apellidos','')))}\n"
+            f"📅 Nacimiento: {esc(str(data.get('fecha_nacimiento','')))}\n"
+            f"🌎 Nacionalidad: {esc(str(data.get('nacionalidad','')))}\n"
+            f"🛂 Calidad: {esc(str(data.get('calidad_migratoria','')))}\n"
+            f"📍 Domicilio: {esc(str(data.get('domicilio','')))}\n"
+            f"🏢 Oficina: {esc(str(data.get('oficina_migratoria','')))}\n"
+            "━━━━━━━━━━━━━━\n"
+            "✅ Reporte generado\n"
+            "💰 60 CRD"
+        )
+        bot.edit_message_text(
+            premium(texto),
+            chat_id=progreso.chat.id,
+            message_id=progreso.message_id,
+            parse_mode="HTML",
+            reply_markup=teclado_volver(),
+        )
+
+        documento = data.get("documento") or {}
+        data_uri = documento.get("data_uri", "")
+        if isinstance(data_uri, str) and data_uri.startswith("data:application/pdf;base64,"):
+            try:
+                pdf_bytes = base64.b64decode(data_uri.split(",",1)[1], validate=True)
+                if not pdf_bytes.startswith(b"%PDF"):
+                    raise ValueError("PDF inválido")
+                
+                nombre = os.path.basename(str(documento.get("nombre", f"MIGRACIONES-CE-{ce}.pdf")))
+                nombre = re.sub(r"[^a-zA-Z0-9_.-]", "_", nombre)
+                archivo = io.BytesIO(pdf_bytes)
+                archivo.name = nombre
+
+                bot.send_document(
+                    message.chat.id,
+                    document=archivo,
+                    caption=premium(f"📄 <b>MIGRACE CE {ce}</b>\n⚜️ Reporte migraciones CE"),
+                    parse_mode="HTML"
+                )
+            except Exception as e:
+                logger.exception("PDF MIGRACE")
+                bot.send_message(message.chat.id, f"⚠️ PDF MIGRACE falló: {e}")
+        else:
+            bot.send_message(message.chat.id, "⚠️ API respondió sin PDF")
+
+    except Exception as e:
+        logger.exception("migrace")
+        try:
+            reembolsar(message.from_user.id, 60)
+            bot.reply_to(message, f"❌ Error MIGRACE: {e} - Reembolsado 60")
+        except: pass
+# ==========================================
+# /ACTNAC - ACTA NACIMIENTO - 60 CRD - ABIERTO
+# ==========================================
+@bot.message_handler(commands=["actnac"])
+@con_creditos(costo=60)
+def actnac_command(message):
+    try:
+        usuario = message.from_user
+        if not usuario: return
+        
+        args = (message.text or "").split()
+        if len(args) != 2 or not validar_dni(args[1]):
+            reembolsar(usuario.id, 60)
+            bot.reply_to(message, premium("⚠️ Uso: <code>/actnac 12345678</code>\n💰 60 CRD"), parse_mode="HTML")
+            return
+
+        dni = args[1]
+        progreso = bot.reply_to(message, premium(f"⚜️ <b>ACTA NACIMIENTO</b>\n🔎 Consultando {dni}..."), parse_mode="HTML")
+
+        resultado, error = codart_get(f"/actnac/{dni}")
+
+        if error or not resultado or not resultado.get("success"):
+            reembolsar(usuario.id, 60)
+            bot.edit_message_text(premium(f"❌ Falló ACTNAC\n{esc(str(error or resultado.get('message'))[:400])}\n💳 Reembolsado 60 CRD"), chat_id=progreso.chat.id, message_id=progreso.message_id, parse_mode="HTML")
+            return
+
+        data = resultado.get("data") or {}
+        documento = data.get("documento") or {}
+        data_uri = documento.get("data_uri", "")
+
+        # Texto OK
+        texto = (
+            f"⚜️ <b>ACTA DE NACIMIENTO</b>\n"
+            f"━━━━━━━━━━━━━━\n"
+            f"🪪 DNI: <code>{esc(data.get('dni', dni))}</code>\n"
+            f"👤 {esc(data.get('nombres',''))} {esc(data.get('apellidos',''))}\n"
+            f"━━━━━━━━━━━━━━\n"
+            f"✅ 60 CRD descontados"
+        )
+        bot.edit_message_text(premium(texto), chat_id=progreso.chat.id, message_id=progreso.message_id, parse_mode="HTML", reply_markup=teclado_volver())
+
+        # ENVIO PDF - SIN CRASHEAR WHATSAPP
+        if data_uri.startswith("data:application/pdf;base64,"):
+            try:
+                b64 = data_uri.split(",",1)[1]
+                pdf_bytes = base64.b64decode(b64, validate=True)
+                
+                # Validación básica
+                if len(pdf_bytes) < 100 or not pdf_bytes.startswith(b"%PDF"):
+                    raise ValueError("PDF inválido")
+
+                nombre = f"ACTA-NACIMIENTO-{dni}.pdf"
+                archivo = io.BytesIO(pdf_bytes)
+                archivo.name = nombre
+
+                bot.send_document(
+                    message.chat.id,
+                    document=archivo,
+                    caption=premium(f"📄 <b>ACTA NACIMIENTO {dni}</b>"),
+                    parse_mode="HTML"
+                )
+            except Exception as e:
+                logger.exception("PDF ACTNAC")
+                bot.send_message(message.chat.id, f"⚠️ Acta encontrada pero PDF falló: {e}")
+        else:
+            bot.send_message(message.chat.id, "⚠️ API respondió sin PDF")
+
+    except Exception as e:
+        logger.exception("actnac")
+        try:
+            reembolsar(message.from_user.id, 60)
+            bot.reply_to(message, f"❌ Error: {e} - Reembolsado")
+        except: pass
 # ==========================================
 # COMANDO /C4 - SPECTER DATA
 # API CODART - SIN RESTRICCIONES
