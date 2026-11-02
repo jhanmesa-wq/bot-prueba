@@ -560,9 +560,6 @@ def val_command(message):
                 "📱 <b>SPECTER • NUMBER VALIDATOR</b>\n"
                 "━━━━━━━━━━━━━━━━━━\n\n"
                 "⚡ <b>USO DEL COMANDO</b>\n\n"
-                "<code>/val 51997097666</code>\n\n"
-                "🌎 País detectado automáticamente.\n"
-                "También puedes especificarlo manualmente:\n"
                 "<code>/val 01613950781 BD</code>\n\n"
                 "━━━━━━━━━━━━━━━━━━\n"
                 "🆓 <i>CONSULTA GRATUITA</i>",
@@ -819,27 +816,13 @@ def c4_command(message):
             )
 
 # ==========================================
-# COMANDO /C4B - FICHA C4 BLANCO
-# API CODART - COSTO 10 CRÉDITOS
+# COMANDO /C4B - FICHA C4 BLANCO - PUBLICO
 # ==========================================
-
 @bot.message_handler(commands=["c4b"])
 @con_creditos(costo=COSTOS["c4b"])
 def c4b_command(message):
     usuario = message.from_user
     if not usuario:
-        return
-
-    # C4B entrega un documento personal: limitarlo a operadores autorizados.
-    autorizados = set(C4B_ALLOWED_USER_IDS)
-    if ADMIN_ID:
-        autorizados.add(ADMIN_ID)
-    if usuario.id not in autorizados:
-        reembolsar(usuario.id, COSTOS["c4b"])
-        bot.reply_to(
-            message,
-            "⛔ Este comando está limitado a operadores autorizados.",
-        )
         return
 
     args = (message.text or "").split()
@@ -896,6 +879,7 @@ def c4b_command(message):
         )
         return
 
+    # ESTO YA ESTÁ DENTRO BIEN INDENTADO
     data = resultado.get("data") or {}
     texto = (
         "⚜️ <b>SPECTER DATA • C4B</b>\n"
@@ -916,7 +900,8 @@ def c4b_command(message):
         parse_mode="HTML",
         reply_markup=teclado_volver(),
     )
-
+    
+    # ENVIO PDF IGUAL QUE ANTES...
     documento = data.get("documento") or {}
     data_uri = documento.get("data_uri", "")
     if isinstance(data_uri, str) and data_uri.startswith("data:application/pdf;base64,"):
@@ -955,8 +940,6 @@ def c4b_command(message):
             message.chat.id,
             "⚠️ La API respondió correctamente, pero no incluyó el PDF esperado.",
         )
-
-
 # ================================================================
 # LOCALIZAR - ENLACE TEMPORAL + CONSENTIMIENTO EXPLÍCITO
 # Usa la MISMA DB_PATH y el mismo sistema de créditos global.
