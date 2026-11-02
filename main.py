@@ -160,7 +160,7 @@ COSTOS = {
     "c4": 10,
     "c4b": 10,
   "c4i": 10,
-  "actnac": 60
+  "actnac": 60,
     "COSTO_IP": 10,
     "localizar": 10,
     "reaccion": 20,
@@ -3583,6 +3583,18 @@ def teclado_menu_cmds():
             ),
             InlineKeyboardButton(
                 "MIGRACIÓN",
+                callback_data="cat_migracion",
+                icon_custom_emoji_id="4981156512731759750"
+            )
+        ],
+        [
+            InlineKeyboardButton(
+                "RUC",
+                callback_data="cat_certificados",
+                icon_custom_emoji_id="4906743979535500183"
+            ),
+            InlineKeyboardButton(
+                "SENTINEL",
                 callback_data="cat_migracion",
                 icon_custom_emoji_id="4981156512731759750"
             )
