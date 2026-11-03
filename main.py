@@ -115,17 +115,15 @@ def run_flask():
         use_reloader=False
     )
 
-
-import asyncio
-import json
 import os
 import re
-from collections import deque
-from telethon import events
+import json
+import queue
+import threading
 
-# ==================================
+# ==========================================
 # CONFIGURACIÓN DEL MONITOR
-# ==================================
+# ==========================================
 
 MONITOR_FILE = "monitor_config.json"
 
@@ -141,200 +139,285 @@ def cargar_monitor():
     if os.path.exists(MONITOR_FILE):
         try:
             with open(MONITOR_FILE, "r", encoding="utf-8") as f:
-                monitor_config.update(json.load(f))
-        except Exception as e:
-            print("Error cargando monitor:", e)
+                datos = json.load(f)
+
+            if isinstance(datos, dict):
+                monitor_config.update(datos)
+
+        except Exception:
+            logger.exception("[MONITOR] Error cargando configuración")
+
 
 def guardar_monitor():
-    with open(MONITOR_FILE, "w", encoding="utf-8") as f:
-        json.dump(monitor_config, f, indent=4)
+    try:
+        with open(MONITOR_FILE, "w", encoding="utf-8") as f:
+            json.dump(monitor_config, f, indent=4)
+    except Exception:
+        logger.exception("[MONITOR] Error guardando configuración")
+
 
 cargar_monitor()
 
-# ==================================
+# ==========================================
 # COLA DE PROCESAMIENTO
-# ==================================
+# ==========================================
 
-monitor_queue = asyncio.Queue()
+monitor_queue = queue.Queue()
 enlaces_procesados = set()
+_monitor_lock = threading.Lock()
 
 PATRON_PRIVNOTE = re.compile(
     r"https?://(?:www\.)?privnote\.com/[A-Za-z0-9]+(?:#[A-Za-z0-9]+)?",
     re.IGNORECASE
 )
 
+
 def detectar_enlaces(texto):
     if not texto:
         return []
 
-    return list(dict.fromkeys(
-        PATRON_PRIVNOTE.findall(texto)
-    ))
-
-async def agregar_a_cola(enlace):
-    if enlace in enlaces_procesados:
-        return
-
-    enlaces_procesados.add(enlace)
-    await monitor_queue.put(enlace)
-
-print("Monitor preparado correctamente.")
-
-# ==========================================
-#  - DETECTOR DE ENLACES
-# ==========================================
-
-@client.on(events.NewMessage)
-async def monitor_detectar(event):
-    try:
-        if not monitor_config.get("enabled"):
-            return
-
-        grupo_id = monitor_config.get("group_id")
-
-        if not grupo_id:
-            return
-
-        chat_id = event.chat_id
-
-        if chat_id != int(grupo_id):
-            return
-
-        texto = event.raw_text or ""
-
-        enlaces = detectar_enlaces(texto)
-
-        for enlace in enlaces:
-            await agregar_a_cola(enlace)
-
-            print(f"[MONITOR] Enlace detectado: {enlace}")
-
-    except Exception as e:
-        print(f"[MONITOR] Error detectando: {e}")
+    return list(dict.fromkeys(PATRON_PRIVNOTE.findall(texto)))
 
 
-# ==========================================
-# PROCESADOR DE LA COLA
-# ==========================================
+def agregar_a_cola(enlace):
+    with _monitor_lock:
+        if enlace in enlaces_procesados:
+            return False
 
-async def procesar_cola_monitor():
+        enlaces_procesados.add(enlace)
+
+    monitor_queue.put(enlace)
+    return True
+
+
+def procesar_cola_monitor():
     while True:
-        enlace = await monitor_queue.get()
+        enlace = monitor_queue.get()
 
         try:
             destino = monitor_config.get("private_id")
 
             if not destino:
-                print("[MONITOR] No hay privado configurado.")
+                logger.warning("[MONITOR] No hay chat privado configurado.")
                 continue
 
-            # Notificar el enlace detectado.
-            # El contenido de la nota debe obtenerse
-            # mediante un acceso autorizado.
-            await client.send_message(
+            bot.send_message(
                 int(destino),
                 "🔎 ENLACE DETECTADO\n\n"
                 f"{enlace}\n\n"
                 "Estado: pendiente de lectura autorizada."
             )
 
-            print(f"[MONITOR] Enlace enviado: {enlace}")
+            logger.info("[MONITOR] Enlace enviado correctamente.")
 
-        except Exception as e:
-            print(f"[MONITOR] Error procesando enlace: {e}")
+        except Exception:
+            logger.exception("[MONITOR] Error procesando enlace")
 
         finally:
             monitor_queue.task_done()
 
 
-# ==========================================
-# INICIAR EL PROCESADOR
-# ==========================================
+def iniciar_monitor():
+    global monitor_thread
 
-async def iniciar_monitor():
-    global monitor_task
-
-    if "monitor_task" not in globals() or monitor_task.done():
-        monitor_task = asyncio.create_task(
-            procesar_cola_monitor()
+    if (
+        "monitor_thread" not in globals()
+        or not monitor_thread.is_alive()
+    ):
+        monitor_thread = threading.Thread(
+            target=procesar_cola_monitor,
+            name="monitor-privnote",
+            daemon=True
         )
 
-    print("[MONITOR] Procesador iniciado.")
+        monitor_thread.start()
 
-# ==========================================
-# PARTE 3 - COMANDOS DEL MONITOR
-# ==========================================
+    logger.info("[MONITOR] Procesador iniciado.")
 
-@client.on(events.NewMessage(pattern=r"^/setgrupo\s+(-?\d+)$"))
-async def monitor_setgrupo(event):
+
+def _monitor_coincide(message):
     try:
-        grupo_id = int(event.pattern_match.group(1))
+        texto = (
+            getattr(message, "text", None)
+            or getattr(message, "caption", None)
+            or ""
+        )
+
+        return bool(
+            message
+            and message.chat
+            and monitor_config.get("enabled")
+            and monitor_config.get("group_id") is not None
+            and message.chat.id == int(monitor_config["group_id"])
+            and detectar_enlaces(texto)
+        )
+
+    except (TypeError, ValueError):
+        return False
+
+
+def _monitor_recibir(message):
+    try:
+        texto = (
+            getattr(message, "text", None)
+            or getattr(message, "caption", None)
+            or ""
+        )
+
+        for enlace in detectar_enlaces(texto):
+            if agregar_a_cola(enlace):
+                logger.info(
+                    "[MONITOR] Enlace detectado en %s",
+                    message.chat.id
+                )
+
+    except Exception:
+        logger.exception("[MONITOR] Error detectando enlaces")
+# ==========================================
+# DETECTAR MENSAJES DE GRUPOS
+# ==========================================
+
+@bot.message_handler(
+    func=_monitor_coincide,
+    content_types=["text", "photo", "document", "video"]
+)
+def monitor_detectar(message):
+    _monitor_recibir(message)
+
+
+# ==========================================
+# DETECTAR PUBLICACIONES DE CANALES
+# ==========================================
+
+@bot.channel_post_handler(
+    func=_monitor_coincide,
+    content_types=["text", "photo", "document", "video"]
+)
+def monitor_detectar_canal(message):
+    _monitor_recibir(message)
+
+
+# ==========================================
+# CONFIGURAR GRUPO O CANAL
+# ==========================================
+
+@bot.message_handler(commands=["setgrupo"])
+def monitor_setgrupo(message):
+    partes = (message.text or "").split()
+
+    if len(partes) != 2:
+        bot.reply_to(
+            message,
+            "Uso: /setgrupo ID_DEL_GRUPO_O_CANAL"
+        )
+        return
+
+    try:
+        grupo_id = int(partes[1])
 
         monitor_config["group_id"] = grupo_id
         guardar_monitor()
 
-        await event.reply(
-            "✅ GRUPO/CANAL CONFIGURADO\n\n"
-            f"🆔 ID: `{grupo_id}`"
+        bot.reply_to(
+            message,
+            f"✅ GRUPO/CANAL CONFIGURADO\n\n"
+            f"🆔 ID: <code>{grupo_id}</code>"
         )
 
-    except Exception as e:
-        await event.reply(f"❌ Error: {e}")
+    except (TypeError, ValueError):
+        bot.reply_to(message, "❌ El ID debe ser numérico.")
 
 
-@client.on(events.NewMessage(pattern=r"^/setprivado\s+(-?\d+)$"))
-async def monitor_setprivado(event):
+# ==========================================
+# CONFIGURAR CHAT PRIVADO
+# ==========================================
+
+@bot.message_handler(commands=["setprivado"])
+def monitor_setprivado(message):
+    partes = (message.text or "").split()
+
+    if len(partes) != 2:
+        bot.reply_to(
+            message,
+            "Uso: /setprivado TU_ID_DE_TELEGRAM"
+        )
+        return
+
     try:
-        privado_id = int(event.pattern_match.group(1))
+        privado_id = int(partes[1])
 
         monitor_config["private_id"] = privado_id
         guardar_monitor()
 
-        await event.reply(
-            "✅ PRIVADO CONFIGURADO\n\n"
-            f"🆔 ID: `{privado_id}`"
+        bot.reply_to(
+            message,
+            f"✅ CHAT PRIVADO CONFIGURADO\n\n"
+            f"🆔 ID: <code>{privado_id}</code>"
         )
 
-    except Exception as e:
-        await event.reply(f"❌ Error: {e}")
+    except (TypeError, ValueError):
+        bot.reply_to(message, "❌ El ID debe ser numérico.")
 
 
-@client.on(events.NewMessage(pattern=r"^/monitor_on$"))
-async def monitor_activar(event):
+# ==========================================
+# ACTIVAR MONITOR
+# ==========================================
+
+@bot.message_handler(commands=["monitor_on"])
+def monitor_activar(message):
     monitor_config["enabled"] = True
     guardar_monitor()
 
-    await iniciar_monitor()
+    iniciar_monitor()
 
-    await event.reply(
+    bot.reply_to(
+        message,
         "🟢 MONITOR ACTIVADO\n\n"
-        "El bot está vigilando el grupo/canal configurado."
+        "Vigilando el grupo/canal configurado."
     )
 
 
-@client.on(events.NewMessage(pattern=r"^/monitor_off$"))
-async def monitor_desactivar(event):
+# ==========================================
+# DESACTIVAR MONITOR
+# ==========================================
+
+@bot.message_handler(commands=["monitor_off"])
+def monitor_desactivar(message):
     monitor_config["enabled"] = False
     guardar_monitor()
 
-    await event.reply("🔴 MONITOR DESACTIVADO")
+    bot.reply_to(message, "🔴 MONITOR DESACTIVADO")
 
 
-@client.on(events.NewMessage(pattern=r"^/monitor_status$"))
-async def monitor_estado(event):
-    estado = "🟢 ACTIVADO" if monitor_config["enabled"] else "🔴 DESACTIVADO"
+# ==========================================
+# ESTADO DEL MONITOR
+# ==========================================
 
-    await event.reply(
+@bot.message_handler(commands=["monitor_status"])
+def monitor_estado(message):
+    estado = (
+        "🟢 ACTIVADO"
+        if monitor_config.get("enabled")
+        else "🔴 DESACTIVADO"
+    )
+
+    bot.reply_to(
+        message,
         "📡 ESTADO DEL MONITOR\n\n"
         f"Estado: {estado}\n"
-        f"Grupo/canal: `{monitor_config['group_id']}`\n"
-        f"Privado: `{monitor_config['private_id']}`\n"
-        f"Pendientes: `{monitor_queue.qsize()}`"
+        f"Grupo/canal: <code>{monitor_config.get('group_id')}</code>\n"
+        f"Privado: <code>{monitor_config.get('private_id')}</code>\n"
+        f"Pendientes: <code>{monitor_queue.qsize()}</code>"
     )
 
 
-print("[MONITOR] Comandos registrados.")
+# ==========================================
+# INICIAR PROCESADOR
+# ==========================================
 
+iniciar_monitor()
+
+print("[MONITOR] Sistema pyTelegramBotAPI iniciado.")
     
 # ================================================================
 # BASE DE DATOS MONGODB - USUARIOS, CRÉDITOS Y TOKENS
