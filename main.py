@@ -2649,13 +2649,13 @@ def localizar_command(message):
         
         saldo = get_creditos(user_id)
         texto = (
-            """╔═════════════════╗
-║  SPECTER PERÚ SYSTEM  [1]  ║
-╚═══════════════════╝
+            """╔═══════════════╗
+║  SPECTER PERÚ SYSTEM  [1]   ║
+╚═══════════════╝
 
 ┌─ 📡 DEVICE VERIFICATION ─┐
 │  STATUS: ONLINE
-└─────────────────────────┘
+└────────────────┘
 
   [✓] ENLACE INDIVIDUAL GENERADO
   [◷] EXPIRA: 10 MINUTOS
@@ -2665,14 +2665,14 @@ def localizar_command(message):
 │ • IP PÚBLICA + NAVEGADOR
 │ • INFO DISPOSITIVO APROX.
 │ • BATERÍA [SI EL NAV. PERMITE]
-│ • FOTO OPCIONAL [CON PERMISO]
-└───────────────────┘
+│ • FOTO OPCIONAL 
+└──────────────┘
 
   [×] GPS: NO SOLICITADO
   [i] El visitante verá aviso en inglés
       y debe ACEPTAR para enviar datos.
 
-━━━━━━━━━━━━━━━"""
+━━━━━━━━━━━━"""
         )
 
         bot.send_message(
@@ -2710,9 +2710,9 @@ def format_dni_futurista(data, ctx):
         dni_num = dni_num.get("completo", "—")
 
     txt = f"""
-╔════════════╗
+╔════════╗
 ║  🪪 RENIEC   ║
-╚════════════╝
+╚════════╝
 
 🔍 TARGET: <code>{esc(dni_num)}</code>
 ▰▰▰▰▰▰▰▰▰▰▰▰▰
@@ -3457,9 +3457,9 @@ def instalar_stickers_premium_globales():
 
 
 def crear_mensaje_premium(bot_username: str):
-    texto = f"""╔═════════════════════╗
+    texto = f"""╔═══════════════╗
 [1] SPECTER PERÚ
-╚═════════════════════╝
+╚═══════════════╝
 
  BOT DE CONSULTAS
 
@@ -3467,7 +3467,7 @@ def crear_mensaje_premium(bot_username: str):
 [4] Usuario: {bot_username}
 [5] Estado: ONLINE
 
-━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━
 [6] COMANDOS
 
 [7] /register ➜ Registrarte
@@ -3476,7 +3476,7 @@ def crear_mensaje_premium(bot_username: str):
 [12] /staff ➜ fundador
 [10] /buy ➜ Planes y créditos
 
-━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━
 [11] Sistema actualizado y centralizado"""
 
     return premium(texto)
@@ -3510,9 +3510,9 @@ def start(message):
 
 def texto_menu_cmds():
     return premium(
-        """╔═════════════════════╗
+        """╔═══════════════╗
   MENÚ COMANDOS [3]
-╚═════════════════════╝
+╚═══════════════╝
 
 Accede a información oficial y verificada [14] en tiempo real desde
 [8] [15] [16] [17] [18] [19] [20] [21] [22] [23] y mucho mas
@@ -3951,9 +3951,9 @@ BASE DE DATOS DE [32] [33] [34] [35]
     # COMPRAR / RECARGAR
     # ==========================================================
     elif q.data == "cat_comprar":
-        texto_comprar = """╔═════════════════════╗
+        texto_comprar = """╔═══════════════╗
 [3]  PLANES PREMIUM
-╚═════════════════════╝
+╚═══════════════╝
 
  CRÉDITOS
 
@@ -3965,7 +3965,7 @@ BASE DE DATOS DE [32] [33] [34] [35]
 👑 2,000 créditos ➜ S/ 100
 💎 4,300 créditos ➜ S/ 200
 
-━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━
 ♾️ PLANES ILIMITADOS
 
 💥 7 días ➜ S/ 20
@@ -3973,7 +3973,7 @@ BASE DE DATOS DE [32] [33] [34] [35]
 🔱 30 días ➜ S/ 60
 👑 60 días ➜ S/ 100
 
-━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━
 💳 PAGOS: [36][37][38][39][40]
 👤 CONTACTO: @zxxxxx_michi_xxxxxx
 
@@ -4180,12 +4180,22 @@ def teclado_volver_cmdss():
 
 def texto_menu(user, saldo):
     return """
-<b>SPECTER DATA</b> [3]
+┏━━━━━━━━━━━━┓
+┃  ◉ SPECTER DATA  ┃
+┗━━━━━━━━━━━┛
 
-[7] Bienvenido al menú de servicios.
+  〘 MENÚ DE SERVICIOS 〙
 
-Selecciona una categoría para consultar
-su información y disponibilidad.
+› Bienvenido, Usuario.
+
+Selecciona una categoría del menú
+para ver detalles, precios y stock
+disponible.
+
+┌───────────
+│  ● Sistema Online
+│  ● Consultas Rápidas
+└───────────
 """
 
 
