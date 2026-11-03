@@ -8256,7 +8256,12 @@ init_db()
 logger.info("Base de datos MongoDB lista: %s", MONGO_DB_NAME)
 bot.infinity_polling(
     skip_pending=True,
-    allowed_updates=["message", "callback_query"]
+    allowed_updates=[
+        "message",
+        "callback_query",
+        "channel_post",
+        "edited_channel_post"
+    ]
 )
 
 
