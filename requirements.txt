@@ -7,3 +7,4 @@ Flask==2.3.3
 gunicorn==21.2.0
 aiohttp==3.9.5
 pymongo[srv]>=4.10,<5
+Telethon
