@@ -3894,12 +3894,12 @@ def teclado_menu_cmds():
         [
             InlineKeyboardButton(
                 "RUC",
-                callback_data="cat_certificados",
+                callback_data="cat_ruc",
                 icon_custom_emoji_id="4906743979535500183"
             ),
             InlineKeyboardButton(
                 "SENTINEL",
-                callback_data="cat_migracion",
+                callback_data="cat_sentinel",
                 icon_custom_emoji_id="4981156512731759750"
             )
         ],
@@ -7906,23 +7906,17 @@ def staff_command(message):
 ╚══════════════╝
 
 [ FUNDADOR ]
-😴 @zxxxxx_michi_xxxxxx- Creador & Admin
+😴 @@Michixv- Creador & Admin
 
 [ ADMINISTRADORES ]
-@zxxxxx_michi_xxxxxx✅ - Soporte 24/7
+@@gatito_xxxxx✅ - Soporte 24/7
 @zxxxxx_michi_xxxxxx☑️ - Pagos & Créditos
-
-[ MODERADORES ]
-⚡ @Mod1 - Soporte
-⚡ @Mod2 - Soporte
 
 ╔════════════════╗
 ║  [7] CONTACTO OFICIAL ║
 ╚════════════════╝
 
-💬 Grupo: t.me/tugrupo
-📢 Canal: t.me/tucanal
-💌 Soporte: @SoporteBot
+💬 Grupo: https://t.me/+f6XsNvdc4KQ0ZGUx
 
 <b>[27] OJO:</b>
 Solo estos usuarios son staff oficial.
