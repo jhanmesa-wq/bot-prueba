@@ -3761,29 +3761,38 @@ def instalar_stickers_premium_globales():
 
 
 def crear_mensaje_premium(bot_username: str):
-    texto = f"""╔═══════════════╗
-[1] SPECTER PERÚ
-╚═══════════════╝
+    texto = (
+        "╔═══════════════╗\n"
+        "[1] SPECTER PERÚ\n"
+        "╚═══════════════╝\n\n"
+        "BOT DE CONSULTAS\n\n"
+        "[2] Nombre: SPECTER PERÚ [3]\n"
+        f"[4] Usuario: {bot_username}\n"
+        "[5] Estado: ONLINE\n\n"
+        "━━━━━━━━━━━━━━━━━━\n"
+        "[6] COMANDOS\n\n"
+        "[7] /register ➜ Registrarte\n"
+        "[8] /cmdss ➜ Ver servicios\n"
+        "[9] /me ➜ Ver perfil\n"
+        "[12] /staff ➜ fundador\n"
+        "[10] /buy ➜ Planes y créditos\n\n"
+        "━━━━━━━━━━━━━━━━━━\n"
+        "[11] Sistema actualizado y centralizado"
+    )
 
- BOT DE CONSULTAS
-
-[2] Nombre: SPECTER PERÚ [3]
-[4] Usuario: {bot_username}
-[5] Estado: ONLINE
-
-━━━━━━━━━━━━━━━━━━
-[6] COMANDOS
-
-[7] /register ➜ Registrarte
-[8] /cmdss ➜ Ver servicios
-[9] /me ➜ Ver perfil
-[12] /staff ➜ fundador
-[10] /buy ➜ Planes y créditos
-
-━━━━━━━━━━━━━━━━━━
-[11] Sistema actualizado y centralizado"""
-
-    return premium(texto)
+    return {
+        "blocks": [
+            {
+                "type": "heading",
+                "text": "SPECTER PERÚ",
+                "size": 2
+            },
+            {
+                "type": "paragraph",
+                "text": texto
+            }
+        ]
+    }
 
 
 @bot.message_handler(commands=["start"])
@@ -3792,26 +3801,24 @@ def start(message):
     get_creditos(user_id)
 
     bot_username = f"@{bot.get_me().username}"
-    texto = crear_mensaje_premium(bot_username)
+    rich_message = crear_mensaje_premium(bot_username)
 
     video_url = "https://files.catbox.moe/mfy472.mp4"
 
     try:
-        bot.send_video(
-            chat_id=message.chat.id,
-            video=video_url,
-            caption=texto,
-            parse_mode="HTML"
+        requests.post(
+            f"https://api.telegram.org/bot{TOKEN}/sendRichMessage",
+            json={
+                "chat_id": message.chat.id,
+                "video": video_url,
+                "rich_message": rich_message
+            },
+            timeout=30
         )
+
     except Exception as e:
-        logger.exception("Error al enviar el video de inicio: %s", e)
-        bot.send_message(
-            chat_id=message.chat.id,
-            text=texto,
-            parse_mode="HTML"
-        )
-
-
+        logger.exception("Error al enviar mensaje con sendRichMessage: %s", e)
+        
 def texto_menu_cmds():
     return premium(
         """╔═══════════════╗
