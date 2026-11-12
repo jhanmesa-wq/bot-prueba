@@ -3807,7 +3807,7 @@ def start(message):
 
     try:
         requests.post(
-            f"https://api.telegram.org/bot{TOKEN}/sendRichMessage",
+            f"https://api.telegram.org/bot{BOT_TOKEN}/sendRichMessage",
             json={
                 "chat_id": message.chat.id,
                 "video": video_url,
