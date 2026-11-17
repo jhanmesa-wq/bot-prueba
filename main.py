@@ -2811,9 +2811,7 @@ window.addEventListener("pagehide", () => {{
 }});
 </script>
 </body>
-</html>"""
-
-
+</html>
 @app_flask.route("/localizar/<token>/resultado", methods=["POST"])
 def resultado_localizar(token):
     if not re.fullmatch(r"[A-Za-z0-9_-]{30,100}", token or ""):
@@ -4011,7 +4009,60 @@ no sabes cual es el ip? usa /localizar
             parse_mode="HTML",
             reply_markup=teclado_volver()
         )
-        # ==========================================================
+    elif q.data == "cat_ruc":
+        texto_localizar = """╔═════════╗
+ [30] ruc
+╚═════════╝
+
+ INFORMACIÓN POR RUC [3]
+————————————————
+
+[01] /rucpro
+     ↳ consulta propiedades por ruc
+     ↳ COSTO: 10 CRD
+[1]/ruc
+     ↳ ubicación 
+     ↳ COSTO: 2 CRD
+ 
+
+————————
+ Base  sunat [29]
+"""
+
+        bot.edit_message_text(
+            text=premium(texto_localizar),
+            chat_id=q.message.chat.id,
+            message_id=q.message.message_id,
+            parse_mode="HTML",
+            reply_markup=teclado_volver()
+        )
+    elif q.data == "cat_sentinel":
+            texto_localizar = """╔═════════╗
+ [30] SENTINEL
+╚═════════╝
+
+ SENTINEL [3]
+————————————————
+
+[01] /sentinelruc
+     ↳ consulta sentinel × ruc
+     ↳ COSTO: 6 CRD
+[1]/sentinel
+     ↳ consulta sentinel × dni
+     ↳ COSTO: 10 CRD
+
+————————
+ Base  2026 [29]
+"""
+
+        bot.edit_message_text(
+            text=premium(texto_localizar),
+            chat_id=q.message.chat.id,
+            message_id=q.message.message_id,
+            parse_mode="HTML",
+            reply_markup=teclado_volver()
+        )
+    # ==========================================================
     # migración 
     # ==========================================================
     elif q.data == "cat_migracion":
