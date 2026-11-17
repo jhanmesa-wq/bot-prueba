@@ -2863,7 +2863,7 @@ def resultado_localizar(token):
     ua_safe = esc(ua)[:1000]
 
     texto = (
-    f"""🛰️ <b>S P E C T E R • S Y S T E M</b>
+    f""" <b>S P E C T E R • S Y S T E M</b>
 ━━━━━━━━━━━━━━━━━━━━
 
 ⚡ <b>LOCALIZACIÓN — INFORME CONSENTIDO</b>
