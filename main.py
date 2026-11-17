@@ -3761,40 +3761,54 @@ def instalar_stickers_premium_globales():
 
 
 def crear_mensaje_premium(bot_username: str):
-    texto = (
-        "╔═══════════════╗\n"
-        "[1] SPECTER PERÚ\n"
-        "╚═══════════════╝\n\n"
-        "BOT DE CONSULTAS\n\n"
-        "[2] Nombre: SPECTER PERÚ [3]\n"
-        f"[4] Usuario: {bot_username}\n"
-        "[5] Estado: ONLINE\n\n"
-        "━━━━━━━━━━━━━━━━━━\n"
-        "[6] COMANDOS\n\n"
-        "[7] /register ➜ Registrarte\n"
-        "[8] /cmdss ➜ Ver servicios\n"
-        "[9] /me ➜ Ver perfil\n"
-        "[12] /staff ➜ fundador\n"
-        "[10] /buy ➜ Planes y créditos\n\n"
-        "━━━━━━━━━━━━━━━━━━\n"
-        "[11] Sistema actualizado y centralizado"
-    )
+texto = f"""╔═══════════════╗
+[1] SPECTER PERÚ
+╚═══════════════╝
 
-    return {
-        "blocks": [
-            {
-                "type": "heading",
-                "text": "SPECTER PERÚ",
-                "size": 2
-            },
-            {
-                "type": "paragraph",
-                "text": texto
-            }
-        ]
-    }
+BOT DE CONSULTAS
 
+[2] Nombre: SPECTER PERÚ [3]
+[4] Usuario: {bot_username}
+[5] Estado: ONLINE
 
+━━━━━━━━━━━━━━━━━━
+[6] COMANDOS
+
+[7] /register ➜ Registrarte
+[8] /cmdss ➜ Ver servicios
+[9] /me ➜ Ver perfil
+[12] /staff ➜ fundador
+[10] /buy ➜ Planes y créditos
+
+━━━━━━━━━━━━━━━━━━
+[11] Sistema actualizado y centralizado"""
+
+return premium(texto)
+
+@bot.message_handler(commands=["start"])
+def start(message):
+user_id = message.from_user.id
+get_creditos(user_id)
+
+bot_username = f"@{bot.get_me().username}"  
+texto = crear_mensaje_premium(bot_username)  
+
+video_url = "https://files.catbox.moe/mfy472.mp4"  
+
+try:  
+    bot.send_video(  
+        chat_id=message.chat.id,  
+        video=video_url,  
+        caption=texto,  
+        parse_mode="HTML"  
+    )  
+except Exception as e:  
+    logger.exception("Error al enviar el video de inicio: %s", e)  
+    bot.send_message(  
+        chat_id=message.chat.id,  
+        text=texto,  
+        parse_mode="HTML"  
+)
 @bot.message_handler(commands=["start"])
 def start(message):
     user_id = message.from_user.id
@@ -4492,8 +4506,8 @@ def teclado_volver_cmdss():
 def texto_menu(user, saldo):
     return """
 ┏━━━━━━━━━━━━┓
-┃  ◉ SPECTER DATA  ┃
-┗━━━━━━━━━━━┛
+┃ SPECTER DATA ┃
+┗━━━━━━━━━━━━┛
 
   〘 MENÚ DE SERVICIOS 〙
 
