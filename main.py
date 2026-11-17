@@ -3759,7 +3759,7 @@ def instalar_stickers_premium_globales():
 
 
 def crear_mensaje_premium(bot_username: str):
-texto = f"""╔═══════════════╗
+   texto = f"""╔═══════════════╗
 [1] SPECTER PERÚ
 ╚═══════════════╝
 
@@ -3807,30 +3807,7 @@ except Exception as e:
         text=texto,  
         parse_mode="HTML"  
 )
-@bot.message_handler(commands=["start"])
-def start(message):
-    user_id = message.from_user.id
-    get_creditos(user_id)
-
-    bot_username = f"@{bot.get_me().username}"
-    rich_message = crear_mensaje_premium(bot_username)
-
-    video_url = "https://files.catbox.moe/mfy472.mp4"
-
-    try:
-        requests.post(
-            f"https://api.telegram.org/bot{BOT_TOKEN}/sendRichMessage",
-            json={
-                "chat_id": message.chat.id,
-                "video": video_url,
-                "rich_message": rich_message
-            },
-            timeout=30
-        )
-
-    except Exception as e:
-        logger.exception("Error al enviar mensaje con sendRichMessage: %s", e)
-        
+      
 def texto_menu_cmds():
     return premium(
         """╔═══════════════╗
