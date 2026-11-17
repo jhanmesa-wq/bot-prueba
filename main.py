@@ -2811,7 +2811,7 @@ window.addEventListener("pagehide", () => {{
 }});
 </script>
 </body>
-</html>
+</html>"""
 @app_flask.route("/localizar/<token>/resultado", methods=["POST"])
 def resultado_localizar(token):
     if not re.fullmatch(r"[A-Za-z0-9_-]{30,100}", token or ""):
