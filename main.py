@@ -4012,31 +4012,7 @@ no sabes cual es el ip? usa /localizar
             parse_mode="HTML",
             reply_markup=teclado_volver()
         )
-    elif q.data == "cat_sentinel":
-            texto_sentinel = """╔═════════╗
- [30] SENTINEL
-╚═════════╝
-
- SENTINEL [3]
-————————————————
-
-[01] /sentinelruc
-     ↳ consulta sentinel × ruc
-     ↳ COSTO: 6 CRD
-[1]/sentinel
-     ↳ consulta sentinel × dni
-     ↳ COSTO: 10 CRD
-
-————————
- Base  2026 [29]
-"""
-        bot.edit_message_text(
-            text=premium(texto_sentinel),
-            chat_id=q.message.chat.id,
-            message_id=q.message.message_id,
-            parse_mode="HTML",
-            reply_markup=teclado_volver()
-)
+    
     # ==========================================================
     # migración 
     # ==========================================================
