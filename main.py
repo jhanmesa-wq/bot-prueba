@@ -4030,14 +4030,13 @@ no sabes cual es el ip? usa /localizar
 ————————
  Base  2026 [29]
 """
-
         bot.edit_message_text(
             text=premium(texto_sentinel),
             chat_id=q.message.chat.id,
             message_id=q.message.message_id,
             parse_mode="HTML",
             reply_markup=teclado_volver()
-        )
+)
     # ==========================================================
     # migración 
     # ==========================================================
