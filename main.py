@@ -3759,7 +3759,7 @@ def instalar_stickers_premium_globales():
 
 
 def crear_mensaje_premium(bot_username: str):
-   texto = f"""╔═══════════════╗
+    texto = f"""╔═══════════════╗
 [1] SPECTER PERÚ
 ╚═══════════════╝
 
@@ -3781,7 +3781,7 @@ BOT DE CONSULTAS
 ━━━━━━━━━━━━━━━━━━
 [11] Sistema actualizado y centralizado"""
 
-return premium(texto)
+    return premium(texto)
 
 @bot.message_handler(commands=["start"])
 def start(message):
@@ -3806,7 +3806,7 @@ def start(message):
             chat_id=message.chat.id,
             text=texto,
             parse_mode="HTML"
-)      
+)
 def texto_menu_cmds():
     return premium(
         """╔═══════════════╗
