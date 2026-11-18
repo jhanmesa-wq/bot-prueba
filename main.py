@@ -3986,7 +3986,7 @@ no sabes cual es el ip? usa /localizar
             reply_markup=teclado_volver()
         )
     elif q.data == "cat_ruc":
-        texto_localizar = """╔═════════╗
+        texto_ruc = """╔═════════╗
  [30] ruc
 ╚═════════╝
 
@@ -4006,14 +4006,14 @@ no sabes cual es el ip? usa /localizar
 """
 
         bot.edit_message_text(
-            text=premium(texto_localizar),
+            text=premium(texto_ruc),
             chat_id=q.message.chat.id,
             message_id=q.message.message_id,
             parse_mode="HTML",
             reply_markup=teclado_volver()
         )
     elif q.data == "cat_sentinel":
-            texto_localizar = """╔═════════╗
+            texto_sentinel = """╔═════════╗
  [30] SENTINEL
 ╚═════════╝
 
@@ -4032,7 +4032,7 @@ no sabes cual es el ip? usa /localizar
 """
 
         bot.edit_message_text(
-            text=premium(texto_localizar),
+            text=premium(texto_sentinel),
             chat_id=q.message.chat.id,
             message_id=q.message.message_id,
             parse_mode="HTML",
