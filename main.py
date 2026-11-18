@@ -3785,29 +3785,28 @@ return premium(texto)
 
 @bot.message_handler(commands=["start"])
 def start(message):
-user_id = message.from_user.id
-get_creditos(user_id)
+    user_id = message.from_user.id
+    get_creditos(user_id)
 
-bot_username = f"@{bot.get_me().username}"  
-texto = crear_mensaje_premium(bot_username)  
+    bot_username = f"@{bot.get_me().username}"
+    texto = crear_mensaje_premium(bot_username)
 
-video_url = "https://files.catbox.moe/mfy472.mp4"  
+    video_url = "https://files.catbox.moe/mfy472.mp4"
 
-try:  
-    bot.send_video(  
-        chat_id=message.chat.id,  
-        video=video_url,  
-        caption=texto,  
-        parse_mode="HTML"  
-    )  
-except Exception as e:  
-    logger.exception("Error al enviar el video de inicio: %s", e)  
-    bot.send_message(  
-        chat_id=message.chat.id,  
-        text=texto,  
-        parse_mode="HTML"  
-)
-      
+    try:
+        bot.send_video(
+            chat_id=message.chat.id,
+            video=video_url,
+            caption=texto,
+            parse_mode="HTML"
+        )
+    except Exception as e:
+        logger.exception("Error al enviar el video de inicio: %s", e)
+        bot.send_message(
+            chat_id=message.chat.id,
+            text=texto,
+            parse_mode="HTML"
+)      
 def texto_menu_cmds():
     return premium(
         """╔═══════════════╗
